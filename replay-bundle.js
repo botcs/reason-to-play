@@ -1,2223 +1,7 @@
 // Copyright (c) 2026 Botos Csaba. MIT License. See LICENSE for details.
-(() => {
-  // engine/registry.js
-  var OntologyRegistry = class {
-    constructor() {
-      this._register = {};
-    }
-    has(key) {
-      return key in this._register;
-    }
-    register(key, cls) {
-      this._register[key] = cls;
-    }
-    registerClass(cls) {
-      this.register(cls.name, cls);
-    }
-    request(key) {
-      if (!(key in this._register)) {
-        throw new Error(`Unknown registry key: '${key}'`);
-      }
-      return this._register[key];
-    }
-    registerAll(entries) {
-      for (const [key, value] of Object.entries(entries)) {
-        this.register(key, value);
-      }
-    }
-  };
-  var registry = new OntologyRegistry();
-
-  // engine/rect.js
-  var Rect = class _Rect {
-    constructor(x, y, w, h) {
-      this.x = x;
-      this.y = y;
-      this.w = w;
-      this.h = h;
-    }
-    // Factory from position tuple and size tuple (pygame-style)
-    static fromPosSize(pos, size) {
-      return new _Rect(pos[0], pos[1], size[0], size[1]);
-    }
-    get left() {
-      return this.x;
-    }
-    set left(v) {
-      this.x = v;
-    }
-    get top() {
-      return this.y;
-    }
-    set top(v) {
-      this.y = v;
-    }
-    get right() {
-      return this.x + this.w;
-    }
-    get bottom() {
-      return this.y + this.h;
-    }
-    get width() {
-      return this.w;
-    }
-    get height() {
-      return this.h;
-    }
-    get centerx() {
-      return this.x + Math.floor(this.w / 2);
-    }
-    get centery() {
-      return this.y + Math.floor(this.h / 2);
-    }
-    get center() {
-      return [this.centerx, this.centery];
-    }
-    get topleft() {
-      return [this.x, this.y];
-    }
-    get size() {
-      return [this.w, this.h];
-    }
-    // Return a new Rect moved by (dx, dy)
-    move(dxOrVec, dy) {
-      if (typeof dxOrVec === "object" && dxOrVec !== null) {
-        return new _Rect(this.x + dxOrVec.x, this.y + dxOrVec.y, this.w, this.h);
-      }
-      return new _Rect(this.x + dxOrVec, this.y + dy, this.w, this.h);
-    }
-    copy() {
-      return new _Rect(this.x, this.y, this.w, this.h);
-    }
-    // AABB overlap test (matching pygame: adjacent rects do NOT collide)
-    colliderect(other) {
-      return this.x < other.x + other.w && this.x + this.w > other.x && this.y < other.y + other.h && this.y + this.h > other.y;
-    }
-    // Returns indices of all rects in the list that overlap this one
-    collidelistall(others) {
-      const result = [];
-      for (let i = 0; i < others.length; i++) {
-        if (this.colliderect(others[i].rect || others[i])) {
-          result.push(i);
-        }
-      }
-      return result;
-    }
-    // Does this rect fully contain `other`?
-    contains(other) {
-      return other.x >= this.x && other.y >= this.y && other.x + other.w <= this.x + this.w && other.y + other.h <= this.y + this.h;
-    }
-    equals(other) {
-      return this.x === other.x && this.y === other.y && this.w === other.w && this.h === other.h;
-    }
-    toString() {
-      return `Rect(${this.x}, ${this.y}, ${this.w}, ${this.h})`;
-    }
-  };
-
-  // engine/action.js
-  var Action = class _Action {
-    constructor(...keys) {
-      this.keys = Object.freeze([...keys].sort());
-    }
-    asVector() {
-      let x = 0, y = 0;
-      for (const k of this.keys) {
-        if (k === "LEFT") x -= 1;
-        if (k === "RIGHT") x += 1;
-        if (k === "UP") y -= 1;
-        if (k === "DOWN") y += 1;
-      }
-      return { x, y };
-    }
-    equals(other) {
-      if (!(other instanceof _Action)) return false;
-      if (this.keys.length !== other.keys.length) return false;
-      for (let i = 0; i < this.keys.length; i++) {
-        if (this.keys[i] !== other.keys[i]) return false;
-      }
-      return true;
-    }
-    toString() {
-      return this.keys.length === 0 ? "noop" : this.keys.join(",");
-    }
-  };
-  var ACTION = {
-    NOOP: new Action(),
-    UP: new Action("UP"),
-    DOWN: new Action("DOWN"),
-    LEFT: new Action("LEFT"),
-    RIGHT: new Action("RIGHT"),
-    SPACE: new Action("SPACE"),
-    SPACE_RIGHT: new Action("SPACE", "RIGHT"),
-    SPACE_LEFT: new Action("SPACE", "LEFT")
-  };
-  var NOOP = ACTION.NOOP;
-
-  // engine/constants.js
-  var GREEN = [129, 199, 132];
-  var BLUE = [25, 118, 210];
-  var RED = [211, 47, 47];
-  var GRAY = [69, 90, 100];
-  var WHITE = [250, 250, 250];
-  var BROWN = [109, 76, 65];
-  var BLACK = [55, 71, 79];
-  var ORANGE = [230, 81, 0];
-  var YELLOW = [255, 245, 157];
-  var PINK = [255, 138, 128];
-  var GOLD = [255, 196, 0];
-  var LIGHTRED = [255, 82, 82];
-  var LIGHTORANGE = [255, 112, 67];
-  var LIGHTBLUE = [144, 202, 249];
-  var LIGHTGREEN = [185, 246, 202];
-  var LIGHTGRAY = [207, 216, 220];
-  var DARKGRAY = [68, 90, 100];
-  var DARKBLUE = [1, 87, 155];
-  var PURPLE = [92, 107, 192];
-  var LIGHTPURPLE = [200, 150, 220];
-  var LIGHTPINK = [255, 230, 230];
-  var COLORS = {
-    GREEN,
-    BLUE,
-    RED,
-    GRAY,
-    WHITE,
-    BROWN,
-    BLACK,
-    ORANGE,
-    YELLOW,
-    PINK,
-    GOLD,
-    LIGHTRED,
-    LIGHTORANGE,
-    LIGHTBLUE,
-    LIGHTGREEN,
-    LIGHTGRAY,
-    DARKGRAY,
-    DARKBLUE,
-    PURPLE,
-    LIGHTPURPLE,
-    LIGHTPINK
-  };
-  var UP = { x: 0, y: -1 };
-  var DOWN = { x: 0, y: 1 };
-  var LEFT = { x: -1, y: 0 };
-  var RIGHT = { x: 1, y: 0 };
-  var BASEDIRS = [UP, LEFT, DOWN, RIGHT];
-  function vecEquals(a, b) {
-    return a.x === b.x && a.y === b.y;
-  }
-  function vecLength(v) {
-    return Math.sqrt(v.x * v.x + v.y * v.y);
-  }
-  function unitVector(v) {
-    const len = vecLength(v);
-    if (len > 0) {
-      return { x: v.x / len, y: v.y / len };
-    }
-    return { x: 1, y: 0 };
-  }
-
-  // engine/physics.js
-  var GridPhysics = class {
-    constructor(gridsize) {
-      if (Array.isArray(gridsize)) {
-        this.gridsize = gridsize;
-      } else {
-        this.gridsize = [gridsize, gridsize];
-      }
-    }
-    passiveMovement(sprite) {
-      let speed = sprite.speed === null ? 1 : sprite.speed;
-      if (speed !== 0 && sprite.orientation !== void 0) {
-        sprite._updatePosition(sprite.orientation, speed * this.gridsize[0]);
-      }
-    }
-    activeMovement(sprite, action, speed) {
-      if (speed === void 0 || speed === null) {
-        speed = sprite.speed === null ? 1 : sprite.speed;
-      }
-      if (speed !== 0 && action !== null && action !== void 0) {
-        let dir;
-        if (action.asVector) {
-          dir = action.asVector();
-        } else {
-          dir = action;
-        }
-        if (vecEquals(dir, { x: 0, y: 0 })) return;
-        sprite._updatePosition(dir, speed * this.gridsize[0]);
-      }
-    }
-    distance(r1, r2) {
-      return Math.abs(r1.top - r2.top) + Math.abs(r1.left - r2.left);
-    }
-  };
-
-  // engine/sprite.js
-  var _IMG_COLORS = COLORS;
-  var VGDLSprite = class {
-    // Class-level defaults (overridden by subclasses)
-    static is_static = false;
-    static only_active = false;
-    static is_avatar = false;
-    static is_stochastic = false;
-    static color = null;
-    static cooldown = 0;
-    static speed = null;
-    static mass = 1;
-    static physicstype = null;
-    static shrinkfactor = 0;
-    constructor(opts) {
-      const {
-        key,
-        id,
-        pos,
-        size = [1, 1],
-        color,
-        speed,
-        cooldown,
-        physicstype,
-        rng,
-        img,
-        resources,
-        ...rest
-      } = opts;
-      this.key = key;
-      this.id = id;
-      const sz = Array.isArray(size) ? size : [size, size];
-      this.rect = new Rect(pos[0], pos[1], sz[0], sz[1]);
-      this.lastrect = this.rect;
-      this.alive = true;
-      const PhysType = physicstype || this.constructor.physicstype || GridPhysics;
-      this.physics = new PhysType(sz);
-      this.speed = speed !== void 0 && speed !== null ? speed : this.constructor.speed;
-      this.cooldown = cooldown !== void 0 && cooldown !== null ? cooldown : this.constructor.cooldown;
-      this.img = img || null;
-      this.color = color || this.constructor.color;
-      if (this.img && this.img.startsWith("colors/")) {
-        const colorName = this.img.split("/")[1];
-        const resolved = _IMG_COLORS[colorName];
-        if (resolved) this.color = resolved;
-      }
-      this._effect_data = {};
-      this.lastmove = 0;
-      this.resources = new Proxy(resources ? { ...resources } : {}, {
-        get(target, prop) {
-          if (typeof prop === "string" && !(prop in target) && prop !== "toJSON" && prop !== "then" && prop !== Symbol.toPrimitive && prop !== Symbol.toStringTag && prop !== "inspect" && prop !== "constructor" && prop !== "__proto__") {
-            return 0;
-          }
-          return target[prop];
-        },
-        set(target, prop, value) {
-          target[prop] = value;
-          return true;
-        }
-      });
-      this.just_pushed = null;
-      this.is_static = this.constructor.is_static;
-      this.only_active = this.constructor.only_active;
-      this.is_avatar = this.constructor.is_avatar;
-      this.is_stochastic = this.constructor.is_stochastic;
-      this.mass = this.constructor.mass;
-      this.shrinkfactor = this.constructor.shrinkfactor;
-      this.stypes = [];
-      for (const [name, value] of Object.entries(rest)) {
-        this[name] = value;
-      }
-    }
-    update(game) {
-      this.lastrect = this.rect;
-      this.lastmove += 1;
-      if (!this.is_static && !this.only_active) {
-        this.physics.passiveMovement(this);
-      }
-    }
-    _updatePosition(orientation, speed) {
-      let vx, vy;
-      if (speed === void 0 || speed === null) {
-        const s = this.speed || 0;
-        vx = orientation.x * s;
-        vy = orientation.y * s;
-      } else {
-        vx = orientation.x * speed;
-        vy = orientation.y * speed;
-      }
-      if (this.lastmove >= this.cooldown) {
-        this.rect = this.rect.move({ x: vx, y: vy });
-        this.lastmove = 0;
-      }
-    }
-    get lastdirection() {
-      return {
-        x: this.rect.x - this.lastrect.x,
-        y: this.rect.y - this.lastrect.y
-      };
-    }
-    toString() {
-      return `${this.key} '${this.id}' at (${this.rect.x}, ${this.rect.y})`;
-    }
-  };
-  var Resource = class extends VGDLSprite {
-    static value = 1;
-    static limit = 2;
-    static res_type = null;
-    constructor(opts) {
-      super(opts);
-      this.value = opts.value !== void 0 ? opts.value : this.constructor.value;
-      this.limit = opts.limit !== void 0 ? opts.limit : this.constructor.limit;
-      this.res_type = opts.res_type || this.constructor.res_type;
-    }
-    get resource_type() {
-      if (this.res_type === null) {
-        return this.key;
-      }
-      return this.res_type;
-    }
-  };
-  var Immutable = class extends VGDLSprite {
-    static is_static = true;
-    update(_game) {
-    }
-    _updatePosition() {
-      throw new Error("Tried to move Immutable");
-    }
-  };
-
-  // engine/sprites.js
-  var Immovable = class extends VGDLSprite {
-    static color = GRAY;
-    static is_static = true;
-  };
-  var Passive = class extends VGDLSprite {
-    static color = RED;
-  };
-  var ResourcePack = class extends Resource {
-    static is_static = true;
-  };
-  var Flicker = class extends VGDLSprite {
-    static color = RED;
-    static limit = 1;
-    constructor(opts) {
-      super(opts);
-      this._age = 0;
-      if (opts.limit !== void 0) this.limit = opts.limit;
-      else this.limit = this.constructor.limit;
-    }
-    update(game) {
-      super.update(game);
-      this._age += 1;
-      if (this._age >= this.limit) {
-        game.killSprite(this);
-      }
-    }
-  };
-  var OrientedSprite = class extends VGDLSprite {
-    static draw_arrow = false;
-    constructor(opts) {
-      super(opts);
-      if (this.orientation === void 0) {
-        this.orientation = opts.orientation || RIGHT;
-      }
-    }
-  };
-  var Missile = class extends OrientedSprite {
-    static speed = 1;
-  };
-  var OrientedFlicker = class extends OrientedSprite {
-    static draw_arrow = true;
-    static speed = 0;
-    constructor(opts) {
-      super(opts);
-      this._age = 0;
-      if (opts.limit !== void 0) this.limit = opts.limit;
-      else this.limit = this.constructor.limit || 1;
-    }
-    update(game) {
-      super.update(game);
-      this._age += 1;
-      if (this._age >= this.limit) {
-        game.killSprite(this);
-      }
-    }
-  };
-  OrientedFlicker.limit = 1;
-  var SpriteProducer = class extends VGDLSprite {
-    static stype = null;
-  };
-  var Portal = class extends SpriteProducer {
-    static is_static = true;
-    static is_stochastic = true;
-    static color = BLUE;
-  };
-  var SpawnPoint = class extends SpriteProducer {
-    static color = BLACK;
-    static is_static = true;
-    constructor(opts) {
-      super(opts);
-      this.counter = 0;
-      this.prob = opts.prob !== void 0 ? opts.prob : 1;
-      this.total = opts.total !== void 0 ? opts.total : null;
-      if (opts.cooldown !== void 0) this.cooldown = opts.cooldown;
-      else if (this.cooldown === 0) this.cooldown = 1;
-      this.is_stochastic = this.prob > 0 && this.prob < 1;
-    }
-    update(game) {
-      if (game.time % this.cooldown === 0 && game.randomGenerator.random() < this.prob) {
-        game.addSpriteCreation(this.stype, [this.rect.x, this.rect.y]);
-        this.counter += 1;
-      }
-      if (this.total && this.counter >= this.total) {
-        game.killSprite(this);
-      }
-    }
-  };
-  var RandomNPC = class extends VGDLSprite {
-    static speed = 1;
-    static is_stochastic = true;
-    update(game) {
-      super.update(game);
-      const dir = BASEDIRS[Math.floor(game.randomGenerator.random() * BASEDIRS.length)];
-      this.physics.activeMovement(this, dir);
-    }
-  };
-  var Chaser = class extends RandomNPC {
-    static stype = null;
-    constructor(opts) {
-      super(opts);
-      this.fleeing = opts.fleeing || false;
-      this.stype = opts.stype || this.constructor.stype;
-    }
-    _closestTargets(game) {
-      let bestd = 1e100;
-      let res = [];
-      const targets = game.getSprites(this.stype);
-      for (const target of targets) {
-        const d = this.physics.distance(this.rect, target.rect);
-        if (d < bestd) {
-          bestd = d;
-          res = [target];
-        } else if (d === bestd) {
-          res.push(target);
-        }
-      }
-      return res;
-    }
-    _movesToward(game, target) {
-      const res = [];
-      const basedist = this.physics.distance(this.rect, target.rect);
-      for (const a of BASEDIRS) {
-        const r = this.rect.move(a);
-        const newdist = this.physics.distance(r, target.rect);
-        if (this.fleeing && basedist < newdist) {
-          res.push(a);
-        }
-        if (!this.fleeing && basedist > newdist) {
-          res.push(a);
-        }
-      }
-      return res;
-    }
-    update(game) {
-      VGDLSprite.prototype.update.call(this, game);
-      let options = [];
-      for (const target of this._closestTargets(game)) {
-        options.push(...this._movesToward(game, target));
-      }
-      if (options.length === 0) {
-        options = [...BASEDIRS];
-      }
-      const choice = options[Math.floor(game.randomGenerator.random() * options.length)];
-      this.physics.activeMovement(this, choice);
-    }
-  };
-  var Fleeing = class extends Chaser {
-    constructor(opts) {
-      super({ ...opts, fleeing: true });
-    }
-  };
-  var Bomber = class extends SpawnPoint {
-    static color = ORANGE;
-    static is_static = false;
-    constructor(opts) {
-      super(opts);
-      if (this.orientation === void 0) {
-        this.orientation = opts.orientation || RIGHT;
-      }
-      this.speed = opts.speed !== void 0 ? opts.speed : 1;
-    }
-    update(game) {
-      this.lastrect = this.rect;
-      this.lastmove += 1;
-      if (!this.is_static && !this.only_active) {
-        this.physics.passiveMovement(this);
-      }
-      SpawnPoint.prototype.update.call(this, game);
-    }
-  };
-  var Walker = class extends Missile {
-    static is_stochastic = true;
-    update(game) {
-      const lastdir = this.lastdirection;
-      if (lastdir.x === 0) {
-        let d;
-        if (this.orientation.x > 0) d = 1;
-        else if (this.orientation.x < 0) d = -1;
-        else d = game.randomGenerator.random() < 0.5 ? -1 : 1;
-        this.physics.activeMovement(this, { x: d, y: 0 });
-      }
-      super.update(game);
-    }
-  };
-  var Conveyor = class extends OrientedSprite {
-    static is_static = true;
-    static color = BLUE;
-    static strength = 1;
-    static draw_arrow = true;
-  };
-  var Spreader = class _Spreader extends Flicker {
-    static spreadprob = 1;
-    update(game) {
-      super.update(game);
-      if (this._age === 2) {
-        for (const u of BASEDIRS) {
-          if (game.randomGenerator.random() < (this.spreadprob || _Spreader.spreadprob)) {
-            game.addSpriteCreation(this.name, [
-              this.lastrect.x + u.x * this.lastrect.w,
-              this.lastrect.y + u.y * this.lastrect.h
-            ]);
-          }
-        }
-      }
-    }
-  };
-
-  // engine/avatars.js
-  function readAction(sprite, game) {
-    const activeKeys = [...game.active_keys].sort();
-    for (let numKeys = Math.max(3, activeKeys.length); numKeys >= 0; numKeys--) {
-      for (const combo of combinations(activeKeys, numKeys)) {
-        const comboKey = combo.join(",");
-        if (sprite._keysToAction.has(comboKey)) {
-          return sprite._keysToAction.get(comboKey);
-        }
-      }
-    }
-    throw new Error("No valid actions encountered, consider allowing NO_OP");
-  }
-  function combinations(arr, r) {
-    if (r === 0) return [[]];
-    if (arr.length === 0) return [];
-    const result = [];
-    function helper(start, combo) {
-      if (combo.length === r) {
-        result.push([...combo]);
-        return;
-      }
-      for (let i = start; i < arr.length; i++) {
-        combo.push(arr[i]);
-        helper(i + 1, combo);
-        combo.pop();
-      }
-    }
-    helper(0, []);
-    return result;
-  }
-  function buildKeysToAction(actions) {
-    const map = /* @__PURE__ */ new Map();
-    for (const action of Object.values(actions)) {
-      const key = [...action.keys].sort().join(",");
-      map.set(key, action);
-    }
-    return map;
-  }
-  var MovingAvatar = class extends VGDLSprite {
-    static color = WHITE;
-    static speed = 1;
-    static is_avatar = true;
-    constructor(opts) {
-      super(opts);
-      this.is_avatar = true;
-      const actions = this.constructor.declarePossibleActions();
-      this._keysToAction = buildKeysToAction(actions);
-    }
-    static declarePossibleActions() {
-      return {
-        UP: new Action("UP"),
-        DOWN: new Action("DOWN"),
-        LEFT: new Action("LEFT"),
-        RIGHT: new Action("RIGHT"),
-        NO_OP: new Action()
-      };
-    }
-    update(game) {
-      VGDLSprite.prototype.update.call(this, game);
-      const action = readAction(this, game);
-      if (!action.equals(NOOP)) {
-        this.physics.activeMovement(this, action);
-      }
-    }
-  };
-  var OrientedAvatar = class extends VGDLSprite {
-    static color = WHITE;
-    static speed = 1;
-    static is_avatar = true;
-    static draw_arrow = false;
-    constructor(opts) {
-      super(opts);
-      this.is_avatar = true;
-      if (this.orientation === void 0) {
-        this.orientation = opts.orientation || RIGHT;
-      }
-      const actions = this.constructor.declarePossibleActions();
-      this._keysToAction = buildKeysToAction(actions);
-    }
-    static declarePossibleActions() {
-      return {
-        UP: new Action("UP"),
-        DOWN: new Action("DOWN"),
-        LEFT: new Action("LEFT"),
-        RIGHT: new Action("RIGHT"),
-        NO_OP: new Action()
-      };
-    }
-    update(game) {
-      const lastOrientation = this.orientation;
-      this.orientation = { x: 0, y: 0 };
-      VGDLSprite.prototype.update.call(this, game);
-      const action = readAction(this, game);
-      if (action) {
-        this.physics.activeMovement(this, action);
-      }
-      const lastdir = this.lastdirection;
-      const lastdirLen = Math.abs(lastdir.x) + Math.abs(lastdir.y);
-      if (lastdirLen !== 0) {
-        this.orientation = lastdir;
-      } else {
-        this.orientation = lastOrientation;
-      }
-    }
-  };
-  var ShootAvatar = class extends OrientedAvatar {
-    static ammo = null;
-    constructor(opts) {
-      super(opts);
-      this.stype = opts.stype || null;
-      this.ammo = opts.ammo !== void 0 ? opts.ammo : this.constructor.ammo;
-    }
-    static declarePossibleActions() {
-      const actions = OrientedAvatar.declarePossibleActions();
-      actions.SPACE = new Action("SPACE");
-      return actions;
-    }
-    update(game) {
-      OrientedAvatar.prototype.update.call(this, game);
-      const action = readAction(this, game);
-      if (this._hasAmmo() && action.equals(ACTION.SPACE)) {
-        this._shoot(game);
-      }
-    }
-    _hasAmmo() {
-      if (this.ammo === null) return true;
-      if (this.ammo in this.resources) {
-        return this.resources[this.ammo] > 0;
-      }
-      return false;
-    }
-    _spendAmmo() {
-      if (this.ammo !== null && this.ammo in this.resources) {
-        this.resources[this.ammo] -= 1;
-      }
-    }
-    _shoot(game) {
-      if (this.stype === null) return;
-      const directions = this._shootDirections(game);
-      for (const dir of directions) {
-        const neighbor = [
-          this.lastrect.x + dir.x * this.lastrect.w,
-          this.lastrect.y + dir.y * this.lastrect.h
-        ];
-        const sprite = game.createSprite(this.stype, neighbor);
-        if (sprite && sprite.orientation !== void 0) {
-          sprite.orientation = dir;
-        }
-      }
-      this._spendAmmo();
-    }
-    _shootDirections(_game) {
-      return [unitVector(this.orientation)];
-    }
-  };
-  var HorizontalAvatar = class extends MovingAvatar {
-    static declarePossibleActions() {
-      return {
-        LEFT: new Action("LEFT"),
-        RIGHT: new Action("RIGHT"),
-        NO_OP: new Action()
-      };
-    }
-    update(game) {
-      VGDLSprite.prototype.update.call(this, game);
-      const action = readAction(this, game);
-      const v = action.asVector();
-      if (vecEquals(v, RIGHT) || vecEquals(v, LEFT)) {
-        this.physics.activeMovement(this, action);
-      }
-    }
-  };
-  var FlakAvatar = class extends HorizontalAvatar {
-    static color = GREEN;
-    constructor(opts) {
-      super(opts);
-      this.stype = opts.stype || null;
-    }
-    static declarePossibleActions() {
-      const actions = HorizontalAvatar.declarePossibleActions();
-      actions.SPACE = new Action("SPACE");
-      return actions;
-    }
-    update(game) {
-      HorizontalAvatar.prototype.update.call(this, game);
-      if (this.stype && game.active_keys.includes("SPACE")) {
-        game.createSprite(this.stype, [this.rect.x, this.rect.y]);
-      }
-    }
-  };
-
-  // engine/effects.js
-  function killSprite(sprite, partner, game) {
-    game.killSprite(sprite);
-  }
-  function killBoth(sprite, partner, game) {
-    game.killSprite(sprite);
-    game.killSprite(partner);
-  }
-  function cloneSprite(sprite, partner, game) {
-    game.addSpriteCreation(sprite.key, [sprite.rect.x, sprite.rect.y]);
-  }
-  function transformTo(sprite, partner, game, { stype = "wall" } = {}) {
-    const lastRectKilled = sprite.lastrect;
-    game.killSprite(sprite);
-    const newSprite = game.addSpriteCreation(stype, sprite.rect.topleft);
-    if (newSprite !== null && newSprite !== void 0) {
-      newSprite.lastrect = lastRectKilled;
-      if (sprite.orientation !== void 0 && newSprite.orientation !== void 0) {
-        newSprite.orientation = sprite.orientation;
-      }
-    }
-  }
-  function stepBackIfHasLess(sprite, partner, game, { resource, limit = 1, no_symmetry = false, exhaustStype = null } = {}) {
-    if (sprite.resources[resource] < limit) {
-      stepBack(sprite, partner, game, { no_symmetry });
-    } else {
-      if (exhaustStype) {
-        if (!game.kill_list.includes(partner)) {
-          transformTo(partner, sprite, game, { stype: exhaustStype });
-        }
-      } else {
-        killSprite(partner, sprite, game);
-      }
-    }
-  }
-  function stepBack(sprite, partner, game, { no_symmetry = false } = {}) {
-    if (!game.kill_list.includes(partner) && !game.kill_list.includes(sprite)) {
-      if (sprite.rect.equals(sprite.lastrect) && !no_symmetry) {
-        partner.rect = partner.lastrect;
-        stepBackPusher(partner, 0);
-      } else {
-        sprite.rect = sprite.lastrect;
-        stepBackPusher(sprite, 0);
-      }
-    }
-  }
-  function stepBackPusher(sprite, depth) {
-    if (depth > 5) return;
-    if (sprite.just_pushed) {
-      sprite.just_pushed.rect = sprite.just_pushed.lastrect;
-      stepBackPusher(sprite.just_pushed, depth + 1);
-    }
-  }
-  function undoAll(sprite, partner, game) {
-    for (const s of game.sprite_registry.sprites()) {
-      s.rect = s.lastrect;
-    }
-  }
-  function findOriginMvt(partner, depth) {
-    if (partner.just_pushed && depth < 3) {
-      return findOriginMvt(partner.just_pushed, depth + 1);
-    }
-    return partner.lastdirection;
-  }
-  function bounceForward(sprite, partner, game) {
-    let pushedDir = findOriginMvt(partner, 0);
-    if (Math.abs(pushedDir.x) + Math.abs(pushedDir.y) === 0) {
-      pushedDir = findOriginMvt(sprite, 0);
-      partner.physics.activeMovement(partner, unitVector(pushedDir));
-      partner.just_pushed = sprite;
-    } else {
-      sprite.physics.activeMovement(sprite, unitVector(pushedDir));
-      sprite.just_pushed = partner;
-    }
-  }
-  function catapultForward(sprite, partner, game, { exhaustStype = null } = {}) {
-    if (sprite.lastrect.colliderect(partner.rect)) return;
-    const direction = sprite.lastdirection;
-    const len = Math.abs(direction.x) + Math.abs(direction.y);
-    if (len === 0) return;
-    const dir = unitVector(direction);
-    const gridsize = sprite.rect.width;
-    const newRect = sprite.rect.copy();
-    newRect.x += Math.round(dir.x) * gridsize;
-    newRect.y += Math.round(dir.y) * gridsize;
-    if (newRect.x < 0 || newRect.y < 0 || newRect.x + newRect.width > game.screensize[0] || newRect.y + newRect.height > game.screensize[1]) return;
-    sprite.rect = newRect;
-    sprite.lastmove = 0;
-    if (exhaustStype) {
-      transformTo(partner, sprite, game, { stype: exhaustStype });
-    }
-  }
-  function reverseDirection(sprite, partner, game, { with_step_back = true } = {}) {
-    if (with_step_back) {
-      sprite.rect = sprite.lastrect;
-    }
-    if (sprite.orientation !== void 0) {
-      sprite.orientation = { x: -sprite.orientation.x, y: -sprite.orientation.y };
-    }
-  }
-  function turnAround(sprite, partner, game) {
-    sprite.rect = sprite.lastrect;
-    sprite.lastmove = sprite.cooldown;
-    sprite.physics.activeMovement(sprite, { x: 0, y: 1 }, 1);
-    reverseDirection(sprite, partner, game, { with_step_back: false });
-  }
-  function flipDirection(sprite, partner, game) {
-    const BASEDIRS2 = [{ x: 0, y: -1 }, { x: -1, y: 0 }, { x: 0, y: 1 }, { x: 1, y: 0 }];
-    sprite.orientation = BASEDIRS2[Math.floor(game.randomGenerator.random() * BASEDIRS2.length)];
-  }
-  function wrapAround(sprite, partner, game, { offset = 0 } = {}) {
-    if (sprite.rect.top < 0) {
-      sprite.rect.top = game.screensize[1] - sprite.rect.height;
-    } else if (sprite.rect.top + sprite.rect.height > game.screensize[1]) {
-      sprite.rect.top = 0;
-    }
-    if (sprite.rect.left < 0) {
-      sprite.rect.left = game.screensize[0] - sprite.rect.width;
-    } else if (sprite.rect.left + sprite.rect.width > game.screensize[0]) {
-      sprite.rect.left = 0;
-    }
-    sprite.lastmove = 0;
-  }
-  function collectResource(sprite, partner, game) {
-    if (!(sprite instanceof Resource)) {
-      throw new Error(`collectResource: sprite must be a Resource, got ${sprite.constructor.name}`);
-    }
-    const r = sprite.resource_type;
-    const limit = game.domain.resources_limits && game.domain.resources_limits[r] || Infinity;
-    partner.resources[r] = Math.max(0, Math.min(partner.resources[r] + sprite.value, limit));
-  }
-  function changeResource(sprite, partner, game, { resource, value = 1 } = {}) {
-    game.resource_changes.push([sprite, resource, value]);
-  }
-  function addResource(sprite, partner, game, { resource, value = 1 } = {}) {
-    game.resource_changes.push([partner, resource, value]);
-    game.kill_list.push(sprite);
-  }
-  function removeResource(sprite, partner, game, { resource, value = -1 } = {}) {
-    game.resource_changes.push([partner, resource, value]);
-    game.kill_list.push(sprite);
-  }
-  function killIfOtherHasMore(sprite, partner, game, { resource, limit = 1 } = {}) {
-    if (partner.resources[resource] >= limit) {
-      killSprite(sprite, partner, game);
-    }
-  }
-  function killIfHasMore(sprite, partner, game, { resource, limit = 1 } = {}) {
-    if (sprite.resources[resource] >= limit) {
-      killSprite(sprite, partner, game);
-    }
-  }
-  function killIfOtherHasLess(sprite, partner, game, { resource, limit = 1 } = {}) {
-    if (partner.resources[resource] <= limit) {
-      killSprite(sprite, partner, game);
-    }
-  }
-  function killIfHasLess(sprite, partner, game, { resource, limit = 1 } = {}) {
-    if (sprite.resources[resource] <= limit) {
-      killSprite(sprite, partner, game);
-    }
-  }
-  function spawnIfHasMore(sprite, partner, game, { resource, stype, limit = 1 } = {}) {
-    if (sprite.resources[resource] >= limit) {
-      game.addSpriteCreation(stype, [sprite.rect.x, sprite.rect.y]);
-    }
-  }
-  function killIfAlive(sprite, partner, game) {
-    if (!game.kill_list.includes(partner)) {
-      killSprite(sprite, partner, game);
-    }
-  }
-  function conveySprite(sprite, partner, game) {
-    const tmp = sprite.lastrect;
-    const v = unitVector(partner.orientation);
-    sprite.physics.activeMovement(sprite, v, partner.strength || 1);
-    sprite.lastrect = tmp;
-  }
-  function pullWithIt(sprite, partner, game) {
-    if (!oncePerStep(sprite, game, "t_lastpull")) return;
-    const tmp = sprite.lastrect;
-    const lastdir = partner.lastdirection;
-    const len = Math.abs(lastdir.x) + Math.abs(lastdir.y);
-    const v = len > 0 ? unitVector(lastdir) : { x: 1, y: 0 };
-    sprite._updatePosition(v, (partner.speed || 1) * sprite.physics.gridsize[0]);
-    sprite.lastrect = tmp;
-  }
-  function teleportToExit(sprite, partner, game) {
-    const exits = game.sprite_registry.withStype(partner.stype || partner.key);
-    if (exits.length > 0) {
-      const e = exits[Math.floor(game.randomGenerator.random() * exits.length)];
-      sprite.rect = e.rect.copy();
-    }
-    sprite.lastmove = 0;
-  }
-  function teleportToOther(sprite, partner, game, { exhaustStype = null } = {}) {
-    if (sprite.lastrect.colliderect(partner.rect)) return;
-    const siblings = game.sprite_registry.group(partner.key).filter((s) => s !== partner);
-    if (siblings.length === 0) return;
-    const e = siblings[Math.floor(game.randomGenerator.random() * siblings.length)];
-    sprite.rect = e.rect.copy();
-    sprite.lastrect = e.rect.copy();
-    sprite.lastmove = 0;
-    if (exhaustStype) {
-      transformTo(partner, sprite, game, { stype: exhaustStype });
-      transformTo(e, sprite, game, { stype: exhaustStype });
-    }
-  }
-  function wallBounce(sprite, partner, game, { friction = 0 } = {}) {
-    if (!oncePerStep(sprite, game, "t_lastbounce")) return;
-    if (sprite.speed !== null) sprite.speed *= 1 - friction;
-    stepBack(sprite, partner, game);
-    if (sprite.orientation !== void 0) {
-      if (Math.abs(sprite.rect.centerx - partner.rect.centerx) > Math.abs(sprite.rect.centery - partner.rect.centery)) {
-        sprite.orientation = { x: -sprite.orientation.x, y: sprite.orientation.y };
-      } else {
-        sprite.orientation = { x: sprite.orientation.x, y: -sprite.orientation.y };
-      }
-    }
-  }
-  function bounceDirection(sprite, partner, game, { friction = 0 } = {}) {
-    stepBack(sprite, partner, game);
-    if (sprite.orientation !== void 0) {
-      const inc = sprite.orientation;
-      const snorm = unitVector({
-        x: -sprite.rect.centerx + partner.rect.centerx,
-        y: -sprite.rect.centery + partner.rect.centery
-      });
-      const dp = snorm.x * inc.x + snorm.y * inc.y;
-      sprite.orientation = {
-        x: -2 * dp * snorm.x + inc.x,
-        y: -2 * dp * snorm.y + inc.y
-      };
-      if (sprite.speed !== null) sprite.speed *= 1 - friction;
-    }
-  }
-  function oncePerStep(sprite, game, name) {
-    if (name in sprite._effect_data) {
-      if (sprite._effect_data[name] === game.time) {
-        return false;
-      }
-    }
-    sprite._effect_data[name] = game.time;
-    return true;
-  }
-
-  // engine/terminations.js
-  var Termination = class {
-    constructor({ win = true, scoreChange = 0 } = {}) {
-      this.win = win;
-      this.score = scoreChange;
-    }
-    isDone(_game) {
-      return [false, null];
-    }
-  };
-  var Timeout = class extends Termination {
-    constructor(opts = {}) {
-      super(opts);
-      this.limit = opts.limit || 0;
-    }
-    isDone(game) {
-      if (game.time >= this.limit) {
-        return [true, this.win];
-      }
-      return [false, null];
-    }
-  };
-  var SpriteCounter = class extends Termination {
-    constructor(opts = {}) {
-      super(opts);
-      this.limit = opts.limit !== void 0 ? opts.limit : 0;
-      this.stype = opts.stype || null;
-    }
-    isDone(game) {
-      if (game.numSprites(this.stype) <= this.limit) {
-        return [true, this.win];
-      }
-      return [false, null];
-    }
-    toString() {
-      return `SpriteCounter(stype=${this.stype})`;
-    }
-  };
-  var MultiSpriteCounter = class extends Termination {
-    constructor(opts = {}) {
-      const { win = true, scoreChange = 0, limit = 0, ...rest } = opts;
-      super({ win, scoreChange });
-      this.limit = limit;
-      this.stypes = [];
-      for (const [key, value] of Object.entries(rest)) {
-        if (key.startsWith("stype")) {
-          this.stypes.push(value);
-        }
-      }
-    }
-    isDone(game) {
-      let total = 0;
-      for (const st of this.stypes) {
-        total += game.numSprites(st);
-      }
-      if (total === this.limit) {
-        return [true, this.win];
-      }
-      return [false, null];
-    }
-  };
-  var ResourceCounter = class extends Termination {
-    constructor(opts = {}) {
-      super(opts);
-      this.stype = opts.stype || null;
-      this.limit = opts.limit || 0;
-    }
-    isDone(game) {
-      const avatars = game.getAvatars();
-      if (avatars.length === 0) return [false, null];
-      const avatar = avatars[0];
-      const satisfied = (avatar.resources[this.stype] || 0) >= this.limit;
-      return [satisfied, this.win];
-    }
-  };
-
-  // engine/sprite-registry.js
-  var SpriteRegistry = class _SpriteRegistry {
-    constructor() {
-      this.classes = {};
-      this.classArgs = {};
-      this.stypes = {};
-      this.spriteKeys = [];
-      this.singletons = [];
-      this._spriteById = {};
-      this._liveSpritesByKey = {};
-      this._deadSpritesByKey = {};
-    }
-    reset() {
-      this._liveSpritesByKey = {};
-      this._deadSpritesByKey = {};
-      this._spriteById = {};
-    }
-    registerSingleton(key) {
-      this.singletons.push(key);
-    }
-    isSingleton(key) {
-      return this.singletons.includes(key);
-    }
-    registerSpriteClass(key, cls, args, stypes) {
-      if (key in this.classes) {
-        throw new Error(`Sprite key already registered: ${key}`);
-      }
-      if (cls === null || cls === void 0) {
-        throw new Error(`Cannot register null class for key: ${key}`);
-      }
-      this.classes[key] = cls;
-      this.classArgs[key] = args;
-      this.stypes[key] = stypes;
-      this.spriteKeys.push(key);
-    }
-    getSpriteDef(key) {
-      if (!(key in this.classes)) {
-        throw new Error(`Unknown sprite type '${key}', verify your domain file`);
-      }
-      return {
-        cls: this.classes[key],
-        args: this.classArgs[key],
-        stypes: this.stypes[key]
-      };
-    }
-    *getSpriteDefs() {
-      for (const key of this.spriteKeys) {
-        yield [key, this.getSpriteDef(key)];
-      }
-    }
-    _generateIdNumber(key) {
-      const liveIds = (this._liveSpritesByKey[key] || []).map((s) => parseInt(s.id.split(".").pop()));
-      const deadIds = (this._deadSpritesByKey[key] || []).map((s) => parseInt(s.id.split(".").pop()));
-      const allIds = liveIds.concat(deadIds);
-      if (allIds.length > 0) {
-        return Math.max(...allIds) + 1;
-      }
-      return 1;
-    }
-    generateId(key) {
-      const n = this._generateIdNumber(key);
-      return `${key}.${n}`;
-    }
-    createSprite(key, opts) {
-      if (this.isSingleton(key)) {
-        const live = this._liveSpritesByKey[key] || [];
-        if (live.length > 0) {
-          return null;
-        }
-      }
-      const { cls, args, stypes } = this.getSpriteDef(key);
-      const id = opts.id || this.generateId(key);
-      const mergedOpts = { ...args, ...opts, key, id };
-      const sprite = new cls(mergedOpts);
-      sprite.stypes = stypes;
-      if (!this._liveSpritesByKey[key]) {
-        this._liveSpritesByKey[key] = [];
-      }
-      this._liveSpritesByKey[key].push(sprite);
-      this._spriteById[id] = sprite;
-      return sprite;
-    }
-    killSprite(sprite) {
-      sprite.alive = false;
-      const key = sprite.key;
-      const liveList = this._liveSpritesByKey[key];
-      if (liveList) {
-        const idx = liveList.indexOf(sprite);
-        if (idx !== -1) {
-          liveList.splice(idx, 1);
-          if (!this._deadSpritesByKey[key]) {
-            this._deadSpritesByKey[key] = [];
-          }
-          this._deadSpritesByKey[key].push(sprite);
-        }
-      }
-    }
-    group(key, includeDead = false) {
-      const live = this._liveSpritesByKey[key] || [];
-      if (!includeDead) return live;
-      const dead = this._deadSpritesByKey[key] || [];
-      return live.concat(dead);
-    }
-    *groups(includeDead = false) {
-      for (const key of this.spriteKeys) {
-        if (includeDead) {
-          const live = this._liveSpritesByKey[key] || [];
-          const dead = this._deadSpritesByKey[key] || [];
-          yield [key, live.concat(dead)];
-        } else {
-          yield [key, this._liveSpritesByKey[key] || []];
-        }
-      }
-    }
-    *sprites(includeDead = false) {
-      if (includeDead) {
-        throw new Error("sprites(includeDead=true) not supported");
-      }
-      for (const key of this.spriteKeys) {
-        const list = this._liveSpritesByKey[key] || [];
-        for (const sprite of list) {
-          yield sprite;
-        }
-      }
-    }
-    spritesArray() {
-      const result = [];
-      for (const key of this.spriteKeys) {
-        const list = this._liveSpritesByKey[key] || [];
-        for (const sprite of list) {
-          result.push(sprite);
-        }
-      }
-      return result;
-    }
-    withStype(stype, includeDead = false) {
-      if (this.spriteKeys.includes(stype)) {
-        return this.group(stype, includeDead);
-      }
-      const result = [];
-      for (const key of this.spriteKeys) {
-        if (this.stypes[key] && this.stypes[key].includes(stype)) {
-          const list = includeDead ? (this._liveSpritesByKey[key] || []).concat(this._deadSpritesByKey[key] || []) : this._liveSpritesByKey[key] || [];
-          result.push(...list);
-        }
-      }
-      return result;
-    }
-    getAvatar() {
-      for (const [, sprites] of this.groups(true)) {
-        if (sprites.length > 0 && this.isAvatar(sprites[0])) {
-          return sprites[0];
-        }
-      }
-      return null;
-    }
-    isAvatar(sprite) {
-      return this.isAvatarCls(sprite.constructor);
-    }
-    isAvatarCls(cls) {
-      let current = cls;
-      while (current && current.name) {
-        if (current.name.includes("Avatar")) return true;
-        current = Object.getPrototypeOf(current);
-      }
-      return false;
-    }
-    // Deep copy for building a level from a domain
-    deepCopy() {
-      const copy = new _SpriteRegistry();
-      copy.classes = { ...this.classes };
-      copy.classArgs = {};
-      for (const [k, v] of Object.entries(this.classArgs)) {
-        copy.classArgs[k] = { ...v };
-      }
-      copy.stypes = {};
-      for (const [k, v] of Object.entries(this.stypes)) {
-        copy.stypes[k] = [...v];
-      }
-      copy.spriteKeys = [...this.spriteKeys];
-      copy.singletons = [...this.singletons];
-      return copy;
-    }
-  };
-
-  // engine/game.js
-  var SeededRandom = class {
-    constructor(seed = 42) {
-      this._seed = seed;
-      this._state = seed;
-    }
-    random() {
-      let t = this._state += 1831565813;
-      t = Math.imul(t ^ t >>> 15, t | 1);
-      t ^= t + Math.imul(t ^ t >>> 7, t | 61);
-      return ((t ^ t >>> 14) >>> 0) / 4294967296;
-    }
-    choice(arr) {
-      return arr[Math.floor(this.random() * arr.length)];
-    }
-    seed(s) {
-      this._state = s;
-      this._seed = s;
-    }
-  };
-  var Effect = class {
-    constructor(actorStype, acteeStype, { scoreChange = 0 } = {}) {
-      this.actor_stype = actorStype;
-      this.actee_stype = acteeStype;
-      this.score = scoreChange;
-      this.is_stochastic = false;
-    }
-    call(sprite, partner, game) {
-      throw new Error("Effect.call not implemented");
-    }
-    get name() {
-      return this.constructor.name;
-    }
-  };
-  var FunctionalEffect = class extends Effect {
-    constructor(fn, actorStype, acteeStype, kwargs = {}) {
-      const scoreChange = kwargs.scoreChange || 0;
-      super(actorStype, acteeStype, { scoreChange });
-      this.callFn = fn;
-      const { scoreChange: _sc, ...fnArgs } = kwargs;
-      this.fnArgs = fnArgs;
-      this._name = fn.name || "anonymous";
-    }
-    call(sprite, partner, game) {
-      if (Object.keys(this.fnArgs).length > 0) {
-        return this.callFn(sprite, partner, game, this.fnArgs);
-      }
-      return this.callFn(sprite, partner, game);
-    }
-    get name() {
-      return this._name;
-    }
-  };
-  var BasicGame = class {
-    constructor(spriteRegistry, opts = {}) {
-      this.domain_registry = spriteRegistry;
-      this.title = opts.title || null;
-      this.seed = opts.seed !== void 0 ? opts.seed : 42;
-      this.block_size = opts.block_size || 1;
-      this.notable_resources = [];
-      this.sprite_order = [];
-      this.collision_eff = [];
-      this.char_mapping = {};
-      this.terminations = [];
-      this.resources_limits = {};
-      this.resources_colors = {};
-      this.is_stochastic = false;
-    }
-    finishSetup() {
-      this.is_stochastic = this.collision_eff.some((e) => e.is_stochastic);
-      this.setupResources();
-      const avatarIdx = this.sprite_order.indexOf("avatar");
-      if (avatarIdx !== -1) {
-        this.sprite_order.splice(avatarIdx, 1);
-        this.sprite_order.push("avatar");
-      }
-    }
-    setupResources() {
-      this.notable_resources = [];
-      for (const [resType, { cls, args }] of this.domain_registry.getSpriteDefs()) {
-        if (cls.prototype instanceof Resource || cls === Resource) {
-          let rt = resType;
-          if (args.res_type) rt = args.res_type;
-          if (args.color) this.resources_colors[rt] = args.color;
-          if (args.limit !== void 0) this.resources_limits[rt] = args.limit;
-          this.notable_resources.push(rt);
-        }
-      }
-    }
-    buildLevel(lstr) {
-      const lines = lstr.split("\n").filter((l) => l.length > 0);
-      const lengths = lines.map((l) => l.length);
-      const minLen = Math.min(...lengths);
-      const maxLen = Math.max(...lengths);
-      if (minLen !== maxLen) {
-        throw new Error(`Inconsistent line lengths: min=${minLen}, max=${maxLen}`);
-      }
-      const level = new BasicGameLevel(
-        this,
-        this.domain_registry.deepCopy(),
-        lstr,
-        lengths[0],
-        lines.length,
-        this.seed
-      );
-      for (let row = 0; row < lines.length; row++) {
-        for (let col = 0; col < lines[row].length; col++) {
-          const c = lines[row][col];
-          const keys = this.char_mapping[c];
-          if (keys) {
-            const pos = [col * this.block_size, row * this.block_size];
-            level.createSprites(keys, pos);
-          }
-        }
-      }
-      level.initState = level.getGameState();
-      return level;
-    }
-  };
-  var BasicGameLevel = class {
-    constructor(domain, spriteRegistry, levelstring, width, height, seed = 0) {
-      this.domain = domain;
-      this.sprite_registry = spriteRegistry;
-      this.levelstring = levelstring;
-      this.width = width;
-      this.height = height;
-      this.block_size = domain.block_size;
-      this.screensize = [this.width * this.block_size, this.height * this.block_size];
-      this.seed = seed;
-      this.randomGenerator = new SeededRandom(seed);
-      this.kill_list = [];
-      this.create_list = [];
-      this.resource_changes = [];
-      this.score = 0;
-      this.last_reward = 0;
-      this.time = 0;
-      this.ended = false;
-      this.won = false;
-      this.lose = false;
-      this.is_stochastic = false;
-      this.active_keys = [];
-      this.events_triggered = [];
-      this.initState = null;
-      this._gameRect = new Rect(0, 0, this.screensize[0], this.screensize[1]);
-    }
-    reset() {
-      this.score = 0;
-      this.last_reward = 0;
-      this.time = 0;
-      this.ended = false;
-      this.won = false;
-      this.lose = false;
-      this.kill_list = [];
-      this.create_list = [];
-      this.resource_changes = [];
-      this.active_keys = [];
-      this.events_triggered = [];
-      if (this.initState) {
-        this.setGameState(this.initState);
-      }
-    }
-    createSprite(key, pos, id) {
-      const sprite = this.sprite_registry.createSprite(key, {
-        pos,
-        id,
-        size: [this.block_size, this.block_size],
-        rng: this.randomGenerator
-      });
-      if (sprite) {
-        this.is_stochastic = this.domain.is_stochastic || sprite.is_stochastic || this.is_stochastic;
-      }
-      return sprite;
-    }
-    createSprites(keys, pos) {
-      return keys.map((key) => this.createSprite(key, pos)).filter(Boolean);
-    }
-    killSprite(sprite) {
-      this.kill_list.push(sprite);
-    }
-    addSpriteCreation(key, pos, id) {
-      this.create_list.push([key, pos, id]);
-      return null;
-    }
-    addScore(scoreVal) {
-      this.score += scoreVal;
-      this.last_reward += scoreVal;
-    }
-    numSprites(key) {
-      return this.sprite_registry.withStype(key).length;
-    }
-    getSprites(key) {
-      return this.sprite_registry.withStype(key);
-    }
-    getAvatars() {
-      const res = [];
-      for (const [, ss] of this.sprite_registry.groups(true)) {
-        if (ss.length > 0 && this.sprite_registry.isAvatar(ss[0])) {
-          res.push(...ss);
-        }
-      }
-      return res;
-    }
-    containsRect(rect) {
-      return this._gameRect.contains(rect);
-    }
-    tick(action) {
-      this.time += 1;
-      this.last_reward = 0;
-      if (this.ended) return;
-      this.active_keys = action.keys;
-      const allSprites = this.sprite_registry.spritesArray();
-      for (const s of allSprites) {
-        s.just_pushed = null;
-      }
-      for (const s of allSprites) {
-        s.update(this);
-      }
-      this.events_triggered = [];
-      const [ss, moveEvents, moveEventKeys] = this._moveEventHandling();
-      const [nonMoveEvents, nonMoveEventKeys] = this._eventHandling(ss);
-      this.events_triggered = moveEvents.concat(nonMoveEvents);
-      for (const sprite of this.kill_list) {
-        this.sprite_registry.killSprite(sprite);
-      }
-      for (const [key, pos, id] of this.create_list) {
-        this.createSprite(key, pos, id);
-      }
-      for (const [sprite, resource, value] of this.resource_changes) {
-        const limit = this.domain.resources_limits && this.domain.resources_limits[resource] || Infinity;
-        sprite.resources[resource] = Math.max(0, Math.min(sprite.resources[resource] + value, limit));
-      }
-      this._checkTerminations();
-      this.kill_list = [];
-      this.create_list = [];
-      this.resource_changes = [];
-    }
-    _moveEventHandling() {
-      let allEventsTriggered = [];
-      let allEventsTriggeredKeys = [];
-      const ss = {};
-      const stepbackEffects = this.domain.collision_eff.filter((e) => e.name === "stepBack" || e.name === "stepBackIfHasLess");
-      for (const effect of stepbackEffects) {
-        const [, events, eventKeys] = this._applyEffect(effect, ss);
-        allEventsTriggered.push(...events);
-        allEventsTriggeredKeys.push(...eventKeys);
-      }
-      const moveEffects = this.domain.collision_eff.filter(
-        (e) => ["bounceForward", "reverseDirection", "turnAround"].includes(e.name)
-      );
-      for (const effect of moveEffects) {
-        const [, events, eventKeys] = this._applyEffect(effect, ss);
-        allEventsTriggered.push(...events);
-        allEventsTriggeredKeys.push(...eventKeys);
-      }
-      for (const effect of stepbackEffects) {
-        const [, events, eventKeys] = this._applyEffect(effect, ss);
-        allEventsTriggered.push(...events);
-        allEventsTriggeredKeys.push(...eventKeys);
-      }
-      return [ss, allEventsTriggered, allEventsTriggeredKeys];
-    }
-    _eventHandling(ss) {
-      let allEventsTriggered = [];
-      let allEventsTriggeredKeys = [];
-      const nonMoveEffects = this.domain.collision_eff.filter(
-        (e) => !["stepBack", "stepBackIfHasLess", "bounceForward", "reverseDirection", "turnAround"].includes(e.name)
-      );
-      for (const effect of nonMoveEffects) {
-        const [, events, eventKeys] = this._applyEffect(effect, ss);
-        allEventsTriggered.push(...events);
-        allEventsTriggeredKeys.push(...eventKeys);
-      }
-      return [allEventsTriggered, allEventsTriggeredKeys];
-    }
-    _applyEffect(effect, ss) {
-      const eventsTriggered = [];
-      const eventsTriggeredKeys = [];
-      const g1 = effect.actor_stype;
-      const g2 = effect.actee_stype;
-      if (!(g1 in ss)) {
-        ss[g1] = this.sprite_registry.withStype(g1);
-      }
-      if (g2 !== "EOS" && !(g2 in ss)) {
-        ss[g2] = this.sprite_registry.withStype(g2);
-      }
-      if (g2 === "EOS") {
-        const sprites2 = ss[g1];
-        for (let i = sprites2.length - 1; i >= 0; i--) {
-          const s1 = sprites2[i];
-          if (!this.containsRect(s1.rect)) {
-            this.addScore(effect.score);
-            effect.call(s1, null, this);
-            eventsTriggered.push([effect.name, s1.id, "EOS"]);
-            eventsTriggeredKeys.push([effect.name, s1.key, "EOS", [s1.rect.x, s1.rect.y], [null, null]]);
-            if (!this.containsRect(s1.rect) && s1.alive) {
-              this.killSprite(s1);
-            }
-          }
-        }
-        return [ss, eventsTriggered, eventsTriggeredKeys];
-      }
-      let sprites = ss[g1];
-      let others = ss[g2];
-      if (sprites.length === 0 || others.length === 0) {
-        return [ss, eventsTriggered, eventsTriggeredKeys];
-      }
-      let reverse = false;
-      if (sprites.length > others.length) {
-        [sprites, others] = [others, sprites];
-        reverse = true;
-      }
-      for (const sprite of sprites) {
-        for (const other of others) {
-          if (sprite === other) continue;
-          if (!sprite.rect.colliderect(other.rect)) continue;
-          if (reverse) {
-            if (!this.kill_list.includes(other)) {
-              this.addScore(effect.score);
-              effect.call(other, sprite, this);
-              eventsTriggered.push([effect.name, other.id, sprite.id]);
-              eventsTriggeredKeys.push([
-                effect.name,
-                other.key,
-                sprite.key,
-                [other.rect.x, other.rect.y],
-                [sprite.rect.x, sprite.rect.y]
-              ]);
-            }
-          } else {
-            if (!this.kill_list.includes(sprite)) {
-              this.addScore(effect.score);
-              effect.call(sprite, other, this);
-              eventsTriggered.push([effect.name, sprite.id, other.id]);
-              eventsTriggeredKeys.push([
-                effect.name,
-                sprite.key,
-                other.key,
-                [sprite.rect.x, sprite.rect.y],
-                [other.rect.x, other.rect.y]
-              ]);
-            }
-          }
-        }
-      }
-      return [ss, eventsTriggered, eventsTriggeredKeys];
-    }
-    _checkTerminations() {
-      this.lose = false;
-      for (const t of this.domain.terminations) {
-        const [ended, won] = t.isDone(this);
-        this.ended = ended;
-        this.won = won === null ? false : won;
-        if (t.constructor.name === "Timeout") {
-        } else if (["SpriteCounter", "MultiSpriteCounter"].includes(t.constructor.name)) {
-          if (this.ended && !this.won) {
-            this.lose = true;
-          }
-        }
-        if (this.ended) {
-          this.addScore(t.score);
-          break;
-        }
-      }
-    }
-    getGameState() {
-      const spriteStates = {};
-      for (const key of this.sprite_registry.spriteKeys) {
-        const live = this.sprite_registry._liveSpritesByKey[key] || [];
-        const dead = this.sprite_registry._deadSpritesByKey[key] || [];
-        spriteStates[key] = [...live, ...dead].map((s) => ({
-          id: s.id,
-          key: s.key,
-          x: s.rect.x,
-          y: s.rect.y,
-          w: s.rect.w,
-          h: s.rect.h,
-          alive: s.alive,
-          resources: { ...s.resources },
-          speed: s.speed,
-          cooldown: s.cooldown,
-          orientation: s.orientation ? { ...s.orientation } : void 0,
-          _age: s._age,
-          lastmove: s.lastmove
-        }));
-      }
-      return {
-        score: this.score,
-        time: this.time,
-        sprites: spriteStates
-      };
-    }
-    setGameState(state) {
-      this.sprite_registry.reset();
-      this.score = state.score;
-      this.time = state.time;
-      for (const [key, spritesData] of Object.entries(state.sprites)) {
-        for (const sd of spritesData) {
-          const sprite = this.sprite_registry.createSprite(key, {
-            id: sd.id,
-            pos: [sd.x, sd.y],
-            size: [sd.w, sd.h],
-            rng: this.randomGenerator
-          });
-          if (sprite) {
-            sprite.resources = new Proxy({ ...sd.resources }, {
-              get(target, prop) {
-                if (typeof prop === "string" && !(prop in target) && prop !== "toJSON" && prop !== "then" && prop !== Symbol.toPrimitive && prop !== Symbol.toStringTag && prop !== "inspect" && prop !== "constructor" && prop !== "__proto__") {
-                  return 0;
-                }
-                return target[prop];
-              },
-              set(target, prop, value) {
-                target[prop] = value;
-                return true;
-              }
-            });
-            if (sd.speed !== void 0) sprite.speed = sd.speed;
-            if (sd.cooldown !== void 0) sprite.cooldown = sd.cooldown;
-            if (sd.orientation) sprite.orientation = { ...sd.orientation };
-            if (sd._age !== void 0) sprite._age = sd._age;
-            if (sd.lastmove !== void 0) sprite.lastmove = sd.lastmove;
-            sprite.alive = sd.alive;
-            if (!sd.alive) {
-              this.sprite_registry.killSprite(sprite);
-            }
-          }
-        }
-      }
-    }
-  };
-
-  // engine/setup-registry.js
-  function setupRegistry() {
-    registry.register("VGDLSprite", VGDLSprite);
-    registry.register("Immovable", Immovable);
-    registry.register("Passive", Passive);
-    registry.register("Resource", Resource);
-    registry.register("ResourcePack", ResourcePack);
-    registry.register("Flicker", Flicker);
-    registry.register("OrientedFlicker", OrientedFlicker);
-    registry.register("OrientedSprite", OrientedSprite);
-    registry.register("Missile", Missile);
-    registry.register("SpawnPoint", SpawnPoint);
-    registry.register("SpriteProducer", SpriteProducer);
-    registry.register("Portal", Portal);
-    registry.register("RandomNPC", RandomNPC);
-    registry.register("Chaser", Chaser);
-    registry.register("Fleeing", Fleeing);
-    registry.register("Bomber", Bomber);
-    registry.register("Walker", Walker);
-    registry.register("Conveyor", Conveyor);
-    registry.register("Spreader", Spreader);
-    registry.register("Immutable", Immutable);
-    registry.register("MovingAvatar", MovingAvatar);
-    registry.register("OrientedAvatar", OrientedAvatar);
-    registry.register("ShootAvatar", ShootAvatar);
-    registry.register("HorizontalAvatar", HorizontalAvatar);
-    registry.register("FlakAvatar", FlakAvatar);
-    registry.register("killSprite", killSprite);
-    registry.register("killBoth", killBoth);
-    registry.register("cloneSprite", cloneSprite);
-    registry.register("transformTo", transformTo);
-    registry.register("stepBack", stepBack);
-    registry.register("stepBackIfHasLess", stepBackIfHasLess);
-    registry.register("undoAll", undoAll);
-    registry.register("bounceForward", bounceForward);
-    registry.register("catapultForward", catapultForward);
-    registry.register("reverseDirection", reverseDirection);
-    registry.register("turnAround", turnAround);
-    registry.register("flipDirection", flipDirection);
-    registry.register("wrapAround", wrapAround);
-    registry.register("collectResource", collectResource);
-    registry.register("changeResource", changeResource);
-    registry.register("addResource", addResource);
-    registry.register("removeResource", removeResource);
-    registry.register("killIfOtherHasMore", killIfOtherHasMore);
-    registry.register("killIfHasMore", killIfHasMore);
-    registry.register("killIfOtherHasLess", killIfOtherHasLess);
-    registry.register("killIfHasLess", killIfHasLess);
-    registry.register("spawnIfHasMore", spawnIfHasMore);
-    registry.register("killIfAlive", killIfAlive);
-    registry.register("conveySprite", conveySprite);
-    registry.register("pullWithIt", pullWithIt);
-    registry.register("teleportToExit", teleportToExit);
-    registry.register("teleportToOther", teleportToOther);
-    registry.register("wallBounce", wallBounce);
-    registry.register("bounceDirection", bounceDirection);
-    registry.register("Timeout", Timeout);
-    registry.register("SpriteCounter", SpriteCounter);
-    registry.register("MultiSpriteCounter", MultiSpriteCounter);
-    registry.register("ResourceCounter", ResourceCounter);
-    registry.register("GridPhysics", GridPhysics);
-    registry.register("BasicGame", BasicGame);
-    for (const [name, value] of Object.entries(COLORS)) {
-      registry.register(name, value);
-    }
-    registry.register("UP", UP);
-    registry.register("DOWN", DOWN);
-    registry.register("LEFT", LEFT);
-    registry.register("RIGHT", RIGHT);
-  }
-
-  // engine/parser.js
-  var Node = class {
-    constructor(content, indent, parent = null) {
-      this.children = [];
-      this.content = content;
-      this.indent = indent;
-      this.parent = null;
-      if (parent) {
-        parent.insert(this);
-      }
-    }
-    insert(node) {
-      if (this.indent < node.indent) {
-        if (this.children.length > 0) {
-          if (this.children[0].indent !== node.indent) {
-            throw new Error(`Children indentations must match: expected ${this.children[0].indent}, got ${node.indent}`);
-          }
-        }
-        this.children.push(node);
-        node.parent = this;
-      } else {
-        if (!this.parent) {
-          throw new Error("Root node too indented?");
-        }
-        this.parent.insert(node);
-      }
-    }
-    getRoot() {
-      if (this.parent) {
-        return this.parent.getRoot();
-      }
-      return this;
-    }
-    toString() {
-      if (this.children.length === 0) {
-        return this.content;
-      }
-      return this.content + "[" + this.children.map((c) => c.toString()).join(", ") + "]";
-    }
-  };
-  function indentTreeParser(s, tabsize = 8) {
-    s = s.replace(/\t/g, " ".repeat(tabsize));
-    const lines = s.split("\n");
-    let last = new Node("", -1);
-    for (let l of lines) {
-      if (l.includes("#")) {
-        l = l.split("#")[0];
-      }
-      const content = l.trim();
-      if (content.length > 0) {
-        const indent = l.length - l.trimStart().length;
-        last = new Node(content, indent, last);
-      }
-    }
-    return last.getRoot();
-  }
-  var VGDLParser = class {
-    constructor() {
-      this.verbose = false;
-    }
-    parseGame(treeOrString, extraArgs = {}) {
-      let tree = treeOrString;
-      if (typeof tree === "string") {
-        tree = indentTreeParser(tree).children[0];
-      }
-      const [sclass, args] = this._parseArgs(tree.content);
-      Object.assign(args, extraArgs);
-      this.spriteRegistry = new SpriteRegistry();
-      this.game = new BasicGame(this.spriteRegistry, args);
-      for (const c of tree.children) {
-        if (c.content.startsWith("SpriteSet")) {
-          this.parseSprites(c.children);
-        }
-        if (c.content === "InteractionSet") {
-          this.parseInteractions(c.children);
-        }
-        if (c.content === "LevelMapping") {
-          this.parseMappings(c.children);
-        }
-        if (c.content === "TerminationSet") {
-          this.parseTerminations(c.children);
-        }
-      }
-      this.game.finishSetup();
-      return this.game;
-    }
-    _eval(estr) {
-      if (registry.has(estr)) {
-        return registry.request(estr);
-      }
-      const num = Number(estr);
-      if (!isNaN(num)) {
-        return num;
-      }
-      if (estr === "True" || estr === "true") return true;
-      if (estr === "False" || estr === "false") return false;
-      return estr;
-    }
-    _parseArgs(s, sclass = null, args = null) {
-      if (!args) args = {};
-      const sparts = s.split(/\s+/).filter((p) => p.length > 0);
-      if (sparts.length === 0) return [sclass, args];
-      if (!sparts[0].includes("=")) {
-        sclass = this._eval(sparts[0]);
-        sparts.shift();
-      }
-      for (const sp of sparts) {
-        const eqIdx = sp.indexOf("=");
-        if (eqIdx === -1) continue;
-        const k = sp.substring(0, eqIdx);
-        const val = sp.substring(eqIdx + 1);
-        args[k] = this._eval(val);
-      }
-      return [sclass, args];
-    }
-    parseSprites(snodes, parentclass = null, parentargs = {}, parenttypes = []) {
-      for (const sn of snodes) {
-        if (!sn.content.includes(">")) {
-          throw new Error(`Expected '>' in sprite definition: ${sn.content}`);
-        }
-        const [key, sdef] = sn.content.split(">").map((x) => x.trim());
-        const [sclass, args] = this._parseArgs(sdef, parentclass, { ...parentargs });
-        const stypes = [...parenttypes, key];
-        if ("singleton" in args) {
-          if (args.singleton === true) {
-            this.spriteRegistry.registerSingleton(key);
-          }
-          delete args.singleton;
-        }
-        if (sn.children.length === 0) {
-          if (this.verbose) {
-            console.log("Defining:", key, sclass, args, stypes);
-          }
-          this.spriteRegistry.registerSpriteClass(key, sclass, args, stypes);
-          const idx = this.game.sprite_order.indexOf(key);
-          if (idx !== -1) {
-            this.game.sprite_order.splice(idx, 1);
-          }
-          this.game.sprite_order.push(key);
-        } else {
-          this.parseSprites(sn.children, sclass, args, stypes);
-        }
-      }
-    }
-    parseInteractions(inodes) {
-      for (const inode of inodes) {
-        if (!inode.content.includes(">")) continue;
-        const [pair, edef] = inode.content.split(">").map((x) => x.trim());
-        const [eclass, kwargs] = this._parseArgs(edef);
-        const objs = pair.split(/\s+/).filter((x) => x.length > 0);
-        for (let i = 1; i < objs.length; i++) {
-          const actorStype = objs[0];
-          const acteeStype = objs[i];
-          let effect;
-          if (typeof eclass === "function" && !eclass.prototype) {
-            effect = new FunctionalEffect(eclass, actorStype, acteeStype, kwargs);
-          } else if (typeof eclass === "function") {
-            effect = new FunctionalEffect(eclass, actorStype, acteeStype, kwargs);
-          } else {
-            throw new Error(`Unknown effect type: ${eclass}`);
-          }
-          this.game.collision_eff.push(effect);
-        }
-      }
-    }
-    parseTerminations(tnodes) {
-      for (const tn of tnodes) {
-        const [sclass, args] = this._parseArgs(tn.content);
-        this.game.terminations.push(new sclass(args));
-      }
-    }
-    parseMappings(mnodes) {
-      for (const mn of mnodes) {
-        const [c, val] = mn.content.split(">").map((x) => x.trim());
-        if (c.length !== 1) {
-          throw new Error(`Only single character mappings allowed, got: '${c}'`);
-        }
-        const keys = val.split(/\s+/).filter((x) => x.length > 0);
-        this.game.char_mapping[c] = keys;
-      }
-    }
-  };
-
-  // renderer.js
-  var Renderer = class {
-    constructor(canvas2, cellSize = 30) {
-      this.canvas = canvas2;
-      this.ctx = canvas2.getContext("2d");
-      this.cellSize = cellSize;
-    }
-    resize(widthCells, heightCells) {
-      this.canvas.width = widthCells * this.cellSize;
-      this.canvas.height = heightCells * this.cellSize;
-    }
-    clear() {
-      this.ctx.fillStyle = "rgb(207, 216, 220)";
-      this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-    }
-    render(level) {
-      this.clear();
-      const bs = level.block_size;
-      const scale = this.cellSize / bs;
-      for (const key of level.domain.sprite_order) {
-        const sprites = level.sprite_registry._liveSpritesByKey[key] || [];
-        for (const sprite of sprites) {
-          this._drawSprite(sprite, scale, bs);
-        }
-      }
-      this._drawHUD(level);
-    }
-    _drawSprite(sprite, scale, bs) {
-      const x = sprite.rect.x * scale;
-      const y = sprite.rect.y * scale;
-      const w = sprite.rect.w * scale;
-      const h = sprite.rect.h * scale;
-      let color = null;
-      let shape = null;
-      if (sprite.img) {
-        const parsed = this._parseImg(sprite.img);
-        color = parsed.color;
-        shape = parsed.shape;
-      }
-      if (!color) {
-        color = sprite.color;
-      }
-      if (!color) {
-        color = [128, 128, 128];
-      }
-      const shrink = sprite.shrinkfactor || 0;
-      const sx = x + w * shrink / 2;
-      const sy = y + h * shrink / 2;
-      const sw = w * (1 - shrink);
-      const sh = h * (1 - shrink);
-      this.ctx.fillStyle = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
-      if (shape) {
-        this._drawShape(shape, sx, sy, sw, sh);
-      } else {
-        this.ctx.fillRect(sx, sy, sw, sh);
-      }
-      if (sprite.orientation && sprite.draw_arrow) {
-        this._drawArrow(sx, sy, sw, sh, sprite.orientation, color);
-      }
-      if (sprite.is_avatar) {
-        this._drawResources(sprite, sx, sy, sw, sh);
-      }
-    }
-    _parseImg(img) {
-      const COLORS2 = {
-        LIGHTGRAY: [207, 216, 220],
-        BLUE: [25, 118, 210],
-        YELLOW: [255, 245, 157],
-        BLACK: [55, 71, 79],
-        ORANGE: [230, 81, 0],
-        PURPLE: [92, 107, 192],
-        BROWN: [109, 76, 65],
-        PINK: [255, 138, 128],
-        GREEN: [129, 199, 132],
-        RED: [211, 47, 47],
-        WHITE: [250, 250, 250],
-        GOLD: [255, 196, 0],
-        LIGHTRED: [255, 82, 82],
-        LIGHTORANGE: [255, 112, 67],
-        LIGHTBLUE: [144, 202, 249],
-        LIGHTGREEN: [185, 246, 202],
-        LIGHTPURPLE: [200, 150, 220],
-        LIGHTPINK: [255, 230, 230],
-        DARKGRAY: [68, 90, 100],
-        DARKBLUE: [1, 87, 155],
-        GRAY: [69, 90, 100]
-      };
-      if (img.startsWith("colors/")) {
-        const colorName = img.split("/")[1];
-        return { color: COLORS2[colorName] || null, shape: null };
-      }
-      if (img.startsWith("colored_shapes/")) {
-        const parts = img.split("/")[1];
-        const SHAPES = ["CIRCLE", "TRIANGLE", "DIAMOND", "STAR", "CROSS", "HEXAGON", "SQUARE", "PENTAGON"];
-        for (const shape of SHAPES) {
-          if (parts.endsWith("_" + shape)) {
-            const colorName = parts.slice(0, -(shape.length + 1));
-            return { color: COLORS2[colorName] || null, shape };
-          }
-        }
-        return { color: null, shape: null };
-      }
-      return { color: null, shape: null };
-    }
-    _drawShape(shape, x, y, w, h) {
-      const ctx = this.ctx;
-      const cx = x + w / 2;
-      const cy = y + h / 2;
-      const rx = w / 2;
-      const ry = h / 2;
-      const pad = 2 / 24;
-      const prx = rx * (1 - 2 * pad);
-      const pry = ry * (1 - 2 * pad);
-      ctx.beginPath();
-      switch (shape) {
-        case "CIRCLE":
-          ctx.ellipse(cx, cy, prx, pry, 0, 0, Math.PI * 2);
-          break;
-        case "TRIANGLE": {
-          const top = cy - pry;
-          const bottom = cy + pry;
-          const left = cx - prx;
-          const right = cx + prx;
-          ctx.moveTo(cx, top);
-          ctx.lineTo(right, bottom);
-          ctx.lineTo(left, bottom);
-          ctx.closePath();
-          break;
-        }
-        case "DIAMOND":
-          ctx.moveTo(cx, cy - pry);
-          ctx.lineTo(cx + prx, cy);
-          ctx.lineTo(cx, cy + pry);
-          ctx.lineTo(cx - prx, cy);
-          ctx.closePath();
-          break;
-        case "STAR": {
-          const outerR = Math.min(prx, pry);
-          const innerR = outerR * 0.4;
-          for (let i = 0; i < 5; i++) {
-            const outerAngle = -Math.PI / 2 + i * (2 * Math.PI / 5);
-            const innerAngle = outerAngle + Math.PI / 5;
-            if (i === 0) {
-              ctx.moveTo(cx + outerR * Math.cos(outerAngle), cy + outerR * Math.sin(outerAngle));
-            } else {
-              ctx.lineTo(cx + outerR * Math.cos(outerAngle), cy + outerR * Math.sin(outerAngle));
-            }
-            ctx.lineTo(cx + innerR * Math.cos(innerAngle), cy + innerR * Math.sin(innerAngle));
-          }
-          ctx.closePath();
-          break;
-        }
-        case "CROSS": {
-          const armW = prx * 2 / 3;
-          const halfArm = armW / 2;
-          ctx.rect(cx - prx, cy - halfArm, prx * 2, armW);
-          ctx.rect(cx - halfArm, cy - pry, armW, pry * 2);
-          break;
-        }
-        case "HEXAGON": {
-          const r = Math.min(prx, pry);
-          for (let i = 0; i < 6; i++) {
-            const angle = Math.PI / 6 + i * (Math.PI / 3);
-            const px = cx + r * Math.cos(angle);
-            const py = cy + r * Math.sin(angle);
-            if (i === 0) ctx.moveTo(px, py);
-            else ctx.lineTo(px, py);
-          }
-          ctx.closePath();
-          break;
-        }
-        case "SQUARE": {
-          const inset = Math.min(prx, pry) * (1 / 20);
-          ctx.rect(cx - prx + inset, cy - pry + inset, (prx - inset) * 2, (pry - inset) * 2);
-          break;
-        }
-        case "PENTAGON": {
-          const r = Math.min(prx, pry);
-          for (let i = 0; i < 5; i++) {
-            const angle = -Math.PI / 2 + i * (2 * Math.PI / 5);
-            const px = cx + r * Math.cos(angle);
-            const py = cy + r * Math.sin(angle);
-            if (i === 0) ctx.moveTo(px, py);
-            else ctx.lineTo(px, py);
-          }
-          ctx.closePath();
-          break;
-        }
-        default:
-          ctx.rect(x, y, w, h);
-      }
-      ctx.fill();
-    }
-    _drawArrow(x, y, w, h, orientation, color) {
-      const cx = x + w / 2;
-      const cy = y + h / 2;
-      const len = Math.min(w, h) * 0.3;
-      const arrowColor = [color[0], 255 - color[1], color[2]];
-      this.ctx.strokeStyle = `rgb(${arrowColor[0]}, ${arrowColor[1]}, ${arrowColor[2]})`;
-      this.ctx.lineWidth = 2;
-      this.ctx.beginPath();
-      this.ctx.moveTo(cx, cy);
-      this.ctx.lineTo(cx + orientation.x * len, cy + orientation.y * len);
-      this.ctx.stroke();
-    }
-    _drawResources(sprite, x, y, w, h) {
-      const resources = sprite.resources;
-      let barIdx = 0;
-      const barHeight = 3;
-      for (const key of Object.keys(resources)) {
-        if (key === "toJSON") continue;
-        const val = resources[key];
-        if (val > 0) {
-          const barY = y + h + barIdx * (barHeight + 1);
-          this.ctx.fillStyle = "#FFD400";
-          this.ctx.fillRect(x, barY, w * Math.min(val / 5, 1), barHeight);
-          barIdx++;
-        }
-      }
-    }
-    _drawHUD(level) {
-      this.ctx.fillStyle = "white";
-      this.ctx.font = "14px monospace";
-      this.ctx.textAlign = "left";
-      const y = this.canvas.height - 5;
-      this.ctx.fillText(`Score: ${level.score}  Time: ${level.time}`, 5, y);
-      if (level.ended) {
-        this.ctx.fillStyle = level.won ? "#0f0" : "#f00";
-        this.ctx.font = "bold 24px monospace";
-        this.ctx.textAlign = "center";
-        this.ctx.fillText(
-          level.won ? "WIN" : "LOSE",
-          this.canvas.width / 2,
-          this.canvas.height / 2
-        );
-      }
-    }
-  };
-
-  // games/game-data.js
-  var GAMES = {
-    "roomworld": {
-      description: `BasicGame
+(()=>{var pt=class{constructor(){this._register={}}has(w){return w in this._register}register(w,e){this._register[w]=e}registerClass(w){this.register(w.name,w)}request(w){if(!(w in this._register))throw new Error(`Unknown registry key: '${w}'`);return this._register[w]}registerAll(w){for(let[e,o]of Object.entries(w))this.register(e,o)}},u=new pt;var rw=class t{constructor(w,e,o,s){this.x=w,this.y=e,this.w=o,this.h=s}static fromPosSize(w,e){return new t(w[0],w[1],e[0],e[1])}get left(){return this.x}set left(w){this.x=w}get top(){return this.y}set top(w){this.y=w}get right(){return this.x+this.w}get bottom(){return this.y+this.h}get width(){return this.w}get height(){return this.h}get centerx(){return this.x+Math.floor(this.w/2)}get centery(){return this.y+Math.floor(this.h/2)}get center(){return[this.centerx,this.centery]}get topleft(){return[this.x,this.y]}get size(){return[this.w,this.h]}move(w,e){return typeof w=="object"&&w!==null?new t(this.x+w.x,this.y+w.y,this.w,this.h):new t(this.x+w,this.y+e,this.w,this.h)}copy(){return new t(this.x,this.y,this.w,this.h)}colliderect(w){return this.x<w.x+w.w&&this.x+this.w>w.x&&this.y<w.y+w.h&&this.y+this.h>w.y}collidelistall(w){let e=[];for(let o=0;o<w.length;o++)this.colliderect(w[o].rect||w[o])&&e.push(o);return e}contains(w){return w.x>=this.x&&w.y>=this.y&&w.x+w.w<=this.x+this.w&&w.y+w.h<=this.y+this.h}equals(w){return this.x===w.x&&this.y===w.y&&this.w===w.w&&this.h===w.h}toString(){return`Rect(${this.x}, ${this.y}, ${this.w}, ${this.h})`}};var b=class t{constructor(...w){this.keys=Object.freeze([...w].sort())}asVector(){let w=0,e=0;for(let o of this.keys)o==="LEFT"&&(w-=1),o==="RIGHT"&&(w+=1),o==="UP"&&(e-=1),o==="DOWN"&&(e+=1);return{x:w,y:e}}equals(w){if(!(w instanceof t)||this.keys.length!==w.keys.length)return!1;for(let e=0;e<this.keys.length;e++)if(this.keys[e]!==w.keys[e])return!1;return!0}toString(){return this.keys.length===0?"noop":this.keys.join(",")}},ft={NOOP:new b,UP:new b("UP"),DOWN:new b("DOWN"),LEFT:new b("LEFT"),RIGHT:new b("RIGHT"),SPACE:new b("SPACE"),SPACE_RIGHT:new b("SPACE","RIGHT"),SPACE_LEFT:new b("SPACE","LEFT")},Wt=ft.NOOP;var mt=[129,199,132],Pw=[25,118,210],Gw=[211,47,47],ut=[69,90,100],Nw=[250,250,250],no=[109,76,65],dt=[55,71,79],gt=[230,81,0],lo=[255,245,157],ao=[255,138,128],co=[255,196,0],ho=[255,82,82],po=[255,112,67],fo=[144,202,249],mo=[185,246,202],uo=[207,216,220],go=[68,90,100],So=[1,87,155],yo=[92,107,192],vo=[200,150,220],xo=[255,230,230],Dw={GREEN:mt,BLUE:Pw,RED:Gw,GRAY:ut,WHITE:Nw,BROWN:no,BLACK:dt,ORANGE:gt,YELLOW:lo,PINK:ao,GOLD:co,LIGHTRED:ho,LIGHTORANGE:po,LIGHTBLUE:fo,LIGHTGREEN:mo,LIGHTGRAY:uo,DARKGRAY:go,DARKBLUE:So,PURPLE:yo,LIGHTPURPLE:vo,LIGHTPINK:xo},St={x:0,y:-1},yt={x:0,y:1},uw={x:-1,y:0},W={x:1,y:0},nw=[St,uw,yt,W];function dw(t,w){return t.x===w.x&&t.y===w.y}function ko(t){return Math.sqrt(t.x*t.x+t.y*t.y)}function z(t){let w=ko(t);return w>0?{x:t.x/w,y:t.y/w}:{x:1,y:0}}var lw=class{constructor(w){Array.isArray(w)?this.gridsize=w:this.gridsize=[w,w]}passiveMovement(w){let e=w.speed===null?1:w.speed;e!==0&&w.orientation!==void 0&&w._updatePosition(w.orientation,e*this.gridsize[0])}activeMovement(w,e,o){if(o==null&&(o=w.speed===null?1:w.speed),o!==0&&e!==null&&e!==void 0){let s;if(e.asVector?s=e.asVector():s=e,dw(s,{x:0,y:0}))return;w._updatePosition(s,o*this.gridsize[0])}}distance(w,e){return Math.abs(w.top-e.top)+Math.abs(w.left-e.left)}};var Eo=Dw,I=class{static is_static=!1;static only_active=!1;static is_avatar=!1;static is_stochastic=!1;static color=null;static cooldown=0;static speed=null;static mass=1;static physicstype=null;static shrinkfactor=0;constructor(w){let{key:e,id:o,pos:s,size:i=[1,1],color:n,speed:l,cooldown:a,physicstype:r,rng:h,img:p,resources:c,...m}=w;this.key=e,this.id=o;let f=Array.isArray(i)?i:[i,i];this.rect=new rw(s[0],s[1],f[0],f[1]),this.lastrect=this.rect,this.alive=!0;let g=r||this.constructor.physicstype||lw;if(this.physics=new g(f),this.speed=l??this.constructor.speed,this.cooldown=a??this.constructor.cooldown,this.img=p||null,this.color=n||this.constructor.color,this.img&&this.img.startsWith("colors/")){let k=this.img.split("/")[1],S=Eo[k];S&&(this.color=S)}this._effect_data={},this.lastmove=0,this.resources=new Proxy(c?{...c}:{},{get(k,S){return typeof S=="string"&&!(S in k)&&S!=="toJSON"&&S!=="then"&&S!==Symbol.toPrimitive&&S!==Symbol.toStringTag&&S!=="inspect"&&S!=="constructor"&&S!=="__proto__"?0:k[S]},set(k,S,E){return k[S]=E,!0}}),this.just_pushed=null,this.is_static=this.constructor.is_static,this.only_active=this.constructor.only_active,this.is_avatar=this.constructor.is_avatar,this.is_stochastic=this.constructor.is_stochastic,this.mass=this.constructor.mass,this.shrinkfactor=this.constructor.shrinkfactor,this.stypes=[];for(let[k,S]of Object.entries(m))this[k]=S}update(w){this.lastrect=this.rect,this.lastmove+=1,!this.is_static&&!this.only_active&&this.physics.passiveMovement(this)}_updatePosition(w,e){let o,s;if(e==null){let i=this.speed||0;o=w.x*i,s=w.y*i}else o=w.x*e,s=w.y*e;this.lastmove>=this.cooldown&&(this.rect=this.rect.move({x:o,y:s}),this.lastmove=0)}get lastdirection(){return{x:this.rect.x-this.lastrect.x,y:this.rect.y-this.lastrect.y}}toString(){return`${this.key} '${this.id}' at (${this.rect.x}, ${this.rect.y})`}},C=class extends I{static value=1;static limit=2;static res_type=null;constructor(w){super(w),this.value=w.value!==void 0?w.value:this.constructor.value,this.limit=w.limit!==void 0?w.limit:this.constructor.limit,this.res_type=w.res_type||this.constructor.res_type}get resource_type(){return this.res_type===null?this.key:this.res_type}},Hw=class extends I{static is_static=!0;update(w){}_updatePosition(){throw new Error("Tried to move Immutable")}};var Fw=class extends I{static color=ut;static is_static=!0},Kw=class extends I{static color=Gw},Uw=class extends C{static is_static=!0},gw=class extends I{static color=Gw;static limit=1;constructor(w){super(w),this._age=0,w.limit!==void 0?this.limit=w.limit:this.limit=this.constructor.limit}update(w){super.update(w),this._age+=1,this._age>=this.limit&&w.killSprite(this)}},Z=class extends I{static draw_arrow=!1;constructor(w){super(w),this.orientation===void 0&&(this.orientation=w.orientation||W)}},Sw=class extends Z{static speed=1},yw=class extends Z{static draw_arrow=!0;static speed=0;constructor(w){super(w),this._age=0,w.limit!==void 0?this.limit=w.limit:this.limit=this.constructor.limit||1}update(w){super.update(w),this._age+=1,this._age>=this.limit&&w.killSprite(this)}};yw.limit=1;var aw=class extends I{static stype=null},Ww=class extends aw{static is_static=!0;static is_stochastic=!0;static color=Pw},cw=class extends aw{static color=dt;static is_static=!0;constructor(w){super(w),this.counter=0,this.prob=w.prob!==void 0?w.prob:1,this.total=w.total!==void 0?w.total:null,w.cooldown!==void 0?this.cooldown=w.cooldown:this.cooldown===0&&(this.cooldown=1),this.is_stochastic=this.prob>0&&this.prob<1}update(w){w.time%this.cooldown===0&&w.randomGenerator.random()<this.prob&&(w.addSpriteCreation(this.stype,[this.rect.x,this.rect.y]),this.counter+=1),this.total&&this.counter>=this.total&&w.killSprite(this)}},vw=class extends I{static speed=1;static is_stochastic=!0;update(w){super.update(w);let e=nw[Math.floor(w.randomGenerator.random()*nw.length)];this.physics.activeMovement(this,e)}},xw=class extends vw{static stype=null;constructor(w){super(w),this.fleeing=w.fleeing||!1,this.stype=w.stype||this.constructor.stype}_closestTargets(w){let e=1e100,o=[],s=w.getSprites(this.stype);for(let i of s){let n=this.physics.distance(this.rect,i.rect);n<e?(e=n,o=[i]):n===e&&o.push(i)}return o}_movesToward(w,e){let o=[],s=this.physics.distance(this.rect,e.rect);for(let i of nw){let n=this.rect.move(i),l=this.physics.distance(n,e.rect);this.fleeing&&s<l&&o.push(i),!this.fleeing&&s>l&&o.push(i)}return o}update(w){I.prototype.update.call(this,w);let e=[];for(let s of this._closestTargets(w))e.push(...this._movesToward(w,s));e.length===0&&(e=[...nw]);let o=e[Math.floor(w.randomGenerator.random()*e.length)];this.physics.activeMovement(this,o)}},zw=class extends xw{constructor(w){super({...w,fleeing:!0})}},Yw=class extends cw{static color=gt;static is_static=!1;constructor(w){super(w),this.orientation===void 0&&(this.orientation=w.orientation||W),this.speed=w.speed!==void 0?w.speed:1}update(w){this.lastrect=this.rect,this.lastmove+=1,!this.is_static&&!this.only_active&&this.physics.passiveMovement(this),cw.prototype.update.call(this,w)}},$w=class extends Sw{static is_stochastic=!0;update(w){if(this.lastdirection.x===0){let o;this.orientation.x>0?o=1:this.orientation.x<0?o=-1:o=w.randomGenerator.random()<.5?-1:1,this.physics.activeMovement(this,{x:o,y:0})}super.update(w)}},jw=class extends Z{static is_static=!0;static color=Pw;static strength=1;static draw_arrow=!0},Qw=class t extends gw{static spreadprob=1;update(w){if(super.update(w),this._age===2)for(let e of nw)w.randomGenerator.random()<(this.spreadprob||t.spreadprob)&&w.addSpriteCreation(this.name,[this.lastrect.x+e.x*this.lastrect.w,this.lastrect.y+e.y*this.lastrect.h])}};function Jw(t,w){let e=[...w.active_keys].sort();for(let o=Math.max(3,e.length);o>=0;o--)for(let s of Ao(e,o)){let i=s.join(",");if(t._keysToAction.has(i))return t._keysToAction.get(i)}throw new Error("No valid actions encountered, consider allowing NO_OP")}function Ao(t,w){if(w===0)return[[]];if(t.length===0)return[];let e=[];function o(s,i){if(i.length===w){e.push([...i]);return}for(let n=s;n<t.length;n++)i.push(t[n]),o(n+1,i),i.pop()}return o(0,[]),e}function zt(t){let w=new Map;for(let e of Object.values(t)){let o=[...e.keys].sort().join(",");w.set(o,e)}return w}var kw=class extends I{static color=Nw;static speed=1;static is_avatar=!0;constructor(w){super(w),this.is_avatar=!0;let e=this.constructor.declarePossibleActions();this._keysToAction=zt(e)}static declarePossibleActions(){return{UP:new b("UP"),DOWN:new b("DOWN"),LEFT:new b("LEFT"),RIGHT:new b("RIGHT"),NO_OP:new b}}update(w){I.prototype.update.call(this,w);let e=Jw(this,w);e.equals(Wt)||this.physics.activeMovement(this,e)}},ww=class extends I{static color=Nw;static speed=1;static is_avatar=!0;static draw_arrow=!1;constructor(w){super(w),this.is_avatar=!0,this.orientation===void 0&&(this.orientation=w.orientation||W);let e=this.constructor.declarePossibleActions();this._keysToAction=zt(e)}static declarePossibleActions(){return{UP:new b("UP"),DOWN:new b("DOWN"),LEFT:new b("LEFT"),RIGHT:new b("RIGHT"),NO_OP:new b}}update(w){let e=this.orientation;this.orientation={x:0,y:0},I.prototype.update.call(this,w);let o=Jw(this,w);o&&this.physics.activeMovement(this,o);let s=this.lastdirection;Math.abs(s.x)+Math.abs(s.y)!==0?this.orientation=s:this.orientation=e}},qw=class extends ww{static ammo=null;constructor(w){super(w),this.stype=w.stype||null,this.ammo=w.ammo!==void 0?w.ammo:this.constructor.ammo}static declarePossibleActions(){let w=ww.declarePossibleActions();return w.SPACE=new b("SPACE"),w}update(w){ww.prototype.update.call(this,w);let e=Jw(this,w);this._hasAmmo()&&e.equals(ft.SPACE)&&this._shoot(w)}_hasAmmo(){return this.ammo===null?!0:this.ammo in this.resources?this.resources[this.ammo]>0:!1}_spendAmmo(){this.ammo!==null&&this.ammo in this.resources&&(this.resources[this.ammo]-=1)}_shoot(w){if(this.stype===null)return;let e=this._shootDirections(w);for(let o of e){let s=[this.lastrect.x+o.x*this.lastrect.w,this.lastrect.y+o.y*this.lastrect.h],i=w.createSprite(this.stype,s);i&&i.orientation!==void 0&&(i.orientation=o)}this._spendAmmo()}_shootDirections(w){return[z(this.orientation)]}},tw=class extends kw{static declarePossibleActions(){return{LEFT:new b("LEFT"),RIGHT:new b("RIGHT"),NO_OP:new b}}update(w){I.prototype.update.call(this,w);let e=Jw(this,w),o=e.asVector();(dw(o,W)||dw(o,uw))&&this.physics.activeMovement(this,e)}},Xw=class extends tw{static color=mt;constructor(w){super(w),this.stype=w.stype||null}static declarePossibleActions(){let w=tw.declarePossibleActions();return w.SPACE=new b("SPACE"),w}update(w){tw.prototype.update.call(this,w),this.stype&&w.active_keys.includes("SPACE")&&w.createSprite(this.stype,[this.rect.x,this.rect.y])}};function Q(t,w,e){e.killSprite(t)}function Yt(t,w,e){e.killSprite(t),e.killSprite(w)}function $t(t,w,e){e.addSpriteCreation(t.key,[t.rect.x,t.rect.y])}function hw(t,w,e,{stype:o="wall"}={}){let s=t.lastrect;e.killSprite(t);let i=e.addSpriteCreation(o,t.rect.topleft);i!=null&&(i.lastrect=s,t.orientation!==void 0&&i.orientation!==void 0&&(i.orientation=t.orientation))}function jt(t,w,e,{resource:o,limit:s=1,no_symmetry:i=!1,exhaustStype:n=null}={}){t.resources[o]<s?bw(t,w,e,{no_symmetry:i}):n?e.kill_list.includes(w)||hw(w,t,e,{stype:n}):Q(w,t,e)}function bw(t,w,e,{no_symmetry:o=!1}={}){!e.kill_list.includes(w)&&!e.kill_list.includes(t)&&(t.rect.equals(t.lastrect)&&!o?(w.rect=w.lastrect,vt(w,0)):(t.rect=t.lastrect,vt(t,0)))}function vt(t,w){w>5||t.just_pushed&&(t.just_pushed.rect=t.just_pushed.lastrect,vt(t.just_pushed,w+1))}function Qt(t,w,e){for(let o of e.sprite_registry.sprites())o.rect=o.lastrect}function xt(t,w){return t.just_pushed&&w<3?xt(t.just_pushed,w+1):t.lastdirection}function qt(t,w,e){let o=xt(w,0);Math.abs(o.x)+Math.abs(o.y)===0?(o=xt(t,0),w.physics.activeMovement(w,z(o)),w.just_pushed=t):(t.physics.activeMovement(t,z(o)),t.just_pushed=w)}function Xt(t,w,e,{exhaustStype:o=null}={}){if(t.lastrect.colliderect(w.rect))return;let s=t.lastdirection;if(Math.abs(s.x)+Math.abs(s.y)===0)return;let n=z(s),l=t.rect.width,a=t.rect.copy();a.x+=Math.round(n.x)*l,a.y+=Math.round(n.y)*l,!(a.x<0||a.y<0||a.x+a.width>e.screensize[0]||a.y+a.height>e.screensize[1])&&(t.rect=a,t.lastmove=0,o&&hw(w,t,e,{stype:o}))}function kt(t,w,e,{with_step_back:o=!0}={}){o&&(t.rect=t.lastrect),t.orientation!==void 0&&(t.orientation={x:-t.orientation.x,y:-t.orientation.y})}function Jt(t,w,e){t.rect=t.lastrect,t.lastmove=t.cooldown,t.physics.activeMovement(t,{x:0,y:1},1),kt(t,w,e,{with_step_back:!1})}function Vt(t,w,e){let o=[{x:0,y:-1},{x:-1,y:0},{x:0,y:1},{x:1,y:0}];t.orientation=o[Math.floor(e.randomGenerator.random()*o.length)]}function Zt(t,w,e,{offset:o=0}={}){t.rect.top<0?t.rect.top=e.screensize[1]-t.rect.height:t.rect.top+t.rect.height>e.screensize[1]&&(t.rect.top=0),t.rect.left<0?t.rect.left=e.screensize[0]-t.rect.width:t.rect.left+t.rect.width>e.screensize[0]&&(t.rect.left=0),t.lastmove=0}function we(t,w,e){if(!(t instanceof C))throw new Error(`collectResource: sprite must be a Resource, got ${t.constructor.name}`);let o=t.resource_type,s=e.domain.resources_limits&&e.domain.resources_limits[o]||1/0;w.resources[o]=Math.max(0,Math.min(w.resources[o]+t.value,s))}function te(t,w,e,{resource:o,value:s=1}={}){e.resource_changes.push([t,o,s])}function ee(t,w,e,{resource:o,value:s=1}={}){e.resource_changes.push([w,o,s]),e.kill_list.push(t)}function oe(t,w,e,{resource:o,value:s=-1}={}){e.resource_changes.push([w,o,s]),e.kill_list.push(t)}function se(t,w,e,{resource:o,limit:s=1}={}){w.resources[o]>=s&&Q(t,w,e)}function ie(t,w,e,{resource:o,limit:s=1}={}){t.resources[o]>=s&&Q(t,w,e)}function re(t,w,e,{resource:o,limit:s=1}={}){w.resources[o]<=s&&Q(t,w,e)}function ne(t,w,e,{resource:o,limit:s=1}={}){t.resources[o]<=s&&Q(t,w,e)}function le(t,w,e,{resource:o,stype:s,limit:i=1}={}){t.resources[o]>=i&&e.addSpriteCreation(s,[t.rect.x,t.rect.y])}function ae(t,w,e){e.kill_list.includes(w)||Q(t,w,e)}function ce(t,w,e){let o=t.lastrect,s=z(w.orientation);t.physics.activeMovement(t,s,w.strength||1),t.lastrect=o}function he(t,w,e){if(!de(t,e,"t_lastpull"))return;let o=t.lastrect,s=w.lastdirection,n=Math.abs(s.x)+Math.abs(s.y)>0?z(s):{x:1,y:0};t._updatePosition(n,(w.speed||1)*t.physics.gridsize[0]),t.lastrect=o}function pe(t,w,e){let o=e.sprite_registry.withStype(w.stype||w.key);if(o.length>0){let s=o[Math.floor(e.randomGenerator.random()*o.length)];t.rect=s.rect.copy()}t.lastmove=0}function fe(t,w,e,{exhaustStype:o=null}={}){if(t.lastrect.colliderect(w.rect))return;let s=e.sprite_registry.group(w.key).filter(n=>n!==w);if(s.length===0)return;let i=s[Math.floor(e.randomGenerator.random()*s.length)];t.rect=i.rect.copy(),t.lastrect=i.rect.copy(),t.lastmove=0,o&&(hw(w,t,e,{stype:o}),hw(i,t,e,{stype:o}))}function me(t,w,e,{friction:o=0}={}){de(t,e,"t_lastbounce")&&(t.speed!==null&&(t.speed*=1-o),bw(t,w,e),t.orientation!==void 0&&(Math.abs(t.rect.centerx-w.rect.centerx)>Math.abs(t.rect.centery-w.rect.centery)?t.orientation={x:-t.orientation.x,y:t.orientation.y}:t.orientation={x:t.orientation.x,y:-t.orientation.y}))}function ue(t,w,e,{friction:o=0}={}){if(bw(t,w,e),t.orientation!==void 0){let s=t.orientation,i=z({x:-t.rect.centerx+w.rect.centerx,y:-t.rect.centery+w.rect.centery}),n=i.x*s.x+i.y*s.y;t.orientation={x:-2*n*i.x+s.x,y:-2*n*i.y+s.y},t.speed!==null&&(t.speed*=1-o)}}function de(t,w,e){return e in t._effect_data&&t._effect_data[e]===w.time?!1:(t._effect_data[e]=w.time,!0)}var pw=class{constructor({win:w=!0,scoreChange:e=0}={}){this.win=w,this.score=e}isDone(w){return[!1,null]}},Vw=class extends pw{constructor(w={}){super(w),this.limit=w.limit||0}isDone(w){return w.time>=this.limit?[!0,this.win]:[!1,null]}},Zw=class extends pw{constructor(w={}){super(w),this.limit=w.limit!==void 0?w.limit:0,this.stype=w.stype||null}isDone(w){return w.numSprites(this.stype)<=this.limit?[!0,this.win]:[!1,null]}toString(){return`SpriteCounter(stype=${this.stype})`}},wt=class extends pw{constructor(w={}){let{win:e=!0,scoreChange:o=0,limit:s=0,...i}=w;super({win:e,scoreChange:o}),this.limit=s,this.stypes=[];for(let[n,l]of Object.entries(i))n.startsWith("stype")&&this.stypes.push(l)}isDone(w){let e=0;for(let o of this.stypes)e+=w.numSprites(o);return e===this.limit?[!0,this.win]:[!1,null]}},tt=class extends pw{constructor(w={}){super(w),this.stype=w.stype||null,this.limit=w.limit||0}isDone(w){let e=w.getAvatars();return e.length===0?[!1,null]:[(e[0].resources[this.stype]||0)>=this.limit,this.win]}};var et=class t{constructor(){this.classes={},this.classArgs={},this.stypes={},this.spriteKeys=[],this.singletons=[],this._spriteById={},this._liveSpritesByKey={},this._deadSpritesByKey={}}reset(){this._liveSpritesByKey={},this._deadSpritesByKey={},this._spriteById={}}registerSingleton(w){this.singletons.push(w)}isSingleton(w){return this.singletons.includes(w)}registerSpriteClass(w,e,o,s){if(w in this.classes)throw new Error(`Sprite key already registered: ${w}`);if(e==null)throw new Error(`Cannot register null class for key: ${w}`);this.classes[w]=e,this.classArgs[w]=o,this.stypes[w]=s,this.spriteKeys.push(w)}getSpriteDef(w){if(!(w in this.classes))throw new Error(`Unknown sprite type '${w}', verify your domain file`);return{cls:this.classes[w],args:this.classArgs[w],stypes:this.stypes[w]}}*getSpriteDefs(){for(let w of this.spriteKeys)yield[w,this.getSpriteDef(w)]}_generateIdNumber(w){let e=(this._liveSpritesByKey[w]||[]).map(i=>parseInt(i.id.split(".").pop())),o=(this._deadSpritesByKey[w]||[]).map(i=>parseInt(i.id.split(".").pop())),s=e.concat(o);return s.length>0?Math.max(...s)+1:1}generateId(w){let e=this._generateIdNumber(w);return`${w}.${e}`}createSprite(w,e){if(this.isSingleton(w)&&(this._liveSpritesByKey[w]||[]).length>0)return null;let{cls:o,args:s,stypes:i}=this.getSpriteDef(w),n=e.id||this.generateId(w),l={...s,...e,key:w,id:n},a=new o(l);return a.stypes=i,this._liveSpritesByKey[w]||(this._liveSpritesByKey[w]=[]),this._liveSpritesByKey[w].push(a),this._spriteById[n]=a,a}killSprite(w){w.alive=!1;let e=w.key,o=this._liveSpritesByKey[e];if(o){let s=o.indexOf(w);s!==-1&&(o.splice(s,1),this._deadSpritesByKey[e]||(this._deadSpritesByKey[e]=[]),this._deadSpritesByKey[e].push(w))}}group(w,e=!1){let o=this._liveSpritesByKey[w]||[];if(!e)return o;let s=this._deadSpritesByKey[w]||[];return o.concat(s)}*groups(w=!1){for(let e of this.spriteKeys)if(w){let o=this._liveSpritesByKey[e]||[],s=this._deadSpritesByKey[e]||[];yield[e,o.concat(s)]}else yield[e,this._liveSpritesByKey[e]||[]]}*sprites(w=!1){if(w)throw new Error("sprites(includeDead=true) not supported");for(let e of this.spriteKeys){let o=this._liveSpritesByKey[e]||[];for(let s of o)yield s}}spritesArray(){let w=[];for(let e of this.spriteKeys){let o=this._liveSpritesByKey[e]||[];for(let s of o)w.push(s)}return w}withStype(w,e=!1){if(this.spriteKeys.includes(w))return this.group(w,e);let o=[];for(let s of this.spriteKeys)if(this.stypes[s]&&this.stypes[s].includes(w)){let i=e?(this._liveSpritesByKey[s]||[]).concat(this._deadSpritesByKey[s]||[]):this._liveSpritesByKey[s]||[];o.push(...i)}return o}getAvatar(){for(let[,w]of this.groups(!0))if(w.length>0&&this.isAvatar(w[0]))return w[0];return null}isAvatar(w){return this.isAvatarCls(w.constructor)}isAvatarCls(w){let e=w;for(;e&&e.name;){if(e.name.includes("Avatar"))return!0;e=Object.getPrototypeOf(e)}return!1}deepCopy(){let w=new t;w.classes={...this.classes},w.classArgs={};for(let[e,o]of Object.entries(this.classArgs))w.classArgs[e]={...o};w.stypes={};for(let[e,o]of Object.entries(this.stypes))w.stypes[e]=[...o];return w.spriteKeys=[...this.spriteKeys],w.singletons=[...this.singletons],w}};var bt=class{constructor(w=42){this._seed=w,this._state=w}random(){let w=this._state+=1831565813;return w=Math.imul(w^w>>>15,w|1),w^=w+Math.imul(w^w>>>7,w|61),((w^w>>>14)>>>0)/4294967296}choice(w){return w[Math.floor(this.random()*w.length)]}seed(w){this._state=w,this._seed=w}},Et=class{constructor(w,e,{scoreChange:o=0}={}){this.actor_stype=w,this.actee_stype=e,this.score=o,this.is_stochastic=!1}call(w,e,o){throw new Error("Effect.call not implemented")}get name(){return this.constructor.name}},Ew=class extends Et{constructor(w,e,o,s={}){let i=s.scoreChange||0;super(e,o,{scoreChange:i}),this.callFn=w;let{scoreChange:n,...l}=s;this.fnArgs=l,this._name=w.name||"anonymous"}call(w,e,o){return Object.keys(this.fnArgs).length>0?this.callFn(w,e,o,this.fnArgs):this.callFn(w,e,o)}get name(){return this._name}},fw=class{constructor(w,e={}){this.domain_registry=w,this.title=e.title||null,this.seed=e.seed!==void 0?e.seed:42,this.block_size=e.block_size||1,this.notable_resources=[],this.sprite_order=[],this.collision_eff=[],this.char_mapping={},this.terminations=[],this.resources_limits={},this.resources_colors={},this.is_stochastic=!1}finishSetup(){this.is_stochastic=this.collision_eff.some(e=>e.is_stochastic),this.setupResources();let w=this.sprite_order.indexOf("avatar");w!==-1&&(this.sprite_order.splice(w,1),this.sprite_order.push("avatar"))}setupResources(){this.notable_resources=[];for(let[w,{cls:e,args:o}]of this.domain_registry.getSpriteDefs())if(e.prototype instanceof C||e===C){let s=w;o.res_type&&(s=o.res_type),o.color&&(this.resources_colors[s]=o.color),o.limit!==void 0&&(this.resources_limits[s]=o.limit),this.notable_resources.push(s)}}buildLevel(w){let e=w.split(`
+`).filter(l=>l.length>0),o=e.map(l=>l.length),s=Math.min(...o),i=Math.max(...o);if(s!==i)throw new Error(`Inconsistent line lengths: min=${s}, max=${i}`);let n=new At(this,this.domain_registry.deepCopy(),w,o[0],e.length,this.seed);for(let l=0;l<e.length;l++)for(let a=0;a<e[l].length;a++){let r=e[l][a],h=this.char_mapping[r];if(h){let p=[a*this.block_size,l*this.block_size];n.createSprites(h,p)}}return n.initState=n.getGameState(),n}},At=class{constructor(w,e,o,s,i,n=0){this.domain=w,this.sprite_registry=e,this.levelstring=o,this.width=s,this.height=i,this.block_size=w.block_size,this.screensize=[this.width*this.block_size,this.height*this.block_size],this.seed=n,this.randomGenerator=new bt(n),this.kill_list=[],this.create_list=[],this.resource_changes=[],this.score=0,this.last_reward=0,this.time=0,this.ended=!1,this.won=!1,this.lose=!1,this.is_stochastic=!1,this.active_keys=[],this.events_triggered=[],this.initState=null,this._gameRect=new rw(0,0,this.screensize[0],this.screensize[1])}reset(){this.score=0,this.last_reward=0,this.time=0,this.ended=!1,this.won=!1,this.lose=!1,this.kill_list=[],this.create_list=[],this.resource_changes=[],this.active_keys=[],this.events_triggered=[],this.initState&&this.setGameState(this.initState)}createSprite(w,e,o){let s=this.sprite_registry.createSprite(w,{pos:e,id:o,size:[this.block_size,this.block_size],rng:this.randomGenerator});return s&&(this.is_stochastic=this.domain.is_stochastic||s.is_stochastic||this.is_stochastic),s}createSprites(w,e){return w.map(o=>this.createSprite(o,e)).filter(Boolean)}killSprite(w){this.kill_list.push(w)}addSpriteCreation(w,e,o){return this.create_list.push([w,e,o]),null}addScore(w){this.score+=w,this.last_reward+=w}numSprites(w){return this.sprite_registry.withStype(w).length}getSprites(w){return this.sprite_registry.withStype(w)}getAvatars(){let w=[];for(let[,e]of this.sprite_registry.groups(!0))e.length>0&&this.sprite_registry.isAvatar(e[0])&&w.push(...e);return w}containsRect(w){return this._gameRect.contains(w)}tick(w){if(this.time+=1,this.last_reward=0,this.ended)return;this.active_keys=w.keys;let e=this.sprite_registry.spritesArray();for(let a of e)a.just_pushed=null;for(let a of e)a.update(this);this.events_triggered=[];let[o,s,i]=this._moveEventHandling(),[n,l]=this._eventHandling(o);this.events_triggered=s.concat(n);for(let a of this.kill_list)this.sprite_registry.killSprite(a);for(let[a,r,h]of this.create_list)this.createSprite(a,r,h);for(let[a,r,h]of this.resource_changes){let p=this.domain.resources_limits&&this.domain.resources_limits[r]||1/0;a.resources[r]=Math.max(0,Math.min(a.resources[r]+h,p))}this._checkTerminations(),this.kill_list=[],this.create_list=[],this.resource_changes=[]}_moveEventHandling(){let w=[],e=[],o={},s=this.domain.collision_eff.filter(n=>n.name==="stepBack"||n.name==="stepBackIfHasLess");for(let n of s){let[,l,a]=this._applyEffect(n,o);w.push(...l),e.push(...a)}let i=this.domain.collision_eff.filter(n=>["bounceForward","reverseDirection","turnAround"].includes(n.name));for(let n of i){let[,l,a]=this._applyEffect(n,o);w.push(...l),e.push(...a)}for(let n of s){let[,l,a]=this._applyEffect(n,o);w.push(...l),e.push(...a)}return[o,w,e]}_eventHandling(w){let e=[],o=[],s=this.domain.collision_eff.filter(i=>!["stepBack","stepBackIfHasLess","bounceForward","reverseDirection","turnAround"].includes(i.name));for(let i of s){let[,n,l]=this._applyEffect(i,w);e.push(...n),o.push(...l)}return[e,o]}_applyEffect(w,e){let o=[],s=[],i=w.actor_stype,n=w.actee_stype;if(i in e||(e[i]=this.sprite_registry.withStype(i)),n!=="EOS"&&!(n in e)&&(e[n]=this.sprite_registry.withStype(n)),n==="EOS"){let h=e[i];for(let p=h.length-1;p>=0;p--){let c=h[p];this.containsRect(c.rect)||(this.addScore(w.score),w.call(c,null,this),o.push([w.name,c.id,"EOS"]),s.push([w.name,c.key,"EOS",[c.rect.x,c.rect.y],[null,null]]),!this.containsRect(c.rect)&&c.alive&&this.killSprite(c))}return[e,o,s]}let l=e[i],a=e[n];if(l.length===0||a.length===0)return[e,o,s];let r=!1;l.length>a.length&&([l,a]=[a,l],r=!0);for(let h of l)for(let p of a)h!==p&&h.rect.colliderect(p.rect)&&(r?this.kill_list.includes(p)||(this.addScore(w.score),w.call(p,h,this),o.push([w.name,p.id,h.id]),s.push([w.name,p.key,h.key,[p.rect.x,p.rect.y],[h.rect.x,h.rect.y]])):this.kill_list.includes(h)||(this.addScore(w.score),w.call(h,p,this),o.push([w.name,h.id,p.id]),s.push([w.name,h.key,p.key,[h.rect.x,h.rect.y],[p.rect.x,p.rect.y]])));return[e,o,s]}_checkTerminations(){this.lose=!1;for(let w of this.domain.terminations){let[e,o]=w.isDone(this);if(this.ended=e,this.won=o===null?!1:o,w.constructor.name==="Timeout"||["SpriteCounter","MultiSpriteCounter"].includes(w.constructor.name)&&this.ended&&!this.won&&(this.lose=!0),this.ended){this.addScore(w.score);break}}}getGameState(){let w={};for(let e of this.sprite_registry.spriteKeys){let o=this.sprite_registry._liveSpritesByKey[e]||[],s=this.sprite_registry._deadSpritesByKey[e]||[];w[e]=[...o,...s].map(i=>({id:i.id,key:i.key,x:i.rect.x,y:i.rect.y,w:i.rect.w,h:i.rect.h,alive:i.alive,resources:{...i.resources},speed:i.speed,cooldown:i.cooldown,orientation:i.orientation?{...i.orientation}:void 0,_age:i._age,lastmove:i.lastmove}))}return{score:this.score,time:this.time,sprites:w}}setGameState(w){this.sprite_registry.reset(),this.score=w.score,this.time=w.time;for(let[e,o]of Object.entries(w.sprites))for(let s of o){let i=this.sprite_registry.createSprite(e,{id:s.id,pos:[s.x,s.y],size:[s.w,s.h],rng:this.randomGenerator});i&&(i.resources=new Proxy({...s.resources},{get(n,l){return typeof l=="string"&&!(l in n)&&l!=="toJSON"&&l!=="then"&&l!==Symbol.toPrimitive&&l!==Symbol.toStringTag&&l!=="inspect"&&l!=="constructor"&&l!=="__proto__"?0:n[l]},set(n,l,a){return n[l]=a,!0}}),s.speed!==void 0&&(i.speed=s.speed),s.cooldown!==void 0&&(i.cooldown=s.cooldown),s.orientation&&(i.orientation={...s.orientation}),s._age!==void 0&&(i._age=s._age),s.lastmove!==void 0&&(i.lastmove=s.lastmove),i.alive=s.alive,s.alive||this.sprite_registry.killSprite(i))}}};function ge(){u.register("VGDLSprite",I),u.register("Immovable",Fw),u.register("Passive",Kw),u.register("Resource",C),u.register("ResourcePack",Uw),u.register("Flicker",gw),u.register("OrientedFlicker",yw),u.register("OrientedSprite",Z),u.register("Missile",Sw),u.register("SpawnPoint",cw),u.register("SpriteProducer",aw),u.register("Portal",Ww),u.register("RandomNPC",vw),u.register("Chaser",xw),u.register("Fleeing",zw),u.register("Bomber",Yw),u.register("Walker",$w),u.register("Conveyor",jw),u.register("Spreader",Qw),u.register("Immutable",Hw),u.register("MovingAvatar",kw),u.register("OrientedAvatar",ww),u.register("ShootAvatar",qw),u.register("HorizontalAvatar",tw),u.register("FlakAvatar",Xw),u.register("killSprite",Q),u.register("killBoth",Yt),u.register("cloneSprite",$t),u.register("transformTo",hw),u.register("stepBack",bw),u.register("stepBackIfHasLess",jt),u.register("undoAll",Qt),u.register("bounceForward",qt),u.register("catapultForward",Xt),u.register("reverseDirection",kt),u.register("turnAround",Jt),u.register("flipDirection",Vt),u.register("wrapAround",Zt),u.register("collectResource",we),u.register("changeResource",te),u.register("addResource",ee),u.register("removeResource",oe),u.register("killIfOtherHasMore",se),u.register("killIfHasMore",ie),u.register("killIfOtherHasLess",re),u.register("killIfHasLess",ne),u.register("spawnIfHasMore",le),u.register("killIfAlive",ae),u.register("conveySprite",ce),u.register("pullWithIt",he),u.register("teleportToExit",pe),u.register("teleportToOther",fe),u.register("wallBounce",me),u.register("bounceDirection",ue),u.register("Timeout",Vw),u.register("SpriteCounter",Zw),u.register("MultiSpriteCounter",wt),u.register("ResourceCounter",tt),u.register("GridPhysics",lw),u.register("BasicGame",fw);for(let[t,w]of Object.entries(Dw))u.register(t,w);u.register("UP",St),u.register("DOWN",yt),u.register("LEFT",uw),u.register("RIGHT",W)}var ot=class{constructor(w,e,o=null){this.children=[],this.content=w,this.indent=e,this.parent=null,o&&o.insert(this)}insert(w){if(this.indent<w.indent){if(this.children.length>0&&this.children[0].indent!==w.indent)throw new Error(`Children indentations must match: expected ${this.children[0].indent}, got ${w.indent}`);this.children.push(w),w.parent=this}else{if(!this.parent)throw new Error("Root node too indented?");this.parent.insert(w)}}getRoot(){return this.parent?this.parent.getRoot():this}toString(){return this.children.length===0?this.content:this.content+"["+this.children.map(w=>w.toString()).join(", ")+"]"}};function _o(t,w=8){t=t.replace(/\t/g," ".repeat(w));let e=t.split(`
+`),o=new ot("",-1);for(let s of e){s.includes("#")&&(s=s.split("#")[0]);let i=s.trim();if(i.length>0){let n=s.length-s.trimStart().length;o=new ot(i,n,o)}}return o.getRoot()}var st=class{constructor(){this.verbose=!1}parseGame(w,e={}){let o=w;typeof o=="string"&&(o=_o(o).children[0]);let[s,i]=this._parseArgs(o.content);Object.assign(i,e),this.spriteRegistry=new et,this.game=new fw(this.spriteRegistry,i);for(let n of o.children)n.content.startsWith("SpriteSet")&&this.parseSprites(n.children),n.content==="InteractionSet"&&this.parseInteractions(n.children),n.content==="LevelMapping"&&this.parseMappings(n.children),n.content==="TerminationSet"&&this.parseTerminations(n.children);return this.game.finishSetup(),this.game}_eval(w){if(u.has(w))return u.request(w);let e=Number(w);return isNaN(e)?w==="True"||w==="true"?!0:w==="False"||w==="false"?!1:w:e}_parseArgs(w,e=null,o=null){o||(o={});let s=w.split(/\s+/).filter(i=>i.length>0);if(s.length===0)return[e,o];s[0].includes("=")||(e=this._eval(s[0]),s.shift());for(let i of s){let n=i.indexOf("=");if(n===-1)continue;let l=i.substring(0,n),a=i.substring(n+1);o[l]=this._eval(a)}return[e,o]}parseSprites(w,e=null,o={},s=[]){for(let i of w){if(!i.content.includes(">"))throw new Error(`Expected '>' in sprite definition: ${i.content}`);let[n,l]=i.content.split(">").map(p=>p.trim()),[a,r]=this._parseArgs(l,e,{...o}),h=[...s,n];if("singleton"in r&&(r.singleton===!0&&this.spriteRegistry.registerSingleton(n),delete r.singleton),i.children.length===0){this.verbose&&console.log("Defining:",n,a,r,h),this.spriteRegistry.registerSpriteClass(n,a,r,h);let p=this.game.sprite_order.indexOf(n);p!==-1&&this.game.sprite_order.splice(p,1),this.game.sprite_order.push(n)}else this.parseSprites(i.children,a,r,h)}}parseInteractions(w){for(let e of w){if(!e.content.includes(">"))continue;let[o,s]=e.content.split(">").map(a=>a.trim()),[i,n]=this._parseArgs(s),l=o.split(/\s+/).filter(a=>a.length>0);for(let a=1;a<l.length;a++){let r=l[0],h=l[a],p;if(typeof i=="function"&&!i.prototype)p=new Ew(i,r,h,n);else if(typeof i=="function")p=new Ew(i,r,h,n);else throw new Error(`Unknown effect type: ${i}`);this.game.collision_eff.push(p)}}}parseTerminations(w){for(let e of w){let[o,s]=this._parseArgs(e.content);this.game.terminations.push(new o(s))}}parseMappings(w){for(let e of w){let[o,s]=e.content.split(">").map(n=>n.trim());if(o.length!==1)throw new Error(`Only single character mappings allowed, got: '${o}'`);let i=s.split(/\s+/).filter(n=>n.length>0);this.game.char_mapping[o]=i}}};var it=class{constructor(w,e=30){this.canvas=w,this.ctx=w.getContext("2d"),this.cellSize=e}resize(w,e){this.canvas.width=w*this.cellSize,this.canvas.height=e*this.cellSize}clear(){this.ctx.fillStyle="rgb(207, 216, 220)",this.ctx.fillRect(0,0,this.canvas.width,this.canvas.height)}render(w){this.clear();let e=w.block_size,o=this.cellSize/e;for(let s of w.domain.sprite_order){let i=w.sprite_registry._liveSpritesByKey[s]||[];for(let n of i)this._drawSprite(n,o,e)}this._drawHUD(w)}_drawSprite(w,e,o){let s=w.rect.x*e,i=w.rect.y*e,n=w.rect.w*e,l=w.rect.h*e,a=null,r=null;if(w.img){let g=this._parseImg(w.img);a=g.color,r=g.shape}a||(a=w.color),a||(a=[128,128,128]);let h=w.shrinkfactor||0,p=s+n*h/2,c=i+l*h/2,m=n*(1-h),f=l*(1-h);this.ctx.fillStyle=`rgb(${a[0]}, ${a[1]}, ${a[2]})`,r?this._drawShape(r,p,c,m,f):this.ctx.fillRect(p,c,m,f),w.orientation&&w.draw_arrow&&this._drawArrow(p,c,m,f,w.orientation,a),w.is_avatar&&this._drawResources(w,p,c,m,f)}_parseImg(w){let e={LIGHTGRAY:[207,216,220],BLUE:[25,118,210],YELLOW:[255,245,157],BLACK:[55,71,79],ORANGE:[230,81,0],PURPLE:[92,107,192],BROWN:[109,76,65],PINK:[255,138,128],GREEN:[129,199,132],RED:[211,47,47],WHITE:[250,250,250],GOLD:[255,196,0],LIGHTRED:[255,82,82],LIGHTORANGE:[255,112,67],LIGHTBLUE:[144,202,249],LIGHTGREEN:[185,246,202],LIGHTPURPLE:[200,150,220],LIGHTPINK:[255,230,230],DARKGRAY:[68,90,100],DARKBLUE:[1,87,155],GRAY:[69,90,100]};if(w.startsWith("colors/")){let o=w.split("/")[1];return{color:e[o]||null,shape:null}}if(w.startsWith("colored_shapes/")){let o=w.split("/")[1],s=["CIRCLE","TRIANGLE","DIAMOND","STAR","CROSS","HEXAGON","SQUARE","PENTAGON"];for(let i of s)if(o.endsWith("_"+i)){let n=o.slice(0,-(i.length+1));return{color:e[n]||null,shape:i}}return{color:null,shape:null}}return{color:null,shape:null}}_drawShape(w,e,o,s,i){let n=this.ctx,l=e+s/2,a=o+i/2,r=s/2,h=i/2,p=2/24,c=r*(1-2*p),m=h*(1-2*p);switch(n.beginPath(),w){case"CIRCLE":n.ellipse(l,a,c,m,0,0,Math.PI*2);break;case"TRIANGLE":{let f=a-m,g=a+m,k=l-c,S=l+c;n.moveTo(l,f),n.lineTo(S,g),n.lineTo(k,g),n.closePath();break}case"DIAMOND":n.moveTo(l,a-m),n.lineTo(l+c,a),n.lineTo(l,a+m),n.lineTo(l-c,a),n.closePath();break;case"STAR":{let f=Math.min(c,m),g=f*.4;for(let k=0;k<5;k++){let S=-Math.PI/2+k*(2*Math.PI/5),E=S+Math.PI/5;k===0?n.moveTo(l+f*Math.cos(S),a+f*Math.sin(S)):n.lineTo(l+f*Math.cos(S),a+f*Math.sin(S)),n.lineTo(l+g*Math.cos(E),a+g*Math.sin(E))}n.closePath();break}case"CROSS":{let f=c*2/3,g=f/2;n.rect(l-c,a-g,c*2,f),n.rect(l-g,a-m,f,m*2);break}case"HEXAGON":{let f=Math.min(c,m);for(let g=0;g<6;g++){let k=Math.PI/6+g*(Math.PI/3),S=l+f*Math.cos(k),E=a+f*Math.sin(k);g===0?n.moveTo(S,E):n.lineTo(S,E)}n.closePath();break}case"SQUARE":{let f=Math.min(c,m)*.05;n.rect(l-c+f,a-m+f,(c-f)*2,(m-f)*2);break}case"PENTAGON":{let f=Math.min(c,m);for(let g=0;g<5;g++){let k=-Math.PI/2+g*(2*Math.PI/5),S=l+f*Math.cos(k),E=a+f*Math.sin(k);g===0?n.moveTo(S,E):n.lineTo(S,E)}n.closePath();break}default:n.rect(e,o,s,i)}n.fill()}_drawArrow(w,e,o,s,i,n){let l=w+o/2,a=e+s/2,r=Math.min(o,s)*.3,h=[n[0],255-n[1],n[2]];this.ctx.strokeStyle=`rgb(${h[0]}, ${h[1]}, ${h[2]})`,this.ctx.lineWidth=2,this.ctx.beginPath(),this.ctx.moveTo(l,a),this.ctx.lineTo(l+i.x*r,a+i.y*r),this.ctx.stroke()}_drawResources(w,e,o,s,i){let n=w.resources,l=0,a=3;for(let r of Object.keys(n)){if(r==="toJSON")continue;let h=n[r];if(h>0){let p=o+i+l*(a+1);this.ctx.fillStyle="#FFD400",this.ctx.fillRect(e,p,s*Math.min(h/5,1),a),l++}}}_drawHUD(w){this.ctx.fillStyle="white",this.ctx.font="14px monospace",this.ctx.textAlign="left";let e=this.canvas.height-5;this.ctx.fillText(`Score: ${w.score}  Time: ${w.time}`,5,e),w.ended&&(this.ctx.fillStyle=w.won?"#0f0":"#f00",this.ctx.font="bold 24px monospace",this.ctx.textAlign="center",this.ctx.fillText(w.won?"WIN":"LOSE",this.canvas.width/2,this.canvas.height/2))}};var rt={roomworld:{description:`BasicGame
     SpriteSet
         floor > Immovable img=colors/LIGHTGRAY
         wall > Immovable img=colors/DARKGRAY
@@ -2307,9 +91,7 @@
 
     TerminationSet
         SpriteCounter stype=goal limit=0 win=True
-        Timeout limit=500 win=False`,
-      levels: {
-        0: `wwwwwwwwwwwww
+        Timeout limit=500 win=False`,levels:{0:`wwwwwwwwwwwww
 w...w...D...w
 w...w.K.w.x.w
 w...wA..w...w
@@ -2321,8 +103,7 @@ wwdwwwwwwwwww
 w...w...w...w
 w...w...w...w
 w...w...w...w
-wwwwwwwwwwwww`,
-        1: `wwwwwwwwwwwww
+wwwwwwwwwwwww`,1:`wwwwwwwwwwwww
 w...w...w.F.w
 w...w...w...w
 w...w...w...w
@@ -2334,8 +115,7 @@ wwwwwwwwwwwww
 w...w.T.w...w
 w...w...w...w
 w.e.w.x.w.c.w
-wwwwwwwwwwwww`,
-        2: `wwwwwwwwwwwww
+wwwwwwwwwwwww`,2:`wwwwwwwwwwwww
 w..Kw...w...w
 w...w...w...w
 w...w.t.w...w
@@ -2347,8 +127,7 @@ wwwwwwwwwwwww
 w...w...w..xw
 w...wc..w...w
 w...w...w...w
-wwwwwwwwwwwww`,
-        3: `wwwwwwwwwwwww
+wwwwwwwwwwwww`,3:`wwwwwwwwwwwww
 w..Pw...w...w
 w...w...wc..w
 w...w...w...w
@@ -2360,11 +139,7 @@ wwwwwwwwwwwww
 w...w...d...w
 w...w...w..xw
 we..w...wP..w
-wwwwwwwwwwwww`
-      }
-    },
-    "avoidGeorge_vgfmri4": {
-      description: `BasicGame
+wwwwwwwwwwwww`}},avoidGeorge_vgfmri4:{description:`BasicGame
     SpriteSet
         floor > Immovable img=colors/LIGHTGRAY
         annoyed > RandomNPC speed=0.25 cons=2 img=colors/PURPLE
@@ -2406,9 +181,7 @@ wwwwwwwwwwwww`
     TerminationSet
         SpriteCounter stype=avatar  win=False
         SpriteCounter stype=quiet   win=False
-        Timeout limit=400 win=True`,
-      levels: {
-        0: `wwwwwwwwwwwwwwwwwwwww
+        Timeout limit=400 win=True`,levels:{0:`wwwwwwwwwwwwwwwwwwwww
 w...................w
 w.......A......wwwwww
 w.........w.........w
@@ -2419,8 +192,7 @@ w...................w
 w..............c....w
 w...................w
 w...................w
-wwwwwwwwwwwwwwwwwwwww`,
-        1: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,1:`wwwwwwwwwwwwwwwwwwwww
 w....w........w.....w
 w....w........w.....w
 w....w........w.....w
@@ -2431,8 +203,7 @@ wwwwwww.....w.......w
 w.....w.....w.......w
 w.c...w.....w....A..w
 w.....w.....w.......w
-wwwwwwwwwwwwwwwwwwwww`,
-        2: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,2:`wwwwwwwwwwwwwwwwwwwww
 w.........w.........w
 w...................w
 w.......A...........w
@@ -2443,8 +214,7 @@ w...................w
 w...g...............w
 w.........w.........w
 w.........w.........w
-wwwwwwwwwwwwwwwwwwwww`,
-        3: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,3:`wwwwwwwwwwwwwwwwwwwww
 w.....wwwwwww....A..w
 w...................w
 w...................w
@@ -2455,8 +225,7 @@ w.....w..........c..w
 w.....w.............w
 w.....wwwwwww...c...w
 w...................w
-wwwwwwwwwwwwwwwwwwwww`,
-        4: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,4:`wwwwwwwwwwwwwwwwwwwww
 w.....wwwwwww....A..w
 w...................w
 w.......g...........w
@@ -2467,8 +236,7 @@ w.....w.............w
 w.....w.............w
 w.....wwwwwww..c....w
 w.................c.w
-wwwwwwwwwwwwwwwwwwwww`,
-        5: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,5:`wwwwwwwwwwwwwwwwwwwww
 w......c............w
 w...................w
 w.......A.w........gw
@@ -2479,8 +247,7 @@ w............c......w
 w...................w
 w.c.................w
 w...................w
-wwwwwwwwwwwwwwwwwwwww`,
-        6: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,6:`wwwwwwwwwwwwwwwwwwwww
 wc...w.....w........w
 w....w.....w........w
 w....w.....w.....A..w
@@ -2491,8 +258,7 @@ w...................w
 w....g.......w......w
 w............w......w
 w............w..c...w
-wwwwwwwwwwwwwwwwwwwww`,
-        7: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,7:`wwwwwwwwwwwwwwwwwwwww
 w.........g.........w
 w...c..www........c.w
 w...................w
@@ -2503,8 +269,7 @@ w....wwwww..........w
 w.g.............c...w
 w....wwwww..........w
 w...................w
-wwwwwwwwwwwwwwwwwwwww`,
-        8: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,8:`wwwwwwwwwwwwwwwwwwwww
 www........A.......ww
 ww...c..............w
 w..............c....w
@@ -2515,11 +280,7 @@ w..................ww
 www.................w
 wc..................w
 w...................w
-wwwwwwwwwwwwwwwwwwwww`
-      }
-    },
-    "bait_vgfmri3": {
-      description: `BasicGame
+wwwwwwwwwwwwwwwwwwwww`}},bait_vgfmri3:{description:`BasicGame
     SpriteSet
         floor > Immovable img=colors/LIGHTGRAY
         hole > Immovable img=colors/BLUE
@@ -2574,23 +335,19 @@ wwwwwwwwwwwwwwwwwwwww`
     TerminationSet
         Timeout limit=600 win=False
         SpriteCounter stype=goal limit=0 win=True
-        SpriteCounter stype=avatar limit=0 win=False`,
-      levels: {
-        0: `wwwwwwwwwwwwwwwwwwwwwww
+        SpriteCounter stype=avatar limit=0 win=False`,levels:{0:`wwwwwwwwwwwwwwwwwwwwwww
 w.........A...........w
 w.....................w
 w.....g........k......w
 w.....................w
 w.....................w
-wwwwwwwwwwwwwwwwwwwwwww`,
-        1: `wwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwww`,1:`wwwwwwwwwwwwwwwwwwwwwww
 w...A.....w......m....w
 w.........w..........kw
 w.....g...............w
 w.........w...........w
 w...m.....w......m....w
-wwwwwwwwwwwwwwwwwwwwwww`,
-        2: `wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwww`,2:`wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
 w............................w
 w...A...........w..1.........w
 w...............w.........k..w
@@ -2599,8 +356,7 @@ w............................w
 w..m.....w.......w...........w
 w...m....w.......w...........w
 w.m......w.......w.....g.....w
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,
-        3: `wwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,3:`wwwwwwwwwwwwwwwwwwwwwww
 w.....................w
 w...A....k.......m....w
 w.............1.......w
@@ -2609,8 +365,7 @@ w...m.................w
 w..............w00wwwww
 w....1.m.......w......w
 w..............w..g..mw
-wwwwwwwwwwwwwwwwwwwwwww`,
-        4: `wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwww`,4:`wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
 w............g...............w
 w............................w
 w........1.....A.............w
@@ -2623,8 +378,7 @@ w.......w..........w.........w
 w.......w..........w.........w
 w.......w..........w.........w
 w.......wwwwwkwwwwww.........w
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,
-        5: `wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,5:`wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
 wwwwwwwg................wwwwww
 ww..........................ww
 ww.............A............ww
@@ -2638,8 +392,7 @@ w.....k00....................w
 wwwwwwwww..........wwwwwwwwwww
 ww..........................ww
 ww..m.......................ww
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,
-        6: `wwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,6:`wwwwwwwwwwwwwwwwwwwwwwwwwwww
 w......1..........w........w
 w.....1g1.........w........w
 w......1..........w........w
@@ -2653,8 +406,7 @@ w...wkw...........w........w
 w...www...........wwwwwwwwww
 w..............m...........w
 w..m.......................w
-wwwwwwwwwwwwwwwwwwwwwwwwwwww`,
-        7: `wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwwwwwww`,7:`wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
 w.......w..........wwww.....ww
 w.......w..1.......wwww.....ww
 wwwwwwwwgm.........00kw..1..ww
@@ -2667,8 +419,7 @@ ww00000000000000000000000000ww
 ww..........................ww
 ww..........................ww
 ww............k.............ww
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,
-        8: `wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,8:`wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
 wwwwwwwww..........wwwwwwwwwww
 wwwwwwwww..........wwwwwwwwwww
 wwwwwwwwg...........0kwwwwwwww
@@ -2682,8 +433,7 @@ ww.........................mww
 ww..........................ww
 ww......1...................ww
 ww..........................ww
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,
-        9: `wwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,9:`wwwwwwwwwwwwwwwww
 w.....wgw.......w
 wwwwww...wwwwwwww
 w.....w.A.w.....w
@@ -2694,8 +444,7 @@ w...............w
 wwwwwww.0.wwwwwww
 w......w0w......w
 w......wkw......w
-wwwwwwwwwwwwwwwww`,
-        10: `wwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwww`,10:`wwwwwwwwwwwwwwwwwww
 w......wwwww......w
 w..1...wwwww...1..w
 w......00.00......w
@@ -2708,8 +457,7 @@ w.................w
 w..wwwwww1wwwwww..w
 w........Ag.......w
 w.................w
-wwwwwwwwwwwwwwwwwww`,
-        11: `wwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwww`,11:`wwwwwwwwwwwww
 w...wkw.....w
 w...w000....w
 w...w0m01...w
@@ -2719,11 +467,7 @@ w....01.1...w
 w..1........w
 w...........w
 w....wwwg...w
-wwwwwwwwwwwww`
-      }
-    },
-    "bait_vgfmri4": {
-      description: `BasicGame
+wwwwwwwwwwwww`}},bait_vgfmri4:{description:`BasicGame
     SpriteSet
         floor > Immovable img=colors/LIGHTGRAY
         hole > Immovable img=colors/BLUE
@@ -2777,9 +521,7 @@ wwwwwwwwwwwww`
 
     TerminationSet
         SpriteCounter stype=goal limit=0 win=True
-        SpriteCounter stype=avatar limit=0 win=False`,
-      levels: {
-        0: `wwwwwwwwwwwwwwwwwwwww
+        SpriteCounter stype=avatar limit=0 win=False`,levels:{0:`wwwwwwwwwwwwwwwwwwwww
 w.......A...........w
 w...................w
 w..............k....w
@@ -2790,8 +532,7 @@ w...................w
 w...................w
 w..g................w
 w...................w
-wwwwwwwwwwwwwwwwwwwww`,
-        1: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,1:`wwwwwwwwwwwwwwwwwwwww
 w...A...m...........w
 w...................w
 w...............g...w
@@ -2802,8 +543,7 @@ w...................w
 w..m................w
 w............k......w
 w...................w
-wwwwwwwwwwwwwwwwwwwww`,
-        2: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,2:`wwwwwwwwwwwwwwwwwwwww
 w............w......w
 w...A........w.....ww
 w............w.....gw
@@ -2814,8 +554,7 @@ w...................w
 w...................w
 w..k................w
 w...................w
-wwwwwwwwwwwwwwwwwwwww`,
-        3: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,3:`wwwwwwwwwwwwwwwwwwwww
 w.........k.........w
 w...A.........1.....w
 w...................w
@@ -2826,8 +565,7 @@ w...................w
 w...................w
 w..g.......mmmmmmm..w
 w...................w
-wwwwwwwwwwwwwwwwwwwww`,
-        4: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,4:`wwwwwwwwwwwwwwwwwwwww
 w..............A....w
 w............1......w
 w.................m.w
@@ -2838,8 +576,7 @@ wwwwwwwwwwwwww00wwwww
 w...................w
 w.............k.....w
 w...................w
-wwwwwwwwwwwwwwwwwwwww`,
-        5: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,5:`wwwwwwwwwwwwwwwwwwwww
 w...................w
 w...................w
 w......1...wwwwwwwwww
@@ -2850,8 +587,7 @@ w.1....1...wwwwwwwwww
 w...................w
 w...................w
 w...................w
-wwwwwwwwwwwwwwwwwwwww`,
-        6: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,6:`wwwwwwwwwwwwwwwwwwwww
 w.............1.....w
 w........1...1g1....w
 w.......1.....1.....w
@@ -2862,8 +598,7 @@ w...w0w..w....wmmmmww
 w...wkw..w....wmmmmww
 w...www..w....wmmmmww
 w.............wwwwwww
-wwwwwwwwwwwwwwwwwwwww`,
-        7: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,7:`wwwwwwwwwwwwwwwwwwwww
 w..........ww.......w
 w..........ww.......w
 w.0m....mmmww.......w
@@ -2874,8 +609,7 @@ w1...1...A..........w
 w..............wwwwww
 w..1...........w....w
 w..............w..k.w
-wwwwwwwwwwwwwwwwwwwww`,
-        8: `wwwwwwwwwww.wwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,8:`wwwwwwwwwww.wwwwwwwww
 w.....k...w.......g.w
 w.........w.........w
 w.........w..1.wwwwww
@@ -2886,11 +620,7 @@ w....1......wwwwwwwww
 w........1..0.......w
 w.g.........0....k..w
 w.....1.....wwwwwwwww
-wwwwwwwwwwwwwwwwwwwww`
-      }
-    },
-    "chase_vgfmri3": {
-      description: `BasicGame
+wwwwwwwwwwwwwwwwwwwww`}},chase_vgfmri3:{description:`BasicGame
     SpriteSet
         floor > Immovable img=colors/LIGHTGRAY
         carcass > Immovable img=colors/BROWN
@@ -2929,23 +659,19 @@ wwwwwwwwwwwwwwwwwwwww`
     TerminationSet
         Timeout limit=600 win=False
         SpriteCounter stype=scared win=True
-        SpriteCounter stype=avatar win=False`,
-      levels: {
-        0: `wwwwwwwwwww
+        SpriteCounter stype=avatar win=False`,levels:{0:`wwwwwwwwwww
 w.........w
 wA........w
 w.........w
 w....0....w
 w.........w
-wwwwwwwwwww`,
-        1: `wwwwwwwwwww
+wwwwwwwwwww`,1:`wwwwwwwwwww
 w..0......w
 w....w....w
 w..www..A.w
 w....w....w
 w.....0...w
-wwwwwwwwwww`,
-        2: `wwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwww`,2:`wwwwwwwwwwwwwwwwwwwwwwwww
 w.......................w
 w.........0.....w.......w
 w......wwwwwwwwww.......w
@@ -2956,8 +682,7 @@ w.....ww...wwww....w0...w
 w.....ww................w
 wwww...0..........wwwwwww
 w.......................w
-wwwwwwwwwwwwwwwwwwwwwwwww`,
-        3: `wwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwwww`,3:`wwwwwwwwwwwwwwwwwwwwwwwwwww
 w...........w.............w
 w...w1......w..w...w......w
 w......wwwwww..w...w......w
@@ -2967,8 +692,7 @@ wwww......0......A........w
 w.....ww...wwwwww....w....w
 w.....ww...ww.....w..w0...w
 w.....w...................w
-wwwwwwwwwwwwwwwwwwwwwwwwwww`,
-        4: `wwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwwwwww`,4:`wwwwwwwwwwwwwwwwwwwwwwwwwww
 w.......0...w.......0.....w
 w...w.......w..0..........w
 w......wwwwww......w......w
@@ -2978,8 +702,7 @@ wwww.....0.......A........w
 w..0..ww...wwwwww....w....w
 w.....ww...ww.....w..w0...w
 w.....w....0..............w
-wwwwwwwwwwwwwwwwwwwwwwwwwww`,
-        5: `wwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwwwwww`,5:`wwwwwwwwwwwwwwwwwwwwwwww
 wAww..........0..... ..w
 w.ww..wwwwww.......www.w
 w.ww..... ....ww...w.0.w
@@ -2989,8 +712,7 @@ w.....w0.....0.... ..www
 w.0...wwwwwww.....0....w
 w.ww..w..0..w...wwww...w
 w.......0.....0........w
-wwwwwwwwwwwwwwwwwwwwwwww`,
-        6: `wwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwww`,6:`wwwwwwwwwwwwwwwwwwwwwwww
 w.....0................w
 w..0...w. ....w.0......w
 w...w.......0.ww.......w
@@ -3000,8 +722,7 @@ w.....w....w...w..w....w
 w.......w..0....w......w
 w...w.....w..0..w..0...w
 w......0......A........w
-wwwwwwwwwwwwwwwwwwwwwwww`,
-        7: `wwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwww`,7:`wwwwwwwwwwwwwwwwwwwwwwww
 ww....w......0.....0000w
 ww..w.w....w.wwwwwwwww.w
 ww..0..ww....... ......w
@@ -3011,8 +732,7 @@ w.0.0..ww...0........0.w
 w.. .....000...0.0.....w
 w......ww..0..0........w
 w...A...0......wwwwwww.w
-wwwwwwwwwwwwwwwwwwwwwwww`,
-        8: `wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwww`,8:`wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
 w....ww....0.................w
 w....ww......................w
 wA...ww............wwwwww....w
@@ -3026,8 +746,7 @@ w.....wwwwww...........ww....w
 wwww.......w......0....wwwwwww
 w......1...w.................w
 w..........w.................w
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,
-        9: `wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,9:`wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
 w.....w......................w
 w.....w.....0................w
 w.....w............wwwwww....w
@@ -3041,8 +760,7 @@ w...0.wwwwww...........ww....w
 w..........w...0.......wwwwwww
 w..........w.................w
 w..........w.................w
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,
-        10: `wwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,10:`wwwwwwwwwwwwwwwwwwwwwwww
 w.0.w..0........w..0...w
 w...w....ww.....w..wwwww
 w...w.ww..w...0.0......w
@@ -3052,8 +770,7 @@ w.............0...w...ww
 w.ww...ww0...wwwwww.00.w
 wA...wwwwww..0....w....w
 www....0......w..0..wwww
-wwwwwwwwwwwwwwwwwwwwwwww`,
-        11: `wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwww`,11:`wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
 w............................w
 w.....w.0..........w.........w
 w.....w........0...wwwwww....w
@@ -3067,11 +784,7 @@ w...0.wwwwwww....www...ww....w
 w..0.......ww...0w.....wwwwwww
 w..........ww................w
 w..........ww................w
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`
-      }
-    },
-    "chase_vgfmri4": {
-      description: `BasicGame
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`}},chase_vgfmri4:{description:`BasicGame
     SpriteSet
         floor > Immovable img=colors/LIGHTGRAY
         carcass > Immovable img=colors/BLACK
@@ -3109,9 +822,7 @@ wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`
 
     TerminationSet
         SpriteCounter stype=scared win=True
-        SpriteCounter stype=avatar win=False`,
-      levels: {
-        0: `wwwwwwwwwwwwwwwwwwwww
+        SpriteCounter stype=avatar win=False`,levels:{0:`wwwwwwwwwwwwwwwwwwwww
 w...................w
 w...................w
 w..............A....w
@@ -3122,8 +833,7 @@ w...................w
 w...................w
 w...................w
 w...................w
-wwwwwwwwwwwwwwwwwwwww`,
-        1: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,1:`wwwwwwwwwwwwwwwwwwwww
 w...................w
 w..0................w
 w.........w.........w
@@ -3134,8 +844,7 @@ w.........w.........w
 w.........w......A..w
 w.........w.........w
 w.........0.........w
-wwwwwwwwwwwwwwwwwwwww`,
-        2: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,2:`wwwwwwwwwwwwwwwwwwwww
 w...................w
 w.....wwwwwwwww.....w
 w.....w...0...w.....w
@@ -3146,8 +855,7 @@ wwwwwww.......w.....w
 w.....w.......w.....w
 w.....w.....0.w.....w
 wwww..w0......w...www
-wwwwwwwwwwwwwwwwwwwww`,
-        3: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,3:`wwwwwwwwwwwwwwwwwwwww
 w...w0......w.......w
 w...w..www..w.......w
 w...w..www..w0......w
@@ -3158,8 +866,7 @@ w...................w
 w......wwww.0.w.....w
 w...0..w...0..w0....w
 w......w......w.....w
-wwwwwwwwwwwwwwwwwwwww`,
-        4: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,4:`wwwwwwwwwwwwwwwwwwwww
 w...w...0...........w
 w...w...............w
 w...w..wwwwww....0..w
@@ -3170,8 +877,7 @@ w.......0...........w
 w..1.......wwww.....w
 w..........ww..0.0..w
 w...........w.......w
-wwwwwwwwwwwwwwwwwwwww`,
-        5: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,5:`wwwwwwwwwwwwwwwwwwwww
 wAwww..........0....w
 w...................w
 w......w...wwwwwww..w
@@ -3182,8 +888,7 @@ wwww...w.....w......w
 w......w.....w......w
 w..1.........w..0...w
 w........0...w......w
-wwwwwwwwwwwwwwwwwwwww`,
-        6: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,6:`wwwwwwwwwwwwwwwwwwwww
 w.....0......0.w....w
 w..0...wwwwwwwww.0..w
 w......w............w
@@ -3194,8 +899,7 @@ w.....w........w....w
 w...wwwwwww.0..w....w
 w..0w.....w...0...0.w
 w...w.....w.........w
-wwwwwwwwwwwwwwwwwwwww`,
-        7: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,7:`wwwwwwwwwwwwwwwwwwwww
 ww...........0..0..0w
 wwwwwwww......wwwwwww
 ww..1..ww...........w
@@ -3206,8 +910,7 @@ w.0....www..w.0wwwwww
 w...........w..w..0.w
 w..............0..0.w
 w.......0.........www
-wwwwwwwwwwwwwwwwwwwww`,
-        8: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,8:`wwwwwwwwwwwwwwwwwwwww
 w....ww.............w
 w....ww.......wwww..w
 w.........0......w..w
@@ -3218,11 +921,7 @@ w.0..............1..w
 w........wwwwww.....w
 wwww..........w..0..w
 w.........1...w.....w
-wwwwwwwwwwwwwwwwwwwww`
-      }
-    },
-    "helper_vgfmri3": {
-      description: `BasicGame frame_rate=30
+wwwwwwwwwwwwwwwwwwwww`}},helper_vgfmri3:{description:`BasicGame frame_rate=30
     SpriteSet
         floor > Immovable img=colors/LIGHTGRAY
         avatar > MovingAvatar img=colors/DARKBLUE cooldown=0
@@ -3279,9 +978,7 @@ wwwwwwwwwwwwwwwwwwwww`
     TerminationSet
         Timeout limit=600 win=False
         SpriteCounter stype=avatar  limit=0 win=False
-        SpriteCounter stype=box1 limit=0 win=True`,
-      levels: {
-        0: `wwwwwwwwwwwwwwwwww
+        SpriteCounter stype=box1 limit=0 win=True`,levels:{0:`wwwwwwwwwwwwwwwwww
 w........a.......w
 w......w.........w
 w......w.........w
@@ -3290,8 +987,7 @@ w......w.........w
 w......www.......w
 w..A.............w
 www...x..........w
-wwwwwwwwwwwwwwwwww`,
-        1: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwww`,1:`wwwwwwwwwwwwwwwwwwwww
 w.x.................w
 w...a.....a.........w
 w............a......w
@@ -3300,8 +996,7 @@ w...b..........a....w
 w........a..........w
 w..A..b..........b..w
 wwwx................w
-wwwwwwwwwwwwwwwwwwwww`,
-        2: `wwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,2:`wwwwwwwwwwwwwwwww
 w...............w
 w.b.............w
 w.......fffff...w
@@ -3310,8 +1005,7 @@ w.......f..xf...w
 w..A....fffff...w
 w.........a.....w
 www..........b..w
-wwwwwwwwwwwwwwwww`,
-        3: `wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwww`,3:`wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
 w............................w
 w............................w
 w...faaf.....................w
@@ -3324,8 +1018,7 @@ w...................a........w
 w..A.....a.....b.............w
 w............................w
 www.................x........w
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,
-        4: `wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,4:`wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
 w.........................x..w
 w............................w
 w.............b..............w
@@ -3339,8 +1032,7 @@ w...f...f...bbb..............w
 w...fffff...bab...b......b...w
 w...........bbb..............w
 www..........................w
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,
-        5: `wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,5:`wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
 w...........bba.b............w
 w........a..fbbbb............w
 w..........afff..............w
@@ -3354,8 +1046,7 @@ w..A...w.......b........ff...w
 www....w............x........w
 w............................w
 w.........z..................w
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,
-        6: `wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,6:`wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
 w............................w
 w............................w
 w...faa.......af.............w
@@ -3369,8 +1060,7 @@ w..A.....a.....b.............w
 w............................w
 w............................w
 www........z........x........w
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,
-        7: `wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,7:`wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
 w............z...............w
 w............................w
 w......fa.a..................w
@@ -3384,8 +1074,7 @@ w..A.....a.....b.............w
 w.....................x......w
 w............................w
 www.....c........c...........w
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,
-        8: `wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,8:`wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
 w............................w
 w........b...................w
 w..................a.........w
@@ -3399,8 +1088,7 @@ w...f.....f..................w
 w....fffff....a...b......b...w
 w...........................ww
 w...........................ww
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,
-        9: `wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,9:`wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
 w............................w
 w........b...................w
 w..................a.........w
@@ -3414,8 +1102,7 @@ w........w...................w
 w......w......a...b......b...w
 w............................w
 w............................w
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,
-        10: `wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,10:`wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
 w............................w
 w...........fba.bf...........w
 w........a..fbbbbf...........w
@@ -3429,8 +1116,7 @@ w..A...w.......b........ff...w
 www....w............x........w
 w..........c.................w
 w................z...........w
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,
-        11: `wwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,11:`wwwwwwwwwwwwwwwww
 w......x........w
 w...............w
 wbbb.........bbbw
@@ -3446,11 +1132,7 @@ wfffffffffffffffw
 w.....a.....a...w
 w...............w
 w...............w
-wwwwwwwwwwwwwwwww`
-      }
-    },
-    "helper_vgfmri4": {
-      description: `BasicGame frame_rate=30
+wwwwwwwwwwwwwwwww`}},helper_vgfmri4:{description:`BasicGame frame_rate=30
     SpriteSet
         floor > Immovable img=colors/LIGHTGRAY
         avatar > MovingAvatar img=colors/DARKBLUE cooldown=0
@@ -3507,9 +1189,7 @@ wwwwwwwwwwwwwwwww`
     TerminationSet
         SpriteCounter stype=avatar  limit=0 win=False
         SpriteCounter stype=box1 limit=0 win=True
-        Timeout limit=600 win=False`,
-      levels: {
-        0: `wwwwwwwwwwwwwwwwwwwww
+        Timeout limit=600 win=False`,levels:{0:`wwwwwwwwwwwwwwwwwwwww
 w...........a.......w
 w...................w
 w.........w.........w
@@ -3520,8 +1200,7 @@ w.........www.......w
 w...................w
 w..A................w
 www......x..........w
-wwwwwwwwwwwwwwwwwwwww`,
-        1: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,1:`wwwwwwwwwwwwwwwwwwwww
 w.x.................w
 w...a.....a.......A.w
 w............a......w
@@ -3532,8 +1211,7 @@ w...................w
 w........a..........w
 w.....b..........b..w
 wwwx................w
-wwwwwwwwwwwwwwwwwwwww`,
-        2: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,2:`wwwwwwwwwwwwwwwwwwwww
 w.......A...........w
 w...................w
 w.b.................w
@@ -3544,8 +1222,7 @@ w.......fffff...a...w
 w...................w
 w............b......w
 www.................w
-wwwwwwwwwwwwwwwwwwwww`,
-        3: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,3:`wwwwwwwwwwwwwwwwwwwww
 w...a...............w
 w.......w.a.w.b.....w
 w.......w...w.......w
@@ -3556,8 +1233,7 @@ w.......wwwww.......w
 w...................w
 w..A.a.........b....w
 www........x........w
-wwwwwwwwwwwwwwwwwwwww`,
-        4: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,4:`wwwwwwwwwwwwwwwwwwwww
 w............w......w
 w...b.a..a...w......w
 w............w.....xw
@@ -3568,8 +1244,7 @@ w.......w....bbbbb..w
 w.......w....b...b..w
 w.......w....b..Ab..w
 www..x..w....bbbbb..w
-wwwwwwwwwwwwwwwwwwwww`,
-        5: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,5:`wwwwwwwwwwwwwwwwwwwww
 w........fffffff....w
 w....A...fbbbbbf....w
 w........fb.a.bf....w
@@ -3580,8 +1255,7 @@ w..z............ccccw
 wbbbbbbb........c...w
 w......b...x....c.a.w
 w..a...b.z......c...w
-wwwwwwwwwwwwwwwwwwwww`,
-        6: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,6:`wwwwwwwwwwwwwwwwwwwww
 w.......x....b..a.ccw
 w............b..a...w
 w............b..aaaaw
@@ -3592,8 +1266,7 @@ w.......b...........w
 wcccccc.b...........w
 w.....c.b.....z.....w
 w.aa..c.b...........w
-wwwwwwwwwwwwwwwwwwwww`,
-        7: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,7:`wwwwwwwwwwwwwwwwwwwww
 w...w.......ffcb..bbw
 w...w.z.....wwcba.bbw
 w.c.f.......wwcba.bbw
@@ -3604,8 +1277,7 @@ w...........cccw..bbw
 wbbb........cccwwwwww
 w..b........wwww....w
 w.ab...x......w.....w
-wwwwwwwwwwwwwwwwwwwww`,
-        8: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,8:`wwwwwwwwwwwwwwwwwwwww
 w.....a..b.....c....w
 wz.wbwwwwwwwwwwwbw..w
 w..w.....z.......b..w
@@ -3616,11 +1288,7 @@ w..w.w..wwwwwwww.w..w
 w.Aw.b.....c..b..b..w
 w..w.bbwwwfwwwwwbw..w
 w..f...b...c.....a..w
-wwwwwwwwwwwwwwwwwwwww`
-      }
-    },
-    "lemmings_vgfmri3": {
-      description: `BasicGame
+wwwwwwwwwwwwwwwwwwwww`}},lemmings_vgfmri3:{description:`BasicGame
     SpriteSet
         floor > Immovable img=colors/LIGHTGRAY
         hole   > Immovable img=colors/LIGHTBLUE
@@ -3665,24 +1333,19 @@ wwwwwwwwwwwwwwwwwwwww`
     TerminationSet
         Timeout limit=600 win=False
         SpriteCounter  stype=avatar  limit=0 win=False
-        MultiSpriteCounter stype1=entrance stype2=lemming limit=0 win=True`,
-      levels: {
-        0: `wwwwwwwwwwwwwwwwwwwwwww
+        MultiSpriteCounter stype1=entrance stype2=lemming limit=0 win=True`,levels:{0:`wwwwwwwwwwwwwwwwwwwwwww
 w..x................www
 w..w..................w
 w.......A............ew
-wwwwwwwwwwwwwwwwwwwwwww`,
-        1: `wwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwww`,1:`wwwwwwwwwwwwwwwwwwwwwww
 w..x................www
 w..w........wwwww.....w
 w.......A.......w....ew
-wwwwwwwwwwwwwwwwwwwwwww`,
-        2: `wwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwww`,2:`wwwwwwwwwwwwwwwwwwwwwww
 w..x...ww.w....w....www
 w..www..w...w..w.w....w
 w.......A........w...ew
-wwwwwwwwwwwwwwwwwwwwwww`,
-        3: `wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwww`,3:`wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
 w......ww...wwwww............w
 w......ww...wwwww........ww..w
 w......ww...wwwww......ww....w
@@ -3696,8 +1359,7 @@ w.......ww......www..........w
 w.......ww......www..........w
 w..w....ww......www..........w
 w.......A...............e....w
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,
-        4: `wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,4:`wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
 w......ww...wwwww............w
 w......ww...wwwww......hhww..w
 w......ww...wwwww......wwx...w
@@ -3711,8 +1373,7 @@ w......wwh......wwwh.........w
 w......wwh......wwwh.........w
 w..w...wwh......wwwh.........w
 w..e....A....................w
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,
-        5: `wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,5:`wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
 w................................w
 w.........whh........wwww...x....w
 w........wwww........whww........w
@@ -3722,8 +1383,7 @@ w........wwwh..........wwh.......w
 w.........www...www...wwww.......w
 w.......e..www........wwww.......w
 w................................w
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,
-        6: `wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,6:`wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
 w............ww..wwwwww...........w
 w............ww.hhh..hw.w.........w
 w.......x....w..wwwwww...ww.......w
@@ -3733,8 +1393,7 @@ w.......ww...hwwwwwwwww...........w
 w............hw..w..ww............w
 w.......w....hw....wwww...........w
 w.......A................e........w
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,
-        7: `wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,7:`wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
 w......ww...wwwww............w
 w...e..ww...wwwww............w
 w......ww....................w
@@ -3748,8 +1407,7 @@ w......wwh......wwwh.........w
 w......wwh......wwwh.....ww..w
 w......wwh......w........wx..w
 w.......A....................w
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,
-        8: `wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,8:`wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
 w..................................w
 w......................e...........w
 w........wwwwwwwwwwwwwwww..........w
@@ -3759,8 +1417,7 @@ wwwwwwwwwwwwwwwwwhhwwwwww..........w
 w........wwwwwwwwwwwwwhww..........w
 w.........x............A...........w
 w..................................w
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,
-        9: `wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,9:`wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
 w......ww...wwwww............w
 w......ww...wwwww........e...w
 w......ww....................w
@@ -3774,8 +1431,7 @@ w......hhw......www......w...w
 w......www......www......w...w
 w...x..www......www......w...w
 w.......A....................w
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,
-        10: `wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,10:`wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
 w...............w.......wh........w
 w..e.....wwwwwwww.......wwww......w
 w........whhhhhhh.........w.......w
@@ -3785,8 +1441,7 @@ w...............whw.....whw.......w
 w.........w.w...whw.....whw.......w
 w.......A...w...whw.....whw.......w
 w...........w...www.....wwx.......w
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,
-        11: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,11:`wwwwwwwwwwwwwwwwwwwww
 w....x.ww.wwwwww....w
 w.....hwwwww.wwww...w
 w..w..wwwwwwwww..ww.w
@@ -3796,11 +1451,7 @@ w..ww.wwwwwwwwww....w
 w.....wwhhw..ww.....w
 w....wwwwww.wwww....w
 w..A.............e..w
-wwwwwwwwwwwwwwwwwwwww`
-      }
-    },
-    "lemmings_vgfmri4": {
-      description: `BasicGame
+wwwwwwwwwwwwwwwwwwwww`}},lemmings_vgfmri4:{description:`BasicGame
     SpriteSet
         floor > Immovable img=colors/LIGHTGRAY
         hole   > Immovable img=colors/LIGHTBLUE
@@ -3845,9 +1496,7 @@ wwwwwwwwwwwwwwwwwwwww`
     TerminationSet
         SpriteCounter  stype=avatar  limit=0 win=False
         MultiSpriteCounter stype1=entrance stype2=lemming limit=0 win=True
-        Timeout limit=600 win=False`,
-      levels: {
-        0: `wwwwwwwwwwwwwwwwwwwww
+        Timeout limit=600 win=False`,levels:{0:`wwwwwwwwwwwwwwwwwwwww
 w...................w
 w..x................w
 w...................w
@@ -3858,8 +1507,7 @@ w...................w
 w...................w
 w................e..w
 w.......A...........w
-wwwwwwwwwwwwwwwwwwwww`,
-        1: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,1:`wwwwwwwwwwwwwwwwwwwww
 w......w............w
 w..x...w............w
 w......w............w
@@ -3870,8 +1518,7 @@ w...................w
 w...................w
 w...................w
 w.......A..........ew
-wwwwwwwwwwwwwwwwwwwww`,
-        2: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,2:`wwwwwwwwwwwwwwwwwwwww
 w...................w
 w..x................w
 w...................w
@@ -3882,8 +1529,7 @@ w...................w
 w...................w
 w................e..w
 w.......A...........w
-wwwwwwwwwwwwwwwwwwwww`,
-        3: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,3:`wwwwwwwwwwwwwwwwwwwww
 w...................w
 w...............e...w
 w...................w
@@ -3894,8 +1540,7 @@ w...................w
 w.....wwwwww........w
 w.....w....w........w
 w.....w.x..w........w
-wwwwwwwwwwwwwwwwwwwww`,
-        4: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,4:`wwwwwwwwwwwwwwwwwwwww
 w......ww...www..hh.w
 w......ww...w.......w
 w......ww...w.......w
@@ -3906,8 +1551,7 @@ w..ww.........w.....w
 w..w..........www...w
 w..w................w
 w.......A..........ew
-wwwwwwwwwwwwwwwwwwwww`,
-        5: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,5:`wwwwwwwwwwwwwwwwwwwww
 w...................w
 w....hh.....ww...x..w
 w....ww.....whh.....w
@@ -3918,8 +1562,7 @@ w...w.........w.....w
 w..........wwww.....w
 w...................w
 we..................w
-wwwwwwwwwwwwwwwwwwwww`,
-        6: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,6:`wwwwwwwwwwwwwwwwwwwww
 w......ww...w.hhww..w
 w......ww...ww....x.w
 w......ww...ww......w
@@ -3930,8 +1573,7 @@ w.............wwh...w
 w......wwh......wwwhw
 w..w...wwh.........hw
 w..e....A...........w
-wwwwwwwwwwwwwwwwwwwww`,
-        7: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,7:`wwwwwwwwwwwwwwwwwwwww
 w...hw..............w
 w...hw..............w
 w...hw....wwwwwwwwwww
@@ -3942,8 +1584,7 @@ wwwwww....wwhh......w
 w.........ww......x.w
 w.........wwhh......w
 w.e.......wwhh......w
-wwwwwwwwwwwwwwwwwwwww`,
-        8: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,8:`wwwwwwwwwwwwwwwwwwwww
 whhh...........e....w
 w..............wwwwww
 w........ww....whhhhw
@@ -3954,11 +1595,7 @@ w...wwwwwwwww.....A.w
 w....whhhhwwww......w
 w....whhhhww........w
 w.x..whhhhww........w
-wwwwwwwwwwwwwwwwwwwww`
-      }
-    },
-    "plaqueAttack_vgfmri3": {
-      description: `BasicGame
+wwwwwwwwwwwwwwwwwwwww`}},plaqueAttack_vgfmri3:{description:`BasicGame
   SpriteSet
     floor > Immovable img=colors/LIGHTGRAY
 
@@ -4030,33 +1667,28 @@ wwwwwwwwwwwwwwwwwwwww`
   TerminationSet
     Timeout limit=600 win=False
     MultiSpriteCounter stype1=fullMolarInf stype2=fullMolarSup limit=0 win=False
-    MultiSpriteCounter stype1=hotdoghole stype2=hotdog stype3=burger stype4=burgerhole limit=0 win=True`,
-      levels: {
-        0: `wwwwwwwwwwwwwwwwwwwww
+    MultiSpriteCounter stype1=hotdoghole stype2=hotdog stype3=burger stype4=burgerhole limit=0 win=True`,levels:{0:`wwwwwwwwwwwwwwwwwwwww
 wwww..www......dwwwww
 w...................w
 w........A..........w
 w...................w
 w...................w
 w..m.m.m............w
-wwwwwwwwwwwwwwwwwwwww`,
-        1: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,1:`wwwwwwwwwwwwwwwwwwwww
 wwwwd.www......dwwwww
 w...................w
 w..n.....A........n.w
 w...................w
 w...mm.....m.m..m.m.w
 www.......ww.......ww
-wwwwwwwwwwwwwwwwwwwww`,
-        2: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,2:`wwwwwwwwwwwwwwwwwwwww
 wwww..www.......wwwww
 w..n.n.n.......n.n.nw
 w........A..........w
 w...................w
 wwwwwww...ww...wwwwww
 w......v..ww..v.....w
-wwwwwwwwwwwwwwwwwwwww`,
-        3: `wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,3:`wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
 wwww.....................wwwww
 w.nnn....................nnn.w
 w............................w
@@ -4068,8 +1700,7 @@ w............................w
 wv...........A..............vw
 w.....mmm............mmm.....w
 w............wwwww...........w
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,
-        4: `wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,4:`wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
 wwww..d..................wwwww
 w.nnn........................w
 w............................w
@@ -4081,8 +1712,7 @@ w............................w
 w............A..............vw
 w.......................mmm..w
 w............wwwww..........vw
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,
-        5: `wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,5:`wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
 wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
 wwww.........ddddd.......wwwww
 w............................w
@@ -4096,8 +1726,7 @@ w...mmmm....A..........mmmm..w
 w.............mmm............w
 wwwwwwwwww...wwwww...wwwwwwwww
 w............wwwww...........w
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,
-        6: `wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,6:`wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
 wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
 wwww.........d.d.d.......wwwww
 w.n........................n.w
@@ -4111,8 +1740,7 @@ w...m.mmm....A.m......mmm.m..w
 w.............m.m............w
 w..wwwwwww...wwwww...wwwwww..w
 wv...........wwwww..........vw
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,
-        7: `wwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,7:`wwwwwwwwwwwwwwwwwwwwwwww
 w......wdw.wdw.wdw.....w
 wwwwwwww.w.w.w.w.w..wwww
 wd...www.w.w.w.w.www..dw
@@ -4126,8 +1754,7 @@ w......................w
 w...........A..........w
 w......................w
 w...m...m...m...m...m..w
-wwwwwwwwwwwwwwwwwwwwwwww`,
-        8: `wwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwww`,8:`wwwwwwwwwwwwwwwwwwwwwwww
 wwwwwwww...wdw...wwwwwww
 wd.....w...w.w...w....dw
 wwwwww.w...w.w...w.wwwww
@@ -4141,8 +1768,7 @@ w......................w
 w...........A..........w
 w.....m.....m.....m....w
 wv........wwwww.......vw
-wwwwwwwwwwwwwwwwwwwwwwww`,
-        9: `wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwww`,9:`wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
 wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
 wwww.......dddddddd......wwwww
 w............................w
@@ -4156,8 +1782,7 @@ w.m.m.m.m....A.......m.m.m.m.w
 w.............mmm............w
 w...wwwwww...wwwww...wwwww...w
 wv...........wwwww..........vw
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,
-        10: `wwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,10:`wwwwwwwwwwwwwwwwwwwwwwww
 w...n...n...n...n...n..w
 w......................w
 w......................w
@@ -4170,8 +1795,7 @@ w......................w
 wwww.www.www.www.www.www
 wv...w w.w w.w w.w w..vw
 wwwwwwwwvwww.wwwvwwwwwww
-wwwwwwwwwwwwwwwwwwwwwwww`,
-        11: `wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwww`,11:`wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
 wwww..........ddd........wwwww
 w..n.n..n............n.n..n..w
 w............................w
@@ -4185,11 +1809,7 @@ w............................w
 w............A...............w
 w.m.m.m.m.....vvv....m.m.m.m.w
 w............wwwww...........w
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`
-      }
-    },
-    "sokoban_vgfmri3": {
-      description: `BasicGame square_size=20
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`}},sokoban_vgfmri3:{description:`BasicGame square_size=20
     SpriteSet
         floor > Immovable img=colors/LIGHTGRAY
         hole   > Immovable img=colors/RED
@@ -4219,21 +1839,17 @@ wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`
 
     TerminationSet
         SpriteCounter stype=box    limit=0 win=True
-        Timeout limit=600 win=False`,
-      levels: {
-        0: `wwwwwwwwwwwwwwwwwwwww
+        Timeout limit=600 win=False`,levels:{0:`wwwwwwwwwwwwwwwwwwwww
 w..............0ww..w
 w......1............w
 w...........A.......w
-wwwwwwwwwwwwwwwwwwwww`,
-        1: `wwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,1:`wwwwwwwwwwwwwwwww
 w......w..0.....w
 w..1...w........w
 w......w.....A..w
 w...............w
 w...............w
-wwwwwwwwwwwwwwwww`,
-        2: `wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwww`,2:`wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
 w...........................ww
 w...........................ww
 wwwwwww......0wwww...........w
@@ -4247,11 +1863,7 @@ w...........................ww
 w...........................ww
 w...........................ww
 w...........................ww
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`
-      }
-    },
-    "zelda_vgfmri3": {
-      description: `BasicGame
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`}},zelda_vgfmri3:{description:`BasicGame
     SpriteSet
         floor > Immovable img=colors/LIGHTGRAY
         goal  > Immovable img=colors/GREEN
@@ -4318,25 +1930,21 @@ wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`
     TerminationSet
         SpriteCounter stype=goal win=True
         SpriteCounter stype=avatar win=False
-        Timeout limit=600 win=False`,
-      levels: {
-        0: `wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+        Timeout limit=600 win=False`,levels:{0:`wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
 w..........w.................w
 w.......g..w.................w
 w..........w.................w
 w.................w.......+..w
 w.....A...........w..........w
 w.................w..........w
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,
-        1: `wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,1:`wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
 w..........w.................w
 w.......g..w.................w
 w..........w.................w
 w.................w.......+..w
 w...............A.w..........w
 w...3.............w..........w
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,
-        2: `wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,2:`wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
 w..........w.................w
 w..3.......wg..........3.....w
 w............................w
@@ -4346,8 +1954,7 @@ w...................w........w
 w...................w........w
 w..3.......w........w........w
 w..........w+.......w..A.....w
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,
-        3: `wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,3:`wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
 w..........w.................w
 w..........wg................w
 w..........wwwww.............w
@@ -4361,8 +1968,7 @@ w...........................+w
 w..........w.................w
 w..........w...........3.....w
 wA.........w.................w
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,
-        4: `wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,4:`wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
 w..........w.................w
 w.........+w.............A...w
 w.......wwww.................w
@@ -4376,8 +1982,7 @@ w....2.......................w
 w.......wwww.................w
 w.........gw.................w
 w..........w.................w
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,
-        5: `wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,5:`wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
 w..........w.................w
 w..........w.............A...w
 w.......wwww.................w
@@ -4391,8 +1996,7 @@ w....2................g......w
 w.......wwww.................w
 w.........+w...........1.....w
 w..........w.................w
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,
-        6: `wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,6:`wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
 w..........w.................w
 w.........gw.............A...w
 w.......wwww.................w
@@ -4406,8 +2010,7 @@ w............................w
 w.......wwww.................w
 w.......2..w...........1.....w
 w..........w.................w
-wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,
-        7: `wwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwww`,7:`wwwwwwwwwwwww
 wA.......w..w
 w..w........w
 w...w...w.+ww
@@ -4415,8 +2018,7 @@ www.w2..wwwww
 w.......w.g.w
 w.2.........w
 w.....2.....w
-wwwwwwwwwwwww`,
-        8: `wwwwwwwwwwwww
+wwwwwwwwwwwww`,8:`wwwwwwwwwwwww
 w.3.gw....1.w
 w..www......w
 w..........2w
@@ -4424,8 +2026,7 @@ w.......wwwww
 w.......w+..w
 w...w...w...w
 wA..w.......w
-wwwwwwwwwwwww`,
-        9: `wwwwwwwwwwwww
+wwwwwwwwwwwww`,9:`wwwwwwwwwwwww
 w..2.ww....Aw
 w....w......w
 w.w.....wwwww
@@ -4433,8 +2034,7 @@ w+w........3w
 w.w..wwwwwwww
 w.......w...w
 w...3w....wgw
-wwwwwwwwwwwww`,
-        10: `wwwwwwwwwwwww
+wwwwwwwwwwwww`,10:`wwwwwwwwwwwww
 w..........gw
 w....w......w
 w.w.w..1....w
@@ -4442,8 +2042,7 @@ w+w.........w
 ww3..3..2...w
 w..w..w.w.w.w
 w...A.......w
-wwwwwwwwwwwww`,
-        11: `wwwwwwwwwwwww
+wwwwwwwwwwwww`,11:`wwwwwwwwwwwww
 w....w....g.w
 w...www.....w
 w.1..www....w
@@ -4451,11 +2050,7 @@ w..wwwwwww..w
 w......w....w
 w....w...1..w
 wA...w+...1.w
-wwwwwwwwwwwww`
-      }
-    },
-    "zelda_vgfmri4": {
-      description: `BasicGame
+wwwwwwwwwwwww`}},zelda_vgfmri4:{description:`BasicGame
     SpriteSet
         floor > Immovable img=colors/LIGHTGRAY
         goal  > Immovable img=colors/GREEN
@@ -4522,9 +2117,7 @@ wwwwwwwwwwwww`
     TerminationSet
         SpriteCounter stype=goal win=True
         SpriteCounter stype=avatar win=False
-        Timeout limit=600 win=False`,
-      levels: {
-        0: `wwwwwwwwwwwwwwwwwwwww
+        Timeout limit=600 win=False`,levels:{0:`wwwwwwwwwwwwwwwwwwwww
 w..........w........w
 w.......g..w........w
 w..........w........w
@@ -4535,8 +2128,7 @@ w...................w
 w...................w
 w.....A.............w
 w...................w
-wwwwwwwwwwwwwwwwwwwww`,
-        1: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,1:`wwwwwwwwwwwwwwwwwwwww
 w..........w........w
 w.......g..w........w
 w...................w
@@ -4547,8 +2139,7 @@ w...................w
 w........A.w........w
 w...3..........w....w
 w...................w
-wwwwwwwwwwwwwwwwwwwww`,
-        2: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,2:`wwwwwwwwwwwwwwwwwwwww
 w..........w........w
 w..3.......wg..3....w
 w...................w
@@ -4559,8 +2150,7 @@ w...........w.......w
 w...........w.......w
 w..3.......w....w...w
 w......w+...w..A....w
-wwwwwwwwwwwwwwwwwwwww`,
-        3: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,3:`wwwwwwwwwwwwwwwwwwwww
 w..........w........w
 w..........wg.......w
 w..........wwwww....w
@@ -4571,8 +2161,7 @@ w..........w........w
 w...................w
 w..........w...3....w
 wA.........w........w
-wwwwwwwwwwwwwwwwwwwww`,
-        4: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,4:`wwwwwwwwwwwwwwwwwwwww
 w..........w........w
 w.........+w....A...w
 w.......www.........w
@@ -4583,8 +2172,7 @@ w....2..............w
 w.......wwww........w
 w.........gw........w
 w..........w........w
-wwwwwwwwwwwwwwwwwwwww`,
-        5: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,5:`wwwwwwwwwwwwwwwwwwwww
 w..........w........w
 w..........w.....A..w
 w.......wwww........w
@@ -4595,8 +2183,7 @@ w.......wwww........w
 w.........+w...1....w
 w..........w........w
 w..........w........w
-wwwwwwwwwwwwwwwwwwwww`,
-        6: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,6:`wwwwwwwwwwwwwwwwwwwww
 w.........gw...A....w
 w.......wwww........w
 w..........3........w
@@ -4607,8 +2194,7 @@ w.......wwww........w
 w.......2..w.....1..w
 w..........w........w
 w..........w........w
-wwwwwwwwwwwwwwwwwwwww`,
-        7: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,7:`wwwwwwwwwwwwwwwwwwwww
 w...................w
 wA...............w..w
 w..w................w
@@ -4619,8 +2205,7 @@ w.......w...........w
 w.......w....g......w
 w.2.................w
 w.....2.............w
-wwwwwwwwwwwwwwwwwwwww`,
-        8: `wwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwwwww`,8:`wwwwwwwwwwwwwwwwwwwww
 w.3.gw....1.w.......w
 w..www......w.......w
 w...........w.......w
@@ -4631,1425 +2216,7 @@ w.......w.....+.....w
 w.......w...........w
 w...w...w...........w
 wA..w...............w
-wwwwwwwwwwwwwwwwwwwww`
-      }
-    }
-  };
+wwwwwwwwwwwwwwwwwwwww`}}};var Se=["#1b6ec2","#2b9a3e","#d42020"];function ve(t){return Se[Math.min(t,Se.length-1)]}function xe(t,w){if(w<=1)return 0;let e=w/3;return t<e?0:t<2*e?1:2}function ke(t){let w=[],e=[],o=!1,s=null;for(let h=0;h<t.length;h++){let p=t[h].response||{},m=(p.rationale||p.scratchpad||p.reasoning||"").length;w.push(m),m>0&&(o=!0);let f=t[h].level;s!==null&&f!==s&&e.push(h),s=f}let i=w.filter(h=>h>0),n=null,l=0,a=0,r=1;if(i.length>0){let h=Math.min(...i),p=Math.max(...i);a=Math.log10(h);let m=Math.log10(p)-a;l=m>0?Math.min(25,Math.max(5,Math.ceil(Math.sqrt(i.length)))):1,r=m>0?m/l:1,n=w.map(f=>{if(f<=0)return-1;let g=Math.floor((Math.log10(f)-a)/r);return g>=l&&(g=l-1),g<0&&(g=0),g})}return{lengths:w,levelBoundaries:e,hasAny:o,binAssignments:n,binCount:l,logMin:a,logBinWidth:r}}function ye(t,w){if(t===0)return 0;let e=Math.floor(Math.log10(t)),o=t/Math.pow(10,e),s;return w?o<1.5?s=1:o<3?s=2:o<7?s=5:s=10:o<=1?s=1:o<=2?s=2:o<=5?s=5:s=10,s*Math.pow(10,e)}function nt(t,w,e){if(w<=t)return[t];let o=ye(w-t,!1),s=ye(o/Math.max(e-1,1),!0);if(s===0)return[t];let i=Math.floor(t/s)*s,n=Math.ceil(w/s)*s,l=[];for(let a=i;a<=n+s*.5;a+=s)l.push(Math.round(a));return l}function be(t){let w=t.getBoundingClientRect(),e=window.devicePixelRatio||1,o=w.width,s=w.height;t.width=o*e,t.height=s*e;let i=t.getContext("2d");return i.scale(e,e),{ctx:i,w:o,h:s}}function _t(t,w){let e=[],o=Math.floor(Math.log10(Math.max(1,t))),s=Math.ceil(Math.log10(Math.max(1,w)));for(let i=o;i<=s;i++)for(let n of[1,2,5]){let l=n*Math.pow(10,i);l>=t&&l<=w&&e.push(l)}return e}function Ee(t,w,e={}){let{logX:o=!1,logY:s=!1}=e,{lengths:i,binAssignments:n,binCount:l,logMin:a}=w,{ctx:r,w:h,h:p}=be(t),c={top:20,right:8,bottom:46,left:52},m=h-c.left-c.right,f=p-c.top-c.bottom;r.clearRect(0,0,h,p);let g=i.filter(d=>d>0),k=i.length-g.length;if(g.length===0){r.fillStyle="#999",r.font="12px monospace",r.textAlign="center",r.fillText("No reasoning data",h/2,p/2);return}let S=Math.min(...g),E=Math.max(...g),L=Math.log10(E)-a,O;if(o){O=new Array(l).fill(0);for(let d of n)d>=0&&O[d]++}else{O=new Array(l).fill(0);let d=E-S;if(d===0)O[0]=g.length;else for(let y of g){let D=Math.floor((y-S)/d*l);D>=l&&(D=l-1),O[D]++}}let V=Math.max(...O);if(V===0)return;let mw=s&&V>1,K=mw?Math.log10(V):1;function U(d){return mw?d<=0?0:Math.log10(d)/K:d/V}r.strokeStyle="#ccc",r.lineWidth=1,r.font="10px monospace",r.textBaseline="middle",r.textAlign="right",r.fillStyle="#666";let ht=mw?_t(1,V):nt(0,V,5);for(let d of ht){let y=c.top+f*(1-U(d));y<c.top-1||y>c.top+f+1||(r.beginPath(),r.moveTo(c.left,y),r.lineTo(c.left+m,y),r.stroke(),r.fillText(String(d),c.left-4,y))}let Mw=1,j=Math.max(1,(m-Mw*(l-1))/l);for(let d=0;d<l;d++){let y=U(O[d])*f,D=c.left+d*(j+Mw),Cw=c.top+f-y;r.fillStyle=ve(xe(d,l)),r.fillRect(D,Cw,j,y)}if(r.textAlign="center",r.textBaseline="top",r.fillStyle="#666",o)if(L>0)for(let d of _t(S,E)){let y=(Math.log10(d)-a)/L;r.fillText(String(d),c.left+y*m,c.top+f+4)}else r.fillText(String(S),c.left+m/2,c.top+f+4);else{let d=E-S;if(d>0)for(let y of nt(S,E,5)){let D=(y-S)/d;r.fillText(String(y),c.left+D*m,c.top+f+4)}else r.fillText(String(S),c.left+m/2,c.top+f+4)}r.strokeStyle="#999",r.lineWidth=1,r.beginPath(),r.moveTo(c.left,c.top),r.lineTo(c.left,c.top+f),r.lineTo(c.left+m,c.top+f),r.stroke(),k>0&&(r.fillStyle="#999",r.font="9px monospace",r.textAlign="right",r.textBaseline="top",r.fillText(k+" empty",h-c.right,2)),r.font="10px monospace",r.fillStyle="#888",r.textAlign="center",r.textBaseline="bottom",r.fillText("Reasoning length (chars)",c.left+m/2,p-2),r.save(),r.translate(12,c.top+f/2),r.rotate(-Math.PI/2),r.textAlign="center",r.textBaseline="middle",r.fillText("Count",0,0),r.restore()}var Aw={top:16,right:12,bottom:40,left:52};function Ae(t,w,e,o={}){let{logY:s=!1}=o,{lengths:i,levelBoundaries:n,binAssignments:l,binCount:a}=w,{ctx:r,w:h,h:p}=be(t),c=Aw,m=h-c.left-c.right,f=p-c.top-c.bottom;r.clearRect(0,0,h,p);let g=i.length;if(g===0)return;let k=Math.max(...i),S=k>0?k:1,E=i.filter(d=>d>0),L=s&&k>1&&E.length>0,O=L?Math.log10(Math.min(...E)):0,mw=(L?Math.log10(k):1)-O||1;function K(d){return c.left+(g>1?d/(g-1)*m:m/2)}function U(d){return L?d<=0?c.top+f:c.top+f-(Math.log10(d)-O)/mw*f:c.top+f-d/S*f}r.font="10px monospace",r.strokeStyle="#eee",r.lineWidth=1;let ht=L?_t(Math.min(...E),k):nt(0,S,5);r.textAlign="right",r.textBaseline="middle",r.fillStyle="#666";for(let d of ht){let y=U(d);y<c.top-1||y>c.top+f+1||(r.beginPath(),r.moveTo(c.left,y),r.lineTo(c.left+m,y),r.stroke(),r.fillText(String(d),c.left-4,y))}let Mw=nt(0,g-1,7);r.textAlign="center",r.textBaseline="top";for(let d of Mw){if(d<0||d>=g)continue;let y=K(d);r.beginPath(),r.moveTo(y,c.top),r.lineTo(y,c.top+f),r.stroke(),r.fillText(String(d+1),y,c.top+f+4)}if(r.strokeStyle="#999",r.lineWidth=1,r.beginPath(),r.moveTo(c.left,c.top),r.lineTo(c.left,c.top+f),r.lineTo(c.left+m,c.top+f),r.stroke(),n.length>0){r.save(),r.setLineDash([4,4]),r.strokeStyle="#bbb",r.lineWidth=1;for(let d of n){let y=K(d);r.beginPath(),r.moveTo(y,c.top),r.lineTo(y,c.top+f),r.stroke()}r.restore()}if(r.lineWidth=1.5,l&&g>1)for(let d=0;d<g-1;d++){if(L&&(i[d]<=0||i[d+1]<=0))continue;let y=l[d+1];r.strokeStyle=y>=0?ve(xe(y,a)):"#ccc",r.beginPath(),r.moveTo(K(d),U(i[d])),r.lineTo(K(d+1),U(i[d+1])),r.stroke()}else{r.strokeStyle="#888",r.beginPath();let d=!1;for(let y=0;y<g;y++){if(L&&i[y]<=0){d=!1;continue}d?r.lineTo(K(y),U(i[y])):(r.moveTo(K(y),U(i[y])),d=!0)}r.stroke()}let j=Math.min(e,g-1);if(j>=0){let d=K(j);r.strokeStyle="rgba(204, 68, 68, 0.25)",r.lineWidth=1,r.beginPath(),r.moveTo(d,c.top),r.lineTo(d,c.top+f),r.stroke();let y=U(i[j]);r.fillStyle="#cc4444",r.beginPath(),r.arc(d,y,4,0,Math.PI*2),r.fill(),r.fillStyle="#cc4444",r.font="bold 10px monospace",r.textAlign="left",r.textBaseline="bottom";let D=d+6,Cw=y-4;D+40>h?(r.textAlign="right",r.fillText(String(i[j]),d-6,Cw)):r.fillText(String(i[j]),D,Cw)}r.font="10px monospace",r.fillStyle="#888",r.textAlign="center",r.textBaseline="bottom",r.fillText("Step",c.left+m/2,p-2),r.save(),r.translate(12,c.top+f/2),r.rotate(-Math.PI/2),r.textAlign="center",r.textBaseline="middle",r.fillText("Reasoning length (chars)",0,0),r.restore()}function lt(t){if(!t.delta_encoded)return;let w=t.states;if(!w||w.length<2){delete t.delta_encoded;return}let e=w[0].sprites;for(let o=1;o<w.length;o++){if(!("sprites"in w[o]))w[o].sprites=Object.assign({},e);else{let s=Object.assign({},e,w[o].sprites);for(let i in s)s[i]===null&&delete s[i];w[o].sprites=s}e=w[o].sprites}delete t.delta_encoded}ge();function x(t,w,e){if(t==null||t[w]===void 0)throw new Error(`[replay-viewer] missing required field '${w}' in ${e}. Check the Python pipeline did not drop it.`);return t[w]}var B=null,R=[],v=[],A=0,_=null,_e=null,Ot=null,ow=null,Ie=20,Io=!1,iw=null,Rt=null,ze=null,X=null,Y=-1,ew=[],Iw=-1,Te=null,M=null,Lw=!1,at=!1,Ye=[],G=!1,$=0,Ow=[],Bt=[],Rw=[],$e=null,F=document.getElementById("file-drop-zone"),J=document.getElementById("replay-loading"),je=document.getElementById("loading-label"),Qe=document.getElementById("loading-detail"),To=document.getElementById("loading-fallback-link"),qe=document.getElementById("file-input"),Lo=document.getElementById("replay-container"),Oo=document.getElementById("game-canvas"),Mt=new it(Oo,30),Ro=document.getElementById("btn-step-back"),Bo=document.getElementById("btn-reset"),Ft=document.getElementById("btn-play-pause"),Mo=document.getElementById("btn-step-fwd"),It=document.getElementById("step-label"),Xe=document.getElementById("speed-select"),sw=document.getElementById("step-scrubber"),ct=document.getElementById("metadata-panel"),Kt=document.getElementById("metadata-json"),Je=document.getElementById("metadata-tab-summary"),Ve=document.getElementById("metadata-tab-json"),Tw=document.getElementById("metadata-copy-btn"),q=document.getElementById("action-log"),P=document.getElementById("btn-share"),Le=document.getElementById("reasoning-charts"),Co=document.getElementById("chart-histogram"),Ct=document.getElementById("chart-line"),Oe=document.getElementById("chart-log-x"),Re=document.getElementById("chart-log-y"),Po=document.getElementById("multi-turn-layout"),H=document.getElementById("conversation-content"),Pt=document.getElementById("flap-tab-desc"),Gt=document.getElementById("flap-tab-level"),Be=document.getElementById("flap-panel-desc"),Me=document.getElementById("flap-panel-level"),Go=document.getElementById("game-desc"),No=document.getElementById("level-text"),Ze={up:document.getElementById("dpad-up"),down:document.getElementById("dpad-down"),left:document.getElementById("dpad-left"),right:document.getElementById("dpad-right"),action:document.getElementById("dpad-space")},Do=Object.values(Ze),Tt=null;function wo(t){if(Tt===t){Tt=null,Pt.classList.remove("active"),Gt.classList.remove("active"),Be.classList.remove("open"),Me.classList.remove("open");return}Tt=t,Pt.classList.toggle("active",t==="desc"),Gt.classList.toggle("active",t==="level"),Be.classList.toggle("open",t==="desc"),Me.classList.toggle("open",t==="level")}Pt.addEventListener("click",()=>wo("desc"));Gt.addEventListener("click",()=>wo("level"));F.addEventListener("click",()=>{qe.click()});qe.addEventListener("change",t=>{t.target.files.length>0&&to(t.target.files[0])});F.addEventListener("dragover",t=>{t.preventDefault(),F.classList.add("dragover")});F.addEventListener("dragleave",()=>{F.classList.remove("dragover")});F.addEventListener("drop",t=>{t.preventDefault(),F.classList.remove("dragover"),t.dataTransfer.files.length>0&&to(t.dataTransfer.files[0])});async function to(t){Rt=t,ze=t.name,iw=null;let w;if(t.name.endsWith(".gz")){let o=new DecompressionStream("gzip"),s=t.stream().pipeThrough(o);w=await new Response(s).text()}else w=await t.text();let e=JSON.parse(w);lt(e),Nt(e)}function Ho(t,w,e){if(t.length>0&&t[0].state_index!==void 0){let n=[];for(let l=0;l<t.length;l++)n.push(t[l].state_index);return n.push(w-1),n}let s=[],i=0;for(let n=0;n<t.length;n++){if(n>0){let l=t[n-1],a=t[n];(a.level!==l.level||a.attempt!==l.attempt)&&i++}s.push(n+i)}return s.push(t.length+i),s}function Fo(t,w){let e=new Array(w).fill(-1),o=[],s=new Array(w).fill(-1);for(let n=0;n<t.length;n++){let l=t[n].state_index;e[l]=n,o.push(l)}let i=-1;for(let n=0;n<w;n++)e[n]>=0&&(i=e[n]),s[n]=i;return{frameToStepMap:e,stepToFrameMap:o,lastActionStepForFrame:s}}function Nt(t){if(!t.states||!Array.isArray(t.states)){alert('Invalid replay file: missing "states" array. Run export_replay first.');return}if(!t.game||!rt[t.game]){alert("Unknown game: "+(t.game||"(none)")+". Not found in GAMES registry.");return}if(B=t,R=t.states,v=t.steps||[],Ye=Ho(v,R.length,t.source),G=v.length>0&&v[0].state_index!==void 0&&R.length>v.length,G){$=R.length;let s=Fo(v,R.length);Ow=s.frameToStepMap,Bt=s.stepToFrameMap,Rw=s.lastActionStepForFrame}else $=0,Ow=[],Bt=[],Rw=[];Io=!!(t.meta&&t.meta.persistent),Po.style.display="flex",F.style.display="none",J.style.display="none",J.classList.remove("error"),Lo.classList.add("visible"),P.style.display="inline-block",qo(),sw.min=0,sw.max=G?$-1:v.length,sw.value=0,Yo(),M=ke(v),M.hasAny?(Le.classList.add("visible"),Bw(0)):Le.classList.remove("visible"),Y=-1;let e=rt[B.game],o=t.game_description||e.description;$e=o,Go.value=o,Ot=null,N(0)}function Ce(t){if(Ot===t)return;let w=rt[B.game];_e=new st().parseGame($e||w.description);let o=w.levels[t];if(!o){console.error("Level",t,"not found for game",B.game);return}_=_e.buildLevel(o),Ot=t,No.value=o,Mt.resize(_.width,_.height)}function Pe(t,w){let e={};for(let[o,s]of Object.entries(t.sprites))e[o]=s.map(i=>({id:i.id,key:i.key,x:i.col*w,y:i.row*w,w,h:w,alive:i.alive,resources:i.resources||{},speed:i.speed,cooldown:i.cooldown,orientation:i.orientation,_age:i._age,lastmove:i.lastmove}));return{score:t.score,time:t.time,sprites:e}}function N(t){if(G){t<0&&(t=0),t>=$&&(t=$-1),A=t;let a=Rw[t],r;if(a>=0?r=v[a].level!==void 0?v[a].level:B.start_level||0:r=v.length>0&&v[0].level!==void 0?v[0].level:B.start_level||0,Ce(r),t<0||t>=R.length)return;let h=R[t],p=_.block_size,c=Pe(h,p);_.setGameState(c);let m=`states[${t}] (frame mode)`;if(_.ended=x(h,"ended",m),_.won=x(h,"won",m),_.lose=x(h,"lose",m),_.timeout=x(h,"timeout",m),_.score=x(h,"score",m),_.time=x(h,"time",m),Mt.render(_),Ge(),Ne(),Fe(),Ke(),sw.value=t,Ht(),M&&M.hasAny){let f=a>=0?a:0;Bw(f)}return}let w=v.length;t<0&&(t=0),t>w&&(t=w),A=t;let e;if(t<v.length)e=v[t].level!==void 0?v[t].level:B.start_level||0;else{let a=v[v.length-1];e=a.level!==void 0?a.level:B.start_level||0}Ce(e);let o=Ye[t];if(o<0||o>=R.length)return;let s=R[o],i=_.block_size,n=Pe(s,i);_.setGameState(n);let l=`states[${o}] (step mode)`;_.ended=x(s,"ended",l),_.won=x(s,"won",l),_.lose=x(s,"lose",l),_.timeout=x(s,"timeout",l),_.score=x(s,"score",l),_.time=x(s,"time",l),Mt.render(_),Ge(),Ne(),Fe(),Ke(),sw.value=t,Ht(),M&&M.hasAny&&Bw(A)}function Ut(){N(A+1)}function eo(){N(A-1)}function oo(){ow!==null?T():so()}function so(){ow===null&&(Ft.textContent="Pause",Ie=Number(Xe.value)||20,ow=setInterval(()=>{let t=G?$-1:v.length;if(A>=t){T();return}Ut()},1e3/Ie))}function T(){ow!==null&&(clearInterval(ow),ow=null),Ft.textContent="Play"}function Ge(){if(G){let w=A,e=Rw[w],o=Ow[w]>=0,s=e>=0?v[e]:null,i=s&&s.level!==void 0?s.level:"?",n=s&&s.attempt!==void 0?s.attempt:"?",l=o?"ACTION":"NO-OP";It.textContent="Frame "+(w+1)+" / "+$+" ["+l+"] (L"+i+" A"+n+")";return}let t=v.length;if(A>=t)It.textContent="Final / "+t+" steps";else{let w=v[A],e=w.level!==void 0?w.level:"?",o=w.attempt!==void 0?w.attempt:"?";It.textContent="Step "+(A+1)+" / "+t+" (L"+e+" A"+o+")"}}function Ne(){Wo()}function Ko(t,w){let e=t[w];if(e.user_prompt!==void 0)return e.user_prompt;let o=`steps[${w}]`,s=x(e,"step",o),i=x(e,"level",o),n=x(e,"attempt",o),l=[];return Uo(l,t,w,i,n),l.push("# Step "+s+" (Level "+i+", Attempt "+n+")"),l.push(""),l.push(x(e,"formatted_obs",o)),l.join(`
+`)}function Uo(t,w,e,o,s){let i=null,n=-1;for(let c=e-1;c>=0;c--){let m=w[c];if(!x(m,"action",`steps[${c}]`).startsWith("_")){i=m,n=c;break}}if(i===null)return;let l=`steps[${n}]`,a=x(i,"level",l),r=x(i,"attempt",l);if(a===o&&r===s)return;let h="";x(i,"won",l)?h="won":x(i,"lose",l)?h="died":x(i,"timeout",l)&&(h="timeout");let p=0;for(let c=n;c>=0;c--){let m=w[c];if(x(m,"action",`steps[${c}]`).startsWith("_"))continue;let g=x(m,"level",`steps[${c}]`),k=x(m,"attempt",`steps[${c}]`);if(g===a&&k===r)p+=x(m,"reward",`steps[${c}]`);else break}h&&(t.push("--- TRIAL ENDED outcome: "+h+", score: "+p+" ---"),t.push("")),t.push("--- NEW TRIAL (Level "+o+", Attempt "+s+") ---"),t.push("")}function Wo(){let t;if(G){if(t=Rw[A],t<0){He(-1);return}}else t=A<v.length?A:v.length;He(t)}function De(t){let w=v[t],e=document.createDocumentFragment(),o=document.createElement("div");o.className="msg msg-user";let s=document.createElement("div");s.className="msg-label",s.textContent="User (Step "+w.step+")",o.appendChild(s);let i=document.createElement("div");i.textContent=Ko(v,t),o.appendChild(i),e.appendChild(o);let n=w.response||{},l=document.createElement("div");l.className="msg msg-assistant";let a=document.createElement("div");a.className="msg-label",a.textContent="Assistant (Step "+w.step+")",l.appendChild(a);let r=[],h=n.rationale;h&&r.push(h),n.action&&r.push("Action: "+n.action);let p=document.createElement("div");return p.textContent=r.join(`
 
-  // replay-charts.js
-  var TIER_COLORS = ["#1b6ec2", "#2b9a3e", "#d42020"];
-  function tierColor(tierIdx) {
-    return TIER_COLORS[Math.min(tierIdx, TIER_COLORS.length - 1)];
-  }
-  function binTier(binIdx, binCount) {
-    if (binCount <= 1) return 0;
-    const third = binCount / 3;
-    if (binIdx < third) return 0;
-    if (binIdx < 2 * third) return 1;
-    return 2;
-  }
-  function computeReasoningData(steps) {
-    const lengths = [];
-    const levelBoundaries = [];
-    let hasAny = false;
-    let prevLevel = null;
-    for (let i = 0; i < steps.length; i++) {
-      const resp = steps[i].response || {};
-      const text = resp.rationale || resp.scratchpad || resp.reasoning || "";
-      const len = text.length;
-      lengths.push(len);
-      if (len > 0) hasAny = true;
-      const lvl = steps[i].level;
-      if (prevLevel !== null && lvl !== prevLevel) {
-        levelBoundaries.push(i);
-      }
-      prevLevel = lvl;
-    }
-    const nonZero = lengths.filter((l) => l > 0);
-    let binAssignments = null;
-    let binCount = 0;
-    let logMin = 0;
-    let logBinWidth = 1;
-    if (nonZero.length > 0) {
-      const dataMin = Math.min(...nonZero);
-      const dataMax = Math.max(...nonZero);
-      logMin = Math.log10(dataMin);
-      const logMax = Math.log10(dataMax);
-      const logRange = logMax - logMin;
-      binCount = logRange > 0 ? Math.min(25, Math.max(5, Math.ceil(Math.sqrt(nonZero.length)))) : 1;
-      logBinWidth = logRange > 0 ? logRange / binCount : 1;
-      binAssignments = lengths.map((val) => {
-        if (val <= 0) return -1;
-        let idx = Math.floor((Math.log10(val) - logMin) / logBinWidth);
-        if (idx >= binCount) idx = binCount - 1;
-        if (idx < 0) idx = 0;
-        return idx;
-      });
-    }
-    return {
-      lengths,
-      levelBoundaries,
-      hasAny,
-      binAssignments,
-      // per-step bin index (-1 = zero-length)
-      binCount,
-      logMin,
-      logBinWidth
-    };
-  }
-  function niceNum(x, round) {
-    if (x === 0) return 0;
-    const exp = Math.floor(Math.log10(x));
-    const f = x / Math.pow(10, exp);
-    let nice;
-    if (round) {
-      if (f < 1.5) nice = 1;
-      else if (f < 3) nice = 2;
-      else if (f < 7) nice = 5;
-      else nice = 10;
-    } else {
-      if (f <= 1) nice = 1;
-      else if (f <= 2) nice = 2;
-      else if (f <= 5) nice = 5;
-      else nice = 10;
-    }
-    return nice * Math.pow(10, exp);
-  }
-  function niceTicks(lo, hi, targetCount) {
-    if (hi <= lo) return [lo];
-    const range = niceNum(hi - lo, false);
-    const spacing = niceNum(range / Math.max(targetCount - 1, 1), true);
-    if (spacing === 0) return [lo];
-    const nLo = Math.floor(lo / spacing) * spacing;
-    const nHi = Math.ceil(hi / spacing) * spacing;
-    const ticks = [];
-    for (let t = nLo; t <= nHi + spacing * 0.5; t += spacing) {
-      ticks.push(Math.round(t));
-    }
-    return ticks;
-  }
-  function setupCtx(canvas2) {
-    const rect = canvas2.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
-    const w = rect.width;
-    const h = rect.height;
-    canvas2.width = w * dpr;
-    canvas2.height = h * dpr;
-    const ctx = canvas2.getContext("2d");
-    ctx.scale(dpr, dpr);
-    return { ctx, w, h };
-  }
-  function logScaleTicks(lo, hi) {
-    const ticks = [];
-    const minPow = Math.floor(Math.log10(Math.max(1, lo)));
-    const maxPow = Math.ceil(Math.log10(Math.max(1, hi)));
-    for (let p = minPow; p <= maxPow; p++) {
-      for (const m of [1, 2, 5]) {
-        const val = m * Math.pow(10, p);
-        if (val >= lo && val <= hi) ticks.push(val);
-      }
-    }
-    return ticks;
-  }
-  function drawHistogram(canvas2, reasoningData2, opts = {}) {
-    const { logX = false, logY = false } = opts;
-    const { lengths, binAssignments, binCount, logMin } = reasoningData2;
-    const { ctx, w, h } = setupCtx(canvas2);
-    const margin = { top: 20, right: 8, bottom: 46, left: 52 };
-    const plotW = w - margin.left - margin.right;
-    const plotH = h - margin.top - margin.bottom;
-    ctx.clearRect(0, 0, w, h);
-    const nonZero = lengths.filter((l) => l > 0);
-    const numZeros = lengths.length - nonZero.length;
-    if (nonZero.length === 0) {
-      ctx.fillStyle = "#999";
-      ctx.font = "12px monospace";
-      ctx.textAlign = "center";
-      ctx.fillText("No reasoning data", w / 2, h / 2);
-      return;
-    }
-    const dataMin = Math.min(...nonZero);
-    const dataMax = Math.max(...nonZero);
-    const logRange = Math.log10(dataMax) - logMin;
-    let bins;
-    if (logX) {
-      bins = new Array(binCount).fill(0);
-      for (const bi of binAssignments) {
-        if (bi >= 0) bins[bi]++;
-      }
-    } else {
-      bins = new Array(binCount).fill(0);
-      const range = dataMax - dataMin;
-      if (range === 0) {
-        bins[0] = nonZero.length;
-      } else {
-        for (const val of nonZero) {
-          let idx = Math.floor((val - dataMin) / range * binCount);
-          if (idx >= binCount) idx = binCount - 1;
-          bins[idx]++;
-        }
-      }
-    }
-    const maxBin = Math.max(...bins);
-    if (maxBin === 0) return;
-    const useLogY = logY && maxBin > 1;
-    const logMaxBin = useLogY ? Math.log10(maxBin) : 1;
-    function yFrac(count) {
-      if (!useLogY) return count / maxBin;
-      if (count <= 0) return 0;
-      return Math.log10(count) / logMaxBin;
-    }
-    ctx.strokeStyle = "#ccc";
-    ctx.lineWidth = 1;
-    ctx.font = "10px monospace";
-    ctx.textBaseline = "middle";
-    ctx.textAlign = "right";
-    ctx.fillStyle = "#666";
-    const yTickVals = useLogY ? logScaleTicks(1, maxBin) : niceTicks(0, maxBin, 5);
-    for (const t of yTickVals) {
-      const y = margin.top + plotH * (1 - yFrac(t));
-      if (y < margin.top - 1 || y > margin.top + plotH + 1) continue;
-      ctx.beginPath();
-      ctx.moveTo(margin.left, y);
-      ctx.lineTo(margin.left + plotW, y);
-      ctx.stroke();
-      ctx.fillText(String(t), margin.left - 4, y);
-    }
-    const barGap = 1;
-    const barW = Math.max(1, (plotW - barGap * (binCount - 1)) / binCount);
-    for (let i = 0; i < binCount; i++) {
-      const barH = yFrac(bins[i]) * plotH;
-      const x = margin.left + i * (barW + barGap);
-      const y = margin.top + plotH - barH;
-      ctx.fillStyle = tierColor(binTier(i, binCount));
-      ctx.fillRect(x, y, barW, barH);
-    }
-    ctx.textAlign = "center";
-    ctx.textBaseline = "top";
-    ctx.fillStyle = "#666";
-    if (logX) {
-      if (logRange > 0) {
-        for (const val of logScaleTicks(dataMin, dataMax)) {
-          const frac = (Math.log10(val) - logMin) / logRange;
-          ctx.fillText(String(val), margin.left + frac * plotW, margin.top + plotH + 4);
-        }
-      } else {
-        ctx.fillText(String(dataMin), margin.left + plotW / 2, margin.top + plotH + 4);
-      }
-    } else {
-      const range = dataMax - dataMin;
-      if (range > 0) {
-        for (const val of niceTicks(dataMin, dataMax, 5)) {
-          const frac = (val - dataMin) / range;
-          ctx.fillText(String(val), margin.left + frac * plotW, margin.top + plotH + 4);
-        }
-      } else {
-        ctx.fillText(String(dataMin), margin.left + plotW / 2, margin.top + plotH + 4);
-      }
-    }
-    ctx.strokeStyle = "#999";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(margin.left, margin.top);
-    ctx.lineTo(margin.left, margin.top + plotH);
-    ctx.lineTo(margin.left + plotW, margin.top + plotH);
-    ctx.stroke();
-    if (numZeros > 0) {
-      ctx.fillStyle = "#999";
-      ctx.font = "9px monospace";
-      ctx.textAlign = "right";
-      ctx.textBaseline = "top";
-      ctx.fillText(numZeros + " empty", w - margin.right, 2);
-    }
-    ctx.font = "10px monospace";
-    ctx.fillStyle = "#888";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "bottom";
-    ctx.fillText("Reasoning length (chars)", margin.left + plotW / 2, h - 2);
-    ctx.save();
-    ctx.translate(12, margin.top + plotH / 2);
-    ctx.rotate(-Math.PI / 2);
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText("Count", 0, 0);
-    ctx.restore();
-  }
-  var LINE_PLOT_MARGIN = { top: 16, right: 12, bottom: 40, left: 52 };
-  function drawLinePlot(canvas2, reasoningData2, currentIdx, opts = {}) {
-    const { logY = false } = opts;
-    const { lengths, levelBoundaries, binAssignments, binCount } = reasoningData2;
-    const { ctx, w, h } = setupCtx(canvas2);
-    const margin = LINE_PLOT_MARGIN;
-    const plotW = w - margin.left - margin.right;
-    const plotH = h - margin.top - margin.bottom;
-    ctx.clearRect(0, 0, w, h);
-    const n = lengths.length;
-    if (n === 0) return;
-    const maxLen = Math.max(...lengths);
-    const yMax = maxLen > 0 ? maxLen : 1;
-    const nonZeroLengths = lengths.filter((l) => l > 0);
-    const useLogY = logY && maxLen > 1 && nonZeroLengths.length > 0;
-    const logYMin = useLogY ? Math.log10(Math.min(...nonZeroLengths)) : 0;
-    const logYMax = useLogY ? Math.log10(maxLen) : 1;
-    const logYRange = logYMax - logYMin || 1;
-    function toX(i) {
-      return margin.left + (n > 1 ? i / (n - 1) * plotW : plotW / 2);
-    }
-    function toY(val) {
-      if (useLogY) {
-        if (val <= 0) return margin.top + plotH;
-        return margin.top + plotH - (Math.log10(val) - logYMin) / logYRange * plotH;
-      }
-      return margin.top + plotH - val / yMax * plotH;
-    }
-    ctx.font = "10px monospace";
-    ctx.strokeStyle = "#eee";
-    ctx.lineWidth = 1;
-    const yTicks = useLogY ? logScaleTicks(Math.min(...nonZeroLengths), maxLen) : niceTicks(0, yMax, 5);
-    ctx.textAlign = "right";
-    ctx.textBaseline = "middle";
-    ctx.fillStyle = "#666";
-    for (const t of yTicks) {
-      const y = toY(t);
-      if (y < margin.top - 1 || y > margin.top + plotH + 1) continue;
-      ctx.beginPath();
-      ctx.moveTo(margin.left, y);
-      ctx.lineTo(margin.left + plotW, y);
-      ctx.stroke();
-      ctx.fillText(String(t), margin.left - 4, y);
-    }
-    const xTicks = niceTicks(0, n - 1, 7);
-    ctx.textAlign = "center";
-    ctx.textBaseline = "top";
-    for (const t of xTicks) {
-      if (t < 0 || t >= n) continue;
-      const x = toX(t);
-      ctx.beginPath();
-      ctx.moveTo(x, margin.top);
-      ctx.lineTo(x, margin.top + plotH);
-      ctx.stroke();
-      ctx.fillText(String(t + 1), x, margin.top + plotH + 4);
-    }
-    ctx.strokeStyle = "#999";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(margin.left, margin.top);
-    ctx.lineTo(margin.left, margin.top + plotH);
-    ctx.lineTo(margin.left + plotW, margin.top + plotH);
-    ctx.stroke();
-    if (levelBoundaries.length > 0) {
-      ctx.save();
-      ctx.setLineDash([4, 4]);
-      ctx.strokeStyle = "#bbb";
-      ctx.lineWidth = 1;
-      for (const bi of levelBoundaries) {
-        const x = toX(bi);
-        ctx.beginPath();
-        ctx.moveTo(x, margin.top);
-        ctx.lineTo(x, margin.top + plotH);
-        ctx.stroke();
-      }
-      ctx.restore();
-    }
-    ctx.lineWidth = 1.5;
-    if (binAssignments && n > 1) {
-      for (let i = 0; i < n - 1; i++) {
-        if (useLogY && (lengths[i] <= 0 || lengths[i + 1] <= 0)) continue;
-        const bi = binAssignments[i + 1];
-        ctx.strokeStyle = bi >= 0 ? tierColor(binTier(bi, binCount)) : "#ccc";
-        ctx.beginPath();
-        ctx.moveTo(toX(i), toY(lengths[i]));
-        ctx.lineTo(toX(i + 1), toY(lengths[i + 1]));
-        ctx.stroke();
-      }
-    } else {
-      ctx.strokeStyle = "#888";
-      ctx.beginPath();
-      let started = false;
-      for (let i = 0; i < n; i++) {
-        if (useLogY && lengths[i] <= 0) {
-          started = false;
-          continue;
-        }
-        if (!started) {
-          ctx.moveTo(toX(i), toY(lengths[i]));
-          started = true;
-        } else {
-          ctx.lineTo(toX(i), toY(lengths[i]));
-        }
-      }
-      ctx.stroke();
-    }
-    const ci = Math.min(currentIdx, n - 1);
-    if (ci >= 0) {
-      const cx = toX(ci);
-      ctx.strokeStyle = "rgba(204, 68, 68, 0.25)";
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(cx, margin.top);
-      ctx.lineTo(cx, margin.top + plotH);
-      ctx.stroke();
-      const cy = toY(lengths[ci]);
-      ctx.fillStyle = "#cc4444";
-      ctx.beginPath();
-      ctx.arc(cx, cy, 4, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = "#cc4444";
-      ctx.font = "bold 10px monospace";
-      ctx.textAlign = "left";
-      ctx.textBaseline = "bottom";
-      const labelX = cx + 6;
-      const labelY = cy - 4;
-      if (labelX + 40 > w) {
-        ctx.textAlign = "right";
-        ctx.fillText(String(lengths[ci]), cx - 6, labelY);
-      } else {
-        ctx.fillText(String(lengths[ci]), labelX, labelY);
-      }
-    }
-    ctx.font = "10px monospace";
-    ctx.fillStyle = "#888";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "bottom";
-    ctx.fillText("Step", margin.left + plotW / 2, h - 2);
-    ctx.save();
-    ctx.translate(12, margin.top + plotH / 2);
-    ctx.rotate(-Math.PI / 2);
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText("Reasoning length (chars)", 0, 0);
-    ctx.restore();
-  }
-
-  // replay-codec.js
-  function expandDeltaStates(data) {
-    if (!data.delta_encoded) return;
-    const states2 = data.states;
-    if (!states2 || states2.length < 2) {
-      delete data.delta_encoded;
-      return;
-    }
-    let prev = states2[0].sprites;
-    for (let i = 1; i < states2.length; i++) {
-      if (!("sprites" in states2[i])) {
-        states2[i].sprites = Object.assign({}, prev);
-      } else {
-        const merged = Object.assign({}, prev, states2[i].sprites);
-        for (const k in merged) {
-          if (merged[k] === null) delete merged[k];
-        }
-        states2[i].sprites = merged;
-      }
-      prev = states2[i].sprites;
-    }
-    delete data.delta_encoded;
-  }
-
-  // replay-main.js
-  setupRegistry();
-  function requireField(obj, name, context) {
-    if (obj === null || obj === void 0 || obj[name] === void 0) {
-      throw new Error(
-        `[replay-viewer] missing required field '${name}' in ${context}. Check the Python pipeline did not drop it.`
-      );
-    }
-    return obj[name];
-  }
-  var logData = null;
-  var states = [];
-  var replaySteps = [];
-  var currentStepIndex = 0;
-  var currentLevel = null;
-  var currentGame = null;
-  var activeLevel = null;
-  var playInterval = null;
-  var playSpeed = 20;
-  var isPersistent = false;
-  var loadedFileKey = null;
-  var loadedFileBlob = null;
-  var loadedFileName = null;
-  var loadedGridKey = null;
-  var conversationBuiltUpTo = -1;
-  var actionLogEntries = [];
-  var prevHighlightIdx = -1;
-  var urlUpdateTimer = null;
-  var reasoningData = null;
-  var chartLogX = false;
-  var chartLogY = false;
-  var stepToStateMap = [];
-  var isFrameMode = false;
-  var totalFrames = 0;
-  var frameToStepMap = [];
-  var stepToFrameMap = [];
-  var lastActionStepForFrame = [];
-  var activeGameDesc = null;
-  var dropZone = document.getElementById("file-drop-zone");
-  var loadingPanel = document.getElementById("replay-loading");
-  var loadingLabel = document.getElementById("loading-label");
-  var loadingDetail = document.getElementById("loading-detail");
-  var loadingFallbackLink = document.getElementById("loading-fallback-link");
-  var fileInput = document.getElementById("file-input");
-  var container = document.getElementById("replay-container");
-  var canvas = document.getElementById("game-canvas");
-  var renderer = new Renderer(canvas, 30);
-  var btnStepBack = document.getElementById("btn-step-back");
-  var btnReset = document.getElementById("btn-reset");
-  var btnPlayPause = document.getElementById("btn-play-pause");
-  var btnStepFwd = document.getElementById("btn-step-fwd");
-  var stepLabel = document.getElementById("step-label");
-  var speedSelect = document.getElementById("speed-select");
-  var scrubber = document.getElementById("step-scrubber");
-  var metadataPanel = document.getElementById("metadata-panel");
-  var metadataJsonEl = document.getElementById("metadata-json");
-  var metadataTabSummary = document.getElementById("metadata-tab-summary");
-  var metadataTabJson = document.getElementById("metadata-tab-json");
-  var metadataCopyBtn = document.getElementById("metadata-copy-btn");
-  var actionLogEl = document.getElementById("action-log");
-  var btnShare = document.getElementById("btn-share");
-  var reasoningChartsEl = document.getElementById("reasoning-charts");
-  var chartHistogramCanvas = document.getElementById("chart-histogram");
-  var chartLineCanvas = document.getElementById("chart-line");
-  var chartLogXBtn = document.getElementById("chart-log-x");
-  var chartLogYBtn = document.getElementById("chart-log-y");
-  var multiTurnLayout = document.getElementById("multi-turn-layout");
-  var conversationContent = document.getElementById("conversation-content");
-  var flapTabDesc = document.getElementById("flap-tab-desc");
-  var flapTabLevel = document.getElementById("flap-tab-level");
-  var flapPanelDesc = document.getElementById("flap-panel-desc");
-  var flapPanelLevel = document.getElementById("flap-panel-level");
-  var gameDescEl = document.getElementById("game-desc");
-  var levelTextEl = document.getElementById("level-text");
-  var dpadBtnsByAction = {
-    up: document.getElementById("dpad-up"),
-    down: document.getElementById("dpad-down"),
-    left: document.getElementById("dpad-left"),
-    right: document.getElementById("dpad-right"),
-    action: document.getElementById("dpad-space")
-  };
-  var dpadAllBtns = Object.values(dpadBtnsByAction);
-  var activeFlap = null;
-  function toggleFlap(which) {
-    if (activeFlap === which) {
-      activeFlap = null;
-      flapTabDesc.classList.remove("active");
-      flapTabLevel.classList.remove("active");
-      flapPanelDesc.classList.remove("open");
-      flapPanelLevel.classList.remove("open");
-      return;
-    }
-    activeFlap = which;
-    flapTabDesc.classList.toggle("active", which === "desc");
-    flapTabLevel.classList.toggle("active", which === "level");
-    flapPanelDesc.classList.toggle("open", which === "desc");
-    flapPanelLevel.classList.toggle("open", which === "level");
-  }
-  flapTabDesc.addEventListener("click", () => toggleFlap("desc"));
-  flapTabLevel.addEventListener("click", () => toggleFlap("level"));
-  dropZone.addEventListener("click", () => {
-    fileInput.click();
-  });
-  fileInput.addEventListener("change", (e) => {
-    if (e.target.files.length > 0) handleFile(e.target.files[0]);
-  });
-  dropZone.addEventListener("dragover", (e) => {
-    e.preventDefault();
-    dropZone.classList.add("dragover");
-  });
-  dropZone.addEventListener("dragleave", () => {
-    dropZone.classList.remove("dragover");
-  });
-  dropZone.addEventListener("drop", (e) => {
-    e.preventDefault();
-    dropZone.classList.remove("dragover");
-    if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
-  });
-  async function handleFile(file) {
-    loadedFileBlob = file;
-    loadedFileName = file.name;
-    loadedFileKey = null;
-    let text;
-    if (file.name.endsWith(".gz")) {
-      const ds = new DecompressionStream("gzip");
-      const decompressed = file.stream().pipeThrough(ds);
-      text = await new Response(decompressed).text();
-    } else {
-      text = await file.text();
-    }
-    const jsonObj = JSON.parse(text);
-    expandDeltaStates(jsonObj);
-    loadLog(jsonObj);
-  }
-  function buildStepToStateMap(steps, totalStates, source) {
-    const hasStateIndex = steps.length > 0 && steps[0].state_index !== void 0;
-    if (hasStateIndex) {
-      const map2 = [];
-      for (let i = 0; i < steps.length; i++) {
-        map2.push(steps[i].state_index);
-      }
-      map2.push(totalStates - 1);
-      return map2;
-    }
-    const map = [];
-    let offset = 0;
-    for (let i = 0; i < steps.length; i++) {
-      if (i > 0) {
-        const prev = steps[i - 1];
-        const curr = steps[i];
-        if (curr.level !== prev.level || curr.attempt !== prev.attempt) {
-          offset++;
-        }
-      }
-      map.push(i + offset);
-    }
-    map.push(steps.length + offset);
-    return map;
-  }
-  function buildFrameMaps(steps, numStates) {
-    const f2s = new Array(numStates).fill(-1);
-    const s2f = [];
-    const lastAction = new Array(numStates).fill(-1);
-    for (let i = 0; i < steps.length; i++) {
-      const si = steps[i].state_index;
-      f2s[si] = i;
-      s2f.push(si);
-    }
-    let last = -1;
-    for (let f = 0; f < numStates; f++) {
-      if (f2s[f] >= 0) last = f2s[f];
-      lastAction[f] = last;
-    }
-    return { frameToStepMap: f2s, stepToFrameMap: s2f, lastActionStepForFrame: lastAction };
-  }
-  function loadLog(jsonObj) {
-    if (!jsonObj.states || !Array.isArray(jsonObj.states)) {
-      alert('Invalid replay file: missing "states" array. Run export_replay first.');
-      return;
-    }
-    if (!jsonObj.game || !GAMES[jsonObj.game]) {
-      alert("Unknown game: " + (jsonObj.game || "(none)") + ". Not found in GAMES registry.");
-      return;
-    }
-    logData = jsonObj;
-    states = jsonObj.states;
-    replaySteps = jsonObj.steps || [];
-    stepToStateMap = buildStepToStateMap(replaySteps, states.length, jsonObj.source);
-    const hasStateIndex = replaySteps.length > 0 && replaySteps[0].state_index !== void 0;
-    isFrameMode = hasStateIndex && states.length > replaySteps.length;
-    if (isFrameMode) {
-      totalFrames = states.length;
-      const maps = buildFrameMaps(replaySteps, states.length);
-      frameToStepMap = maps.frameToStepMap;
-      stepToFrameMap = maps.stepToFrameMap;
-      lastActionStepForFrame = maps.lastActionStepForFrame;
-    } else {
-      totalFrames = 0;
-      frameToStepMap = [];
-      stepToFrameMap = [];
-      lastActionStepForFrame = [];
-    }
-    isPersistent = !!(jsonObj.meta && jsonObj.meta.persistent);
-    multiTurnLayout.style.display = "flex";
-    dropZone.style.display = "none";
-    loadingPanel.style.display = "none";
-    loadingPanel.classList.remove("error");
-    container.classList.add("visible");
-    btnShare.style.display = "inline-block";
-    populateMetadata();
-    scrubber.min = 0;
-    scrubber.max = isFrameMode ? totalFrames - 1 : replaySteps.length;
-    scrubber.value = 0;
-    buildActionLog();
-    reasoningData = computeReasoningData(replaySteps);
-    if (reasoningData.hasAny) {
-      reasoningChartsEl.classList.add("visible");
-      redrawCharts(0);
-    } else {
-      reasoningChartsEl.classList.remove("visible");
-    }
-    conversationBuiltUpTo = -1;
-    const gameData = GAMES[logData.game];
-    const desc = jsonObj.game_description || gameData.description;
-    activeGameDesc = desc;
-    gameDescEl.value = desc;
-    activeLevel = null;
-    goToStep(0);
-  }
-  function buildLevelIfNeeded(levelNum) {
-    if (activeLevel === levelNum) return;
-    const gameData = GAMES[logData.game];
-    const parser = new VGDLParser();
-    currentGame = parser.parseGame(activeGameDesc || gameData.description);
-    const lvlStr = gameData.levels[levelNum];
-    if (!lvlStr) {
-      console.error("Level", levelNum, "not found for game", logData.game);
-      return;
-    }
-    currentLevel = currentGame.buildLevel(lvlStr);
-    activeLevel = levelNum;
-    levelTextEl.value = lvlStr;
-    renderer.resize(currentLevel.width, currentLevel.height);
-  }
-  function gridStateToPixelState(gridState, blockSize) {
-    const pixelSprites = {};
-    for (const [key, spriteList] of Object.entries(gridState.sprites)) {
-      pixelSprites[key] = spriteList.map((s) => ({
-        id: s.id,
-        key: s.key,
-        x: s.col * blockSize,
-        y: s.row * blockSize,
-        w: blockSize,
-        h: blockSize,
-        alive: s.alive,
-        resources: s.resources || {},
-        speed: s.speed,
-        cooldown: s.cooldown,
-        orientation: s.orientation,
-        _age: s._age,
-        lastmove: s.lastmove
-      }));
-    }
-    return {
-      score: gridState.score,
-      time: gridState.time,
-      sprites: pixelSprites
-    };
-  }
-  function goToStep(index) {
-    if (isFrameMode) {
-      if (index < 0) index = 0;
-      if (index >= totalFrames) index = totalFrames - 1;
-      currentStepIndex = index;
-      const actionIdx = lastActionStepForFrame[index];
-      let levelNum2;
-      if (actionIdx >= 0) {
-        levelNum2 = replaySteps[actionIdx].level !== void 0 ? replaySteps[actionIdx].level : logData.start_level || 0;
-      } else {
-        levelNum2 = replaySteps.length > 0 && replaySteps[0].level !== void 0 ? replaySteps[0].level : logData.start_level || 0;
-      }
-      buildLevelIfNeeded(levelNum2);
-      if (index < 0 || index >= states.length) return;
-      const gridState2 = states[index];
-      const blockSize2 = currentLevel.block_size;
-      const pixelState2 = gridStateToPixelState(gridState2, blockSize2);
-      currentLevel.setGameState(pixelState2);
-      const frameCtx = `states[${index}] (frame mode)`;
-      currentLevel.ended = requireField(gridState2, "ended", frameCtx);
-      currentLevel.won = requireField(gridState2, "won", frameCtx);
-      currentLevel.lose = requireField(gridState2, "lose", frameCtx);
-      currentLevel.timeout = requireField(gridState2, "timeout", frameCtx);
-      currentLevel.score = requireField(gridState2, "score", frameCtx);
-      currentLevel.time = requireField(gridState2, "time", frameCtx);
-      renderer.render(currentLevel);
-      updateStepLabel();
-      updateThoughtPanel();
-      updateActionLogHighlight();
-      updateDpadHighlight();
-      scrubber.value = index;
-      updateUrlParams();
-      if (reasoningData && reasoningData.hasAny) {
-        const stepIdx = actionIdx >= 0 ? actionIdx : 0;
-        redrawCharts(stepIdx);
-      }
-      return;
-    }
-    const maxIdx = replaySteps.length;
-    if (index < 0) index = 0;
-    if (index > maxIdx) index = maxIdx;
-    currentStepIndex = index;
-    let levelNum;
-    if (index < replaySteps.length) {
-      levelNum = replaySteps[index].level !== void 0 ? replaySteps[index].level : logData.start_level || 0;
-    } else {
-      const lastStep = replaySteps[replaySteps.length - 1];
-      levelNum = lastStep.level !== void 0 ? lastStep.level : logData.start_level || 0;
-    }
-    buildLevelIfNeeded(levelNum);
-    const stateIdx = stepToStateMap[index];
-    if (stateIdx < 0 || stateIdx >= states.length) return;
-    const gridState = states[stateIdx];
-    const blockSize = currentLevel.block_size;
-    const pixelState = gridStateToPixelState(gridState, blockSize);
-    currentLevel.setGameState(pixelState);
-    const stepCtx = `states[${stateIdx}] (step mode)`;
-    currentLevel.ended = requireField(gridState, "ended", stepCtx);
-    currentLevel.won = requireField(gridState, "won", stepCtx);
-    currentLevel.lose = requireField(gridState, "lose", stepCtx);
-    currentLevel.timeout = requireField(gridState, "timeout", stepCtx);
-    currentLevel.score = requireField(gridState, "score", stepCtx);
-    currentLevel.time = requireField(gridState, "time", stepCtx);
-    renderer.render(currentLevel);
-    updateStepLabel();
-    updateThoughtPanel();
-    updateActionLogHighlight();
-    updateDpadHighlight();
-    scrubber.value = index;
-    updateUrlParams();
-    if (reasoningData && reasoningData.hasAny) {
-      redrawCharts(currentStepIndex);
-    }
-  }
-  function stepForward() {
-    goToStep(currentStepIndex + 1);
-  }
-  function stepBackward() {
-    goToStep(currentStepIndex - 1);
-  }
-  function togglePlayback() {
-    if (playInterval !== null) {
-      stopPlayback();
-    } else {
-      startPlayback();
-    }
-  }
-  function startPlayback() {
-    if (playInterval !== null) return;
-    btnPlayPause.textContent = "Pause";
-    playSpeed = Number(speedSelect.value) || 20;
-    playInterval = setInterval(() => {
-      const maxIndex = isFrameMode ? totalFrames - 1 : replaySteps.length;
-      if (currentStepIndex >= maxIndex) {
-        stopPlayback();
-        return;
-      }
-      stepForward();
-    }, 1e3 / playSpeed);
-  }
-  function stopPlayback() {
-    if (playInterval !== null) {
-      clearInterval(playInterval);
-      playInterval = null;
-    }
-    btnPlayPause.textContent = "Play";
-  }
-  function updateStepLabel() {
-    if (isFrameMode) {
-      const frameNum = currentStepIndex;
-      const actionIdx = lastActionStepForFrame[frameNum];
-      const isAction = frameToStepMap[frameNum] >= 0;
-      const stepInfo = actionIdx >= 0 ? replaySteps[actionIdx] : null;
-      const lvl = stepInfo && stepInfo.level !== void 0 ? stepInfo.level : "?";
-      const att = stepInfo && stepInfo.attempt !== void 0 ? stepInfo.attempt : "?";
-      const tag = isAction ? "ACTION" : "NO-OP";
-      stepLabel.textContent = "Frame " + (frameNum + 1) + " / " + totalFrames + " [" + tag + "] (L" + lvl + " A" + att + ")";
-      return;
-    }
-    const total = replaySteps.length;
-    if (currentStepIndex >= total) {
-      stepLabel.textContent = "Final / " + total + " steps";
-    } else {
-      const step = replaySteps[currentStepIndex];
-      const lvl = step.level !== void 0 ? step.level : "?";
-      const att = step.attempt !== void 0 ? step.attempt : "?";
-      stepLabel.textContent = "Step " + (currentStepIndex + 1) + " / " + total + " (L" + lvl + " A" + att + ")";
-    }
-  }
-  function updateThoughtPanel() {
-    updateMultiTurnPanel();
-  }
-  function reconstructMtUserContent(steps, idx) {
-    const step = steps[idx];
-    if (step.user_prompt !== void 0) return step.user_prompt;
-    const ctx = `steps[${idx}]`;
-    const stepNum = requireField(step, "step", ctx);
-    const level = requireField(step, "level", ctx);
-    const attempt = requireField(step, "attempt", ctx);
-    const parts = [];
-    appendTrialTransition(parts, steps, idx, level, attempt);
-    parts.push("# Step " + stepNum + " (Level " + level + ", Attempt " + attempt + ")");
-    parts.push("");
-    parts.push(requireField(step, "formatted_obs", ctx));
-    return parts.join("\n");
-  }
-  function appendTrialTransition(parts, steps, idx, level, attempt) {
-    let prevReal = null;
-    let prevRealIdx = -1;
-    for (let j = idx - 1; j >= 0; j--) {
-      const s = steps[j];
-      const action = requireField(s, "action", `steps[${j}]`);
-      if (!action.startsWith("_")) {
-        prevReal = s;
-        prevRealIdx = j;
-        break;
-      }
-    }
-    if (prevReal === null) return;
-    const prevCtx = `steps[${prevRealIdx}]`;
-    const prevLevel = requireField(prevReal, "level", prevCtx);
-    const prevAttempt = requireField(prevReal, "attempt", prevCtx);
-    if (prevLevel === level && prevAttempt === attempt) return;
-    let prevOutcome = "";
-    if (requireField(prevReal, "won", prevCtx)) prevOutcome = "won";
-    else if (requireField(prevReal, "lose", prevCtx)) prevOutcome = "died";
-    else if (requireField(prevReal, "timeout", prevCtx)) prevOutcome = "timeout";
-    let prevScore = 0;
-    for (let j = prevRealIdx; j >= 0; j--) {
-      const s = steps[j];
-      const action = requireField(s, "action", `steps[${j}]`);
-      if (action.startsWith("_")) continue;
-      const lvl = requireField(s, "level", `steps[${j}]`);
-      const att = requireField(s, "attempt", `steps[${j}]`);
-      if (lvl === prevLevel && att === prevAttempt) {
-        prevScore += requireField(s, "reward", `steps[${j}]`);
-      } else {
-        break;
-      }
-    }
-    if (prevOutcome) {
-      parts.push("--- TRIAL ENDED outcome: " + prevOutcome + ", score: " + prevScore + " ---");
-      parts.push("");
-    }
-    parts.push("--- NEW TRIAL (Level " + level + ", Attempt " + attempt + ") ---");
-    parts.push("");
-  }
-  function updateMultiTurnPanel() {
-    let actionIdx;
-    if (isFrameMode) {
-      actionIdx = lastActionStepForFrame[currentStepIndex];
-      if (actionIdx < 0) {
-        buildConversation(-1);
-        return;
-      }
-    } else {
-      actionIdx = currentStepIndex < replaySteps.length ? currentStepIndex : replaySteps.length;
-    }
-    buildConversation(actionIdx);
-  }
-  function buildConversationTurnPair(i) {
-    const step = replaySteps[i];
-    const frag = document.createDocumentFragment();
-    const userDiv = document.createElement("div");
-    userDiv.className = "msg msg-user";
-    const userLabel = document.createElement("div");
-    userLabel.className = "msg-label";
-    userLabel.textContent = "User (Step " + step.step + ")";
-    userDiv.appendChild(userLabel);
-    const userText = document.createElement("div");
-    userText.textContent = reconstructMtUserContent(replaySteps, i);
-    userDiv.appendChild(userText);
-    frag.appendChild(userDiv);
-    const response = step.response || {};
-    const assistantDiv = document.createElement("div");
-    assistantDiv.className = "msg msg-assistant";
-    const assistantLabel = document.createElement("div");
-    assistantLabel.className = "msg-label";
-    assistantLabel.textContent = "Assistant (Step " + step.step + ")";
-    assistantDiv.appendChild(assistantLabel);
-    const parts = [];
-    const rationale = response.rationale;
-    if (rationale) parts.push(rationale);
-    if (response.action) parts.push("Action: " + response.action);
-    const assistantText = document.createElement("div");
-    assistantText.textContent = parts.join("\n\n") || "--";
-    assistantDiv.appendChild(assistantText);
-    frag.appendChild(assistantDiv);
-    return frag;
-  }
-  function isSyntheticStep(step) {
-    return step && typeof step.action === "string" && step.action.startsWith("_");
-  }
-  function countRealSteps(fromIdx, toIdx) {
-    let n = 0;
-    for (let i = fromIdx; i <= toIdx; i++) {
-      if (!isSyntheticStep(replaySteps[i])) n++;
-    }
-    return n;
-  }
-  function buildConversation(upToIndex) {
-    const end = Math.min(upToIndex, replaySteps.length - 1);
-    if (conversationBuiltUpTo < 0) {
-      conversationContent.innerHTML = "";
-      const sysPrompt = logData.system_prompt;
-      if (sysPrompt) {
-        const sysDiv = document.createElement("div");
-        sysDiv.className = "msg msg-system";
-        const sysLabel = document.createElement("div");
-        sysLabel.className = "msg-label";
-        sysLabel.textContent = "System";
-        sysDiv.appendChild(sysLabel);
-        const sysText = document.createElement("div");
-        sysText.textContent = sysPrompt;
-        sysDiv.appendChild(sysText);
-        conversationContent.appendChild(sysDiv);
-      }
-      for (let i = 0; i <= end; i++) {
-        if (isSyntheticStep(replaySteps[i])) continue;
-        conversationContent.appendChild(buildConversationTurnPair(i));
-      }
-      conversationBuiltUpTo = end;
-      conversationContent.scrollTop = conversationContent.scrollHeight;
-      return;
-    }
-    if (end > conversationBuiltUpTo) {
-      for (let i = conversationBuiltUpTo + 1; i <= end; i++) {
-        if (isSyntheticStep(replaySteps[i])) continue;
-        conversationContent.appendChild(buildConversationTurnPair(i));
-      }
-      conversationBuiltUpTo = end;
-      conversationContent.scrollTop = conversationContent.scrollHeight;
-      return;
-    }
-    if (end < conversationBuiltUpTo) {
-      const removePairs = countRealSteps(end + 1, conversationBuiltUpTo);
-      for (let i = 0; i < removePairs * 2; i++) {
-        conversationContent.removeChild(conversationContent.lastChild);
-      }
-      conversationBuiltUpTo = end;
-    }
-  }
-  function buildActionLog() {
-    actionLogEl.innerHTML = "";
-    actionLogEntries = [];
-    prevHighlightIdx = -1;
-    if (isFrameMode) {
-      let prevLevel2 = null;
-      let prevAttempt2 = null;
-      for (let f = 0; f < totalFrames; f++) {
-        const stepIdx = frameToStepMap[f];
-        const stateCtx = `states[${f}]`;
-        const lvl = requireField(states[f], "level", stateCtx);
-        const att = requireField(states[f], "attempt", stateCtx);
-        if (lvl !== prevLevel2 || att !== prevAttempt2) {
-          if (prevLevel2 !== null) {
-            const sep = document.createElement("div");
-            sep.className = "log-separator";
-            sep.textContent = "--- Level " + lvl + ", Attempt " + att + " ---";
-            actionLogEl.appendChild(sep);
-          }
-          prevLevel2 = lvl;
-          prevAttempt2 = att;
-        }
-        const entry = document.createElement("div");
-        entry.className = "log-entry";
-        entry.dataset.index = f;
-        const frameTag = "[F" + (f + 1) + "]";
-        if (stepIdx >= 0) {
-          const step = replaySteps[stepIdx];
-          const ctx = `replaySteps[${stepIdx}]`;
-          const lvl2 = requireField(step, "level", ctx);
-          const att2 = requireField(step, "attempt", ctx);
-          const stepNum = requireField(step, "step", ctx);
-          const actionName = requireField(step, "action", ctx).toUpperCase();
-          const stepTag = "[L" + lvl2 + " A" + att2 + " #" + stepNum + "]";
-          const sourceLog = requireField(step, "action_log", ctx);
-          const arrowIdx = sourceLog.indexOf(" -> ");
-          const result = arrowIdx >= 0 ? " -> " + sourceLog.substring(arrowIdx + 4) : "";
-          entry.textContent = frameTag + stepTag + " " + actionName + result;
-        } else {
-          const frameState = states[f];
-          const frameDiff = frameState && frameState.action_log;
-          if (frameDiff) {
-            const arrowIdx = frameDiff.indexOf(" -> ");
-            const result = arrowIdx >= 0 ? frameDiff.substring(arrowIdx + 4) : "";
-            if (result && result !== "no change") {
-              entry.textContent = frameTag + " NO-OP -> " + result;
-            } else {
-              entry.textContent = frameTag + " NO-OP";
-            }
-          } else {
-            entry.textContent = frameTag + " NO-OP";
-          }
-          entry.classList.add("noop-entry");
-        }
-        entry.addEventListener("click", () => {
-          stopPlayback();
-          goToStep(f);
-        });
-        actionLogEl.appendChild(entry);
-        actionLogEntries.push(entry);
-      }
-      return;
-    }
-    let prevLevel = null;
-    let prevAttempt = null;
-    for (let i = 0; i < replaySteps.length; i++) {
-      const step = replaySteps[i];
-      const ctx = `replaySteps[${i}]`;
-      const lvl = requireField(step, "level", ctx);
-      const att = requireField(step, "attempt", ctx);
-      if (lvl !== prevLevel || att !== prevAttempt) {
-        if (prevLevel !== null) {
-          const sep = document.createElement("div");
-          sep.className = "log-separator";
-          sep.textContent = "--- Level " + lvl + ", Attempt " + att + " ---";
-          actionLogEl.appendChild(sep);
-        }
-        prevLevel = lvl;
-        prevAttempt = att;
-      }
-      const entry = document.createElement("div");
-      entry.className = "log-entry";
-      entry.dataset.index = i;
-      entry.textContent = requireField(step, "action_log", ctx);
-      entry.addEventListener("click", () => {
-        stopPlayback();
-        goToStep(i);
-      });
-      actionLogEl.appendChild(entry);
-      actionLogEntries.push(entry);
-    }
-  }
-  function updateActionLogHighlight() {
-    if (prevHighlightIdx >= 0 && prevHighlightIdx < actionLogEntries.length) {
-      actionLogEntries[prevHighlightIdx].classList.remove("current-step");
-    }
-    if (currentStepIndex >= 0 && currentStepIndex < actionLogEntries.length) {
-      const entry = actionLogEntries[currentStepIndex];
-      entry.classList.add("current-step");
-      const containerRect = actionLogEl.getBoundingClientRect();
-      const entryRect = entry.getBoundingClientRect();
-      if (entryRect.top < containerRect.top) {
-        actionLogEl.scrollTop -= containerRect.top - entryRect.top;
-      } else if (entryRect.bottom > containerRect.bottom) {
-        actionLogEl.scrollTop += entryRect.bottom - containerRect.bottom;
-      }
-    }
-    prevHighlightIdx = currentStepIndex;
-  }
-  function updateDpadHighlight() {
-    let action = null;
-    if (isFrameMode) {
-      const stepIdx = frameToStepMap[currentStepIndex];
-      if (stepIdx >= 0) action = (replaySteps[stepIdx].action || "").toLowerCase();
-    } else if (currentStepIndex < replaySteps.length) {
-      action = (replaySteps[currentStepIndex].action || "").toLowerCase();
-    }
-    for (const btn of dpadAllBtns) btn.classList.remove("active");
-    const activeBtn = action ? dpadBtnsByAction[action] : null;
-    if (activeBtn) activeBtn.classList.add("active");
-  }
-  btnStepBack.addEventListener("click", () => {
-    stopPlayback();
-    stepBackward();
-  });
-  btnReset.addEventListener("click", () => {
-    stopPlayback();
-    window.location.href = window.location.pathname;
-  });
-  function selectMetadataTab(tab) {
-    const isJson = tab === "json";
-    metadataTabSummary.classList.toggle("active", !isJson);
-    metadataTabJson.classList.toggle("active", isJson);
-    metadataPanel.style.display = isJson ? "none" : "grid";
-    metadataJsonEl.style.display = isJson ? "block" : "none";
-    metadataCopyBtn.style.display = isJson ? "inline-block" : "none";
-  }
-  metadataTabSummary.addEventListener("click", () => selectMetadataTab("summary"));
-  metadataTabJson.addEventListener("click", () => selectMetadataTab("json"));
-  metadataCopyBtn.addEventListener("click", async () => {
-    await navigator.clipboard.writeText(metadataJsonEl.textContent);
-    const original = metadataCopyBtn.textContent;
-    metadataCopyBtn.textContent = "Copied!";
-    setTimeout(() => {
-      metadataCopyBtn.textContent = original;
-    }, 1500);
-  });
-  btnStepFwd.addEventListener("click", () => {
-    stopPlayback();
-    stepForward();
-  });
-  btnPlayPause.addEventListener("click", () => togglePlayback());
-  speedSelect.addEventListener("change", () => {
-    if (playInterval !== null) {
-      stopPlayback();
-      startPlayback();
-    }
-  });
-  scrubber.addEventListener("input", () => {
-    stopPlayback();
-    goToStep(Number(scrubber.value));
-  });
-  function redrawCharts(stepIdx) {
-    if (!reasoningData || !reasoningData.hasAny) return;
-    drawHistogram(chartHistogramCanvas, reasoningData, { logX: chartLogX, logY: chartLogY });
-    drawLinePlot(chartLineCanvas, reasoningData, stepIdx ?? currentStepIndex, { logY: chartLogX });
-  }
-  chartLogXBtn.addEventListener("click", () => {
-    chartLogX = !chartLogX;
-    chartLogXBtn.classList.toggle("active", chartLogX);
-    redrawCharts();
-  });
-  chartLogYBtn.addEventListener("click", () => {
-    chartLogY = !chartLogY;
-    chartLogYBtn.classList.toggle("active", chartLogY);
-    redrawCharts();
-  });
-  chartLineCanvas.addEventListener("click", (e) => {
-    if (!reasoningData || !reasoningData.hasAny || replaySteps.length === 0) return;
-    const rect = chartLineCanvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const plotW = rect.width - LINE_PLOT_MARGIN.left - LINE_PLOT_MARGIN.right;
-    const frac = (x - LINE_PLOT_MARGIN.left) / plotW;
-    const stepIdx = Math.round(frac * (replaySteps.length - 1));
-    if (stepIdx >= 0 && stepIdx < replaySteps.length) {
-      stopPlayback();
-      goToStep(isFrameMode ? stepToFrameMap[stepIdx] : stepIdx);
-    }
-  });
-  document.addEventListener("keydown", (e) => {
-    const tag = e.target.tagName;
-    if (tag === "TEXTAREA" || tag === "INPUT" || tag === "SELECT") return;
-    if (!logData) return;
-    switch (e.key) {
-      case "ArrowLeft":
-        e.preventDefault();
-        stopPlayback();
-        stepBackward();
-        break;
-      case "ArrowRight":
-        e.preventDefault();
-        stopPlayback();
-        stepForward();
-        break;
-      case " ":
-        e.preventDefault();
-        togglePlayback();
-        break;
-      case "Home":
-        e.preventDefault();
-        stopPlayback();
-        goToStep(0);
-        break;
-      case "End":
-        e.preventDefault();
-        stopPlayback();
-        goToStep(isFrameMode ? totalFrames - 1 : replaySteps.length);
-        break;
-    }
-  });
-  function formatMetaValue(value) {
-    if (value === null || value === void 0) return "--";
-    if (typeof value === "boolean") return value ? "yes" : "no";
-    if (typeof value === "number") {
-      if (Number.isFinite(value) && !Number.isInteger(value)) return value.toFixed(4);
-      return String(value);
-    }
-    if (typeof value === "object") return JSON.stringify(value);
-    return String(value);
-  }
-  var METADATA_EXCLUDE = /* @__PURE__ */ new Set(["states", "steps"]);
-  function collectMetadataEntries() {
-    const entries = [];
-    for (const [key, value] of Object.entries(logData)) {
-      if (METADATA_EXCLUDE.has(key)) continue;
-      if (key === "meta" && value && typeof value === "object" && !Array.isArray(value)) {
-        for (const [mk, mv] of Object.entries(value)) {
-          entries.push([`meta.${mk}`, mv]);
-        }
-      } else {
-        entries.push([key, value]);
-      }
-    }
-    entries.sort(([a], [b]) => a.localeCompare(b));
-    return entries;
-  }
-  function collectMetadataObject() {
-    const obj = {};
-    for (const [key, value] of Object.entries(logData)) {
-      if (METADATA_EXCLUDE.has(key)) continue;
-      obj[key] = value;
-    }
-    return obj;
-  }
-  function populateMetadata() {
-    metadataPanel.innerHTML = "";
-    for (const [key, value] of collectMetadataEntries()) {
-      const keyEl = document.createElement("span");
-      keyEl.className = "meta-key";
-      keyEl.textContent = key;
-      const valEl = document.createElement("span");
-      valEl.className = "meta-val";
-      valEl.textContent = formatMetaValue(value);
-      metadataPanel.appendChild(keyEl);
-      metadataPanel.appendChild(valEl);
-    }
-    metadataJsonEl.textContent = JSON.stringify(collectMetadataObject(), null, 2);
-  }
-  function updateUrlParams() {
-    if (!loadedGridKey && !loadedFileKey) return;
-    clearTimeout(urlUpdateTimer);
-    urlUpdateTimer = setTimeout(function() {
-      const params = new URLSearchParams();
-      if (loadedGridKey) {
-        params.set("grid-key", loadedGridKey);
-      } else {
-        params.set("file", loadedFileKey);
-      }
-      params.set("step", String(currentStepIndex));
-      history.replaceState(null, "", "?" + params.toString());
-    }, 200);
-  }
-  function buildShareUrl() {
-    const params = new URLSearchParams();
-    if (loadedGridKey) {
-      params.set("grid-key", loadedGridKey);
-    } else {
-      params.set("file", loadedFileKey);
-    }
-    params.set("step", String(currentStepIndex));
-    return window.location.origin + "/replay.html?" + params.toString();
-  }
-  function flashShareButton(msg) {
-    btnShare.textContent = msg;
-    btnShare.disabled = false;
-    setTimeout(function() {
-      btnShare.textContent = "Share";
-    }, 2e3);
-  }
-  async function shareReplay() {
-    if (loadedGridKey || loadedFileKey) {
-      const url = buildShareUrl();
-      await navigator.clipboard.writeText(url);
-      flashShareButton("Link copied!");
-      return;
-    }
-    if (!loadedFileBlob) return;
-    btnShare.textContent = "Uploading...";
-    btnShare.disabled = true;
-    const resp = await fetch("/_api/upload-url?filename=" + encodeURIComponent(loadedFileName));
-    if (!resp.ok) {
-      alert("Failed to get upload URL: " + resp.status + " " + resp.statusText);
-      btnShare.textContent = "Share";
-      btnShare.disabled = false;
-      return;
-    }
-    const data = await resp.json();
-    const putResp = await fetch(data.uploadUrl, { method: "PUT", body: loadedFileBlob });
-    if (!putResp.ok) {
-      alert("Upload failed: " + putResp.status + " " + putResp.statusText);
-      btnShare.textContent = "Share";
-      btnShare.disabled = false;
-      return;
-    }
-    loadedFileKey = data.key;
-    updateUrlParams();
-    const shareUrl = buildShareUrl();
-    await navigator.clipboard.writeText(shareUrl);
-    flashShareButton("Link copied!");
-  }
-  btnShare.addEventListener("click", shareReplay);
-  function showLoading(label, detail) {
-    dropZone.style.display = "none";
-    loadingPanel.classList.remove("error");
-    loadingPanel.style.display = "block";
-    loadingLabel.textContent = label;
-    loadingDetail.textContent = detail || "";
-  }
-  function showLoadError(label, detail) {
-    loadingPanel.classList.add("error");
-    loadingPanel.style.display = "block";
-    loadingLabel.textContent = label;
-    loadingDetail.textContent = detail || "";
-  }
-  loadingFallbackLink.addEventListener("click", function() {
-    loadingPanel.style.display = "none";
-    loadingPanel.classList.remove("error");
-    dropZone.style.display = "";
-  });
-  async function loadReplayLocal(s3Key) {
-    if (!window.__REPLAY_GZ__?.[s3Key]) {
-      const jsPath = "catalogue-data/" + s3Key.replace(".replay.json.gz", ".replay.js");
-      await new Promise((resolve, reject) => {
-        const sc = document.createElement("script");
-        sc.src = jsPath;
-        sc.onload = resolve;
-        sc.onerror = () => reject(new Error("Failed to load replay script: " + jsPath));
-        document.head.appendChild(sc);
-      });
-    }
-    const b64 = window.__REPLAY_GZ__?.[s3Key];
-    if (!b64) throw new Error("Replay data missing after load: " + s3Key);
-    const binary = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
-    const ds = new DecompressionStream("gzip");
-    const writer = ds.writable.getWriter();
-    writer.write(binary);
-    writer.close();
-    const text = await new Response(ds.readable).text();
-    const data = JSON.parse(text);
-    expandDeltaStates(data);
-    return data;
-  }
-  (async function() {
-    const params = new URLSearchParams(window.location.search);
-    const fileParam = params.get("file");
-    const urlParam = params.get("url");
-    const gridKeyParam = params.get("grid-key");
-    const localKeyParam = params.get("local-key");
-    if (!localKeyParam && !gridKeyParam && !urlParam && !fileParam) {
-      return;
-    }
-    function shortDetail(key) {
-      if (!key) return "";
-      const slash = key.lastIndexOf("/");
-      return slash >= 0 ? key.substring(slash + 1) : key;
-    }
-    let fetchUrl;
-    let isGz;
-    let detail = "";
-    try {
-      if (localKeyParam) {
-        showLoading("Loading local replay...", shortDetail(localKeyParam));
-        const replayData = await loadReplayLocal(localKeyParam);
-        loadedGridKey = localKeyParam;
-        loadLog(replayData);
-        const localStepParam = params.get("step");
-        if (localStepParam !== null) goToStep(parseInt(localStepParam, 10));
-        return;
-      } else if (gridKeyParam) {
-        showLoading("Resolving share URL...", shortDetail(gridKeyParam));
-        const resp = await fetch(
-          "/grid-api/replay-url?key=" + encodeURIComponent(gridKeyParam)
-        );
-        if (!resp.ok) {
-          showLoadError(
-            "Failed to resolve grid replay URL",
-            "HTTP " + resp.status + " " + resp.statusText
-          );
-          return;
-        }
-        const data = await resp.json();
-        fetchUrl = data.url;
-        isGz = gridKeyParam.endsWith(".gz");
-        detail = shortDetail(gridKeyParam);
-      } else if (urlParam) {
-        fetchUrl = urlParam;
-        isGz = urlParam.split("?")[0].endsWith(".gz");
-        detail = shortDetail(urlParam.split("?")[0]);
-      } else {
-        fetchUrl = "/" + fileParam;
-        isGz = fileParam.endsWith(".gz");
-        detail = shortDetail(fileParam);
-      }
-      showLoading("Downloading replay...", detail);
-      const response = await fetch(fetchUrl);
-      if (!response.ok) {
-        showLoadError(
-          "Failed to download replay",
-          "HTTP " + response.status + " " + response.statusText
-        );
-        return;
-      }
-      let text;
-      if (isGz) {
-        showLoading("Decompressing...", detail);
-        const ds = new DecompressionStream("gzip");
-        const decompressed = response.body.pipeThrough(ds);
-        text = await new Response(decompressed).text();
-      } else {
-        text = await response.text();
-      }
-      showLoading("Parsing...", detail);
-      const jsonObj = JSON.parse(text);
-      expandDeltaStates(jsonObj);
-      loadedGridKey = gridKeyParam || null;
-      loadedFileKey = fileParam || null;
-      loadLog(jsonObj);
-      const stepParam = params.get("step");
-      if (stepParam !== null) {
-        goToStep(parseInt(stepParam, 10));
-      }
-    } catch (e) {
-      showLoadError("Error loading replay", String(e));
-      console.error(e);
-    }
-  })();
-})();
+`)||"--",l.appendChild(p),e.appendChild(l),e}function Dt(t){return t&&typeof t.action=="string"&&t.action.startsWith("_")}function zo(t,w){let e=0;for(let o=t;o<=w;o++)Dt(v[o])||e++;return e}function He(t){let w=Math.min(t,v.length-1);if(Y<0){H.innerHTML="";let e=B.system_prompt;if(e){let o=document.createElement("div");o.className="msg msg-system";let s=document.createElement("div");s.className="msg-label",s.textContent="System",o.appendChild(s);let i=document.createElement("div");i.textContent=e,o.appendChild(i),H.appendChild(o)}for(let o=0;o<=w;o++)Dt(v[o])||H.appendChild(De(o));Y=w,H.scrollTop=H.scrollHeight;return}if(w>Y){for(let e=Y+1;e<=w;e++)Dt(v[e])||H.appendChild(De(e));Y=w,H.scrollTop=H.scrollHeight;return}if(w<Y){let e=zo(w+1,Y);for(let o=0;o<e*2;o++)H.removeChild(H.lastChild);Y=w}}function Yo(){if(q.innerHTML="",ew=[],Iw=-1,G){let e=null,o=null;for(let s=0;s<$;s++){let i=Ow[s],n=`states[${s}]`,l=x(R[s],"level",n),a=x(R[s],"attempt",n);if(l!==e||a!==o){if(e!==null){let p=document.createElement("div");p.className="log-separator",p.textContent="--- Level "+l+", Attempt "+a+" ---",q.appendChild(p)}e=l,o=a}let r=document.createElement("div");r.className="log-entry",r.dataset.index=s;let h="[F"+(s+1)+"]";if(i>=0){let p=v[i],c=`replaySteps[${i}]`,m=x(p,"level",c),f=x(p,"attempt",c),g=x(p,"step",c),k=x(p,"action",c).toUpperCase(),S="[L"+m+" A"+f+" #"+g+"]",E=x(p,"action_log",c),L=E.indexOf(" -> "),O=L>=0?" -> "+E.substring(L+4):"";r.textContent=h+S+" "+k+O}else{let p=R[s],c=p&&p.action_log;if(c){let m=c.indexOf(" -> "),f=m>=0?c.substring(m+4):"";f&&f!=="no change"?r.textContent=h+" NO-OP -> "+f:r.textContent=h+" NO-OP"}else r.textContent=h+" NO-OP";r.classList.add("noop-entry")}r.addEventListener("click",()=>{T(),N(s)}),q.appendChild(r),ew.push(r)}return}let t=null,w=null;for(let e=0;e<v.length;e++){let o=v[e],s=`replaySteps[${e}]`,i=x(o,"level",s),n=x(o,"attempt",s);if(i!==t||n!==w){if(t!==null){let a=document.createElement("div");a.className="log-separator",a.textContent="--- Level "+i+", Attempt "+n+" ---",q.appendChild(a)}t=i,w=n}let l=document.createElement("div");l.className="log-entry",l.dataset.index=e,l.textContent=x(o,"action_log",s),l.addEventListener("click",()=>{T(),N(e)}),q.appendChild(l),ew.push(l)}}function Fe(){if(Iw>=0&&Iw<ew.length&&ew[Iw].classList.remove("current-step"),A>=0&&A<ew.length){let t=ew[A];t.classList.add("current-step");let w=q.getBoundingClientRect(),e=t.getBoundingClientRect();e.top<w.top?q.scrollTop-=w.top-e.top:e.bottom>w.bottom&&(q.scrollTop+=e.bottom-w.bottom)}Iw=A}function Ke(){let t=null;if(G){let e=Ow[A];e>=0&&(t=(v[e].action||"").toLowerCase())}else A<v.length&&(t=(v[A].action||"").toLowerCase());for(let e of Do)e.classList.remove("active");let w=t?Ze[t]:null;w&&w.classList.add("active")}Ro.addEventListener("click",()=>{T(),eo()});Bo.addEventListener("click",()=>{T(),window.location.href=window.location.pathname});function io(t){let w=t==="json";Je.classList.toggle("active",!w),Ve.classList.toggle("active",w),ct.style.display=w?"none":"grid",Kt.style.display=w?"block":"none",Tw.style.display=w?"inline-block":"none"}Je.addEventListener("click",()=>io("summary"));Ve.addEventListener("click",()=>io("json"));Tw.addEventListener("click",async()=>{await navigator.clipboard.writeText(Kt.textContent);let t=Tw.textContent;Tw.textContent="Copied!",setTimeout(()=>{Tw.textContent=t},1500)});Mo.addEventListener("click",()=>{T(),Ut()});Ft.addEventListener("click",()=>oo());Xe.addEventListener("change",()=>{ow!==null&&(T(),so())});sw.addEventListener("input",()=>{T(),N(Number(sw.value))});function Bw(t){!M||!M.hasAny||(Ee(Co,M,{logX:Lw,logY:at}),Ae(Ct,M,t??A,{logY:Lw}))}Oe.addEventListener("click",()=>{Lw=!Lw,Oe.classList.toggle("active",Lw),Bw()});Re.addEventListener("click",()=>{at=!at,Re.classList.toggle("active",at),Bw()});Ct.addEventListener("click",t=>{if(!M||!M.hasAny||v.length===0)return;let w=Ct.getBoundingClientRect(),e=t.clientX-w.left,o=w.width-Aw.left-Aw.right,s=(e-Aw.left)/o,i=Math.round(s*(v.length-1));i>=0&&i<v.length&&(T(),N(G?Bt[i]:i))});document.addEventListener("keydown",t=>{let w=t.target.tagName;if(!(w==="TEXTAREA"||w==="INPUT"||w==="SELECT")&&B)switch(t.key){case"ArrowLeft":t.preventDefault(),T(),eo();break;case"ArrowRight":t.preventDefault(),T(),Ut();break;case" ":t.preventDefault(),oo();break;case"Home":t.preventDefault(),T(),N(0);break;case"End":t.preventDefault(),T(),N(G?$-1:v.length);break}});function $o(t){return t==null?"--":typeof t=="boolean"?t?"yes":"no":typeof t=="number"?Number.isFinite(t)&&!Number.isInteger(t)?t.toFixed(4):String(t):typeof t=="object"?JSON.stringify(t):String(t)}var ro=new Set(["states","steps"]);function jo(){let t=[];for(let[w,e]of Object.entries(B))if(!ro.has(w))if(w==="meta"&&e&&typeof e=="object"&&!Array.isArray(e))for(let[o,s]of Object.entries(e))t.push([`meta.${o}`,s]);else t.push([w,e]);return t.sort(([w],[e])=>w.localeCompare(e)),t}function Qo(){let t={};for(let[w,e]of Object.entries(B))ro.has(w)||(t[w]=e);return t}function qo(){ct.innerHTML="";for(let[t,w]of jo()){let e=document.createElement("span");e.className="meta-key",e.textContent=t;let o=document.createElement("span");o.className="meta-val",o.textContent=$o(w),ct.appendChild(e),ct.appendChild(o)}Kt.textContent=JSON.stringify(Qo(),null,2)}function Ht(){!X&&!iw||(clearTimeout(Te),Te=setTimeout(function(){let t=new URLSearchParams;X?t.set("grid-key",X):t.set("file",iw),t.set("step",String(A)),history.replaceState(null,"","?"+t.toString())},200))}function Ue(){let t=new URLSearchParams;return X?t.set("grid-key",X):t.set("file",iw),t.set("step",String(A)),window.location.origin+"/replay.html?"+t.toString()}function We(t){P.textContent=t,P.disabled=!1,setTimeout(function(){P.textContent="Share"},2e3)}async function Xo(){if(X||iw){let s=Ue();await navigator.clipboard.writeText(s),We("Link copied!");return}if(!Rt)return;P.textContent="Uploading...",P.disabled=!0;let t=await fetch("/_api/upload-url?filename="+encodeURIComponent(ze));if(!t.ok){alert("Failed to get upload URL: "+t.status+" "+t.statusText),P.textContent="Share",P.disabled=!1;return}let w=await t.json(),e=await fetch(w.uploadUrl,{method:"PUT",body:Rt});if(!e.ok){alert("Upload failed: "+e.status+" "+e.statusText),P.textContent="Share",P.disabled=!1;return}iw=w.key,Ht();let o=Ue();await navigator.clipboard.writeText(o),We("Link copied!")}P.addEventListener("click",Xo);function _w(t,w){F.style.display="none",J.classList.remove("error"),J.style.display="block",je.textContent=t,Qe.textContent=w||""}function Lt(t,w){J.classList.add("error"),J.style.display="block",je.textContent=t,Qe.textContent=w||""}To.addEventListener("click",function(){J.style.display="none",J.classList.remove("error"),F.style.display=""});async function Jo(t){if(!window.__REPLAY_GZ__?.[t]){let l="catalogue-data/"+t.replace(".replay.json.gz",".replay.js");await new Promise((a,r)=>{let h=document.createElement("script");h.src=l,h.onload=a,h.onerror=()=>r(new Error("Failed to load replay script: "+l)),document.head.appendChild(h)})}let w=window.__REPLAY_GZ__?.[t];if(!w)throw new Error("Replay data missing after load: "+t);let e=Uint8Array.from(atob(w),l=>l.charCodeAt(0)),o=new DecompressionStream("gzip"),s=o.writable.getWriter();s.write(e),s.close();let i=await new Response(o.readable).text(),n=JSON.parse(i);return lt(n),n}(async function(){let t=new URLSearchParams(window.location.search),w=t.get("file"),e=t.get("url"),o=t.get("grid-key"),s=t.get("local-key");if(!s&&!o&&!e&&!w)return;function i(r){if(!r)return"";let h=r.lastIndexOf("/");return h>=0?r.substring(h+1):r}let n,l,a="";try{if(s){_w("Loading local replay...",i(s));let m=await Jo(s);X=s,Nt(m);let f=t.get("step");f!==null&&N(parseInt(f,10));return}else if(o){_w("Resolving share URL...",i(o));let m=await fetch("/grid-api/replay-url?key="+encodeURIComponent(o));if(!m.ok){Lt("Failed to resolve grid replay URL","HTTP "+m.status+" "+m.statusText);return}n=(await m.json()).url,l=o.endsWith(".gz"),a=i(o)}else e?(n=e,l=e.split("?")[0].endsWith(".gz"),a=i(e.split("?")[0])):(n="/"+w,l=w.endsWith(".gz"),a=i(w));_w("Downloading replay...",a);let r=await fetch(n);if(!r.ok){Lt("Failed to download replay","HTTP "+r.status+" "+r.statusText);return}let h;if(l){_w("Decompressing...",a);let m=new DecompressionStream("gzip"),f=r.body.pipeThrough(m);h=await new Response(f).text()}else h=await r.text();_w("Parsing...",a);let p=JSON.parse(h);lt(p),X=o||null,iw=w||null,Nt(p);let c=t.get("step");c!==null&&N(parseInt(c,10))}catch(r){Lt("Error loading replay",String(r)),console.error(r)}})();})();

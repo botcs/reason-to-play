@@ -330,7 +330,7 @@
       <br><br>
       On the behavioral side, the best LRMs match human learning curves remarkably well &mdash; they discover game rules in roughly the same number of steps humans need and progress through difficulty levels at a comparable rate.
       On the neural side, the hidden states of these models predict human fMRI BOLD responses across cortical and subcortical regions &mdash; the first demonstration that LRM representations systematically align with human brain activity during active game learning.
-      Through targeted ablations we show that what drives the brain alignment is the model's in-context representation of the current game state, not its downstream planning or reasoning.
+      Through targeted ablations we show that what drives the brain alignment is the model's in-context representation of the sequence of game states.
     </section>
 
     <!-- =========================================================== -->
@@ -451,6 +451,8 @@
         <b style="color:#555;">Reasoning trace (Bait, level 3).</b>
         Curated excerpts from a DeepSeek V3.2 run.
         The model proposes candidate object identities, verifies them against observed state changes, and adapts its strategy when predictions fail.
+        You can step through the full reasoning trace of this run &mdash; every observation, every chain of thought, every action &mdash; in the
+        <a href="replay.html?local-key=llm_catalogue/lrm-cr/deepseek/deepseek-v3.2/bait_vgfmri4.replay.json.gz">replay viewer</a>.
       </div>
     </section>
 
