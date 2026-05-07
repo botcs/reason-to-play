@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Botos Csaba. MIT License. See LICENSE for details.
 #!/usr/bin/env python
 """
 Manual play mode - step into the LLM's shoes.

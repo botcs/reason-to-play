@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Botos Csaba. MIT License. See LICENSE for details.
 import pygame
 
 from src.vgdl.core import VGDLSprite, Resource

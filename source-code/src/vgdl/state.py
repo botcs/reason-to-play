@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Botos Csaba. MIT License. See LICENSE for details.
 from collections import OrderedDict
 
 from src.vgdl.core import BasicGame, BasicGameLevel

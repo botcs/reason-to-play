@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Botos Csaba. MIT License. See LICENSE for details.
 # from itertools import combinations_with_replacement as comb_rep_iter
 from itertools import product
 import numpy as np

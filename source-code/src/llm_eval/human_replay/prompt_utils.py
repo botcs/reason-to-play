@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Botos Csaba. MIT License. See LICENSE for details.
 """Utility functions for loading prompt files (.replay.json.gz or legacy .jsonl)."""
 
 import json

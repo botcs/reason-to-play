@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Botos Csaba. MIT License. See LICENSE for details.
 #!/usr/bin/env python
 """
 Entry point for human replay prompt generation using the unified Harness.

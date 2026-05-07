@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Botos Csaba. MIT License. See LICENSE for details.
 """Delta-encode / expand the ``states`` array in .replay.json.gz files.
 
 Encoding rule (per-sprite-type):

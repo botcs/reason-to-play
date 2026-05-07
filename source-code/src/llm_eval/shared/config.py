@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Botos Csaba. MIT License. See LICENSE for details.
 """
 Structured configuration schema for the VGDL LLM evaluation harness.
 

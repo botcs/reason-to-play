@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Botos Csaba. MIT License. See LICENSE for details.
 """Load human behavioral data from BSON files."""
 
 import zlib

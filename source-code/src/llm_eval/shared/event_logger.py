@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Botos Csaba. MIT License. See LICENSE for details.
 """
 EventLogger: Formats action-log strings from real VGDL engine events.
 

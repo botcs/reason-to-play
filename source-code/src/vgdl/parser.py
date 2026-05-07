@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Botos Csaba. MIT License. See LICENSE for details.
 from types import FunctionType
 
 from src.vgdl import registry, ontology

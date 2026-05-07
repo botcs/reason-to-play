@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Botos Csaba. MIT License. See LICENSE for details.
 """
 DeepSpeed-Inference wrapper for LLM feature extraction with tensor parallelism.
 

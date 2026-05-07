@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Botos Csaba. MIT License. See LICENSE for details.
 """
 Abstract base class for LLM wrappers used by the llm_eval scaffolding.
 """

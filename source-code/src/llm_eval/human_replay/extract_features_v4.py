@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Botos Csaba. MIT License. See LICENSE for details.
 """
 DeepSeek V4 multi-turn sliding-window feature extractor.
 

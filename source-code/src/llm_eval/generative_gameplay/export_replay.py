@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Botos Csaba. MIT License. See LICENSE for details.
 """
 Replay file utilities: state capture and .generative.replay.json.gz writing.
 

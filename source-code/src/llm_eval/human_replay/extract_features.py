@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Botos Csaba. MIT License. See LICENSE for details.
 #!/usr/bin/env python
 """Sliding-window feature extraction for human-replay sessions.
 

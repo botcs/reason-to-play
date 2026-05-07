@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Botos Csaba. MIT License. See LICENSE for details.
 from pygame.math import Vector2
 
 from src.vgdl.core import Action, Physics

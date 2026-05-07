@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Botos Csaba. MIT License. See LICENSE for details.
 """Tensor-parallel patches for Qwen3.5 MoE.
 
 The default tp_plan in ``transformers.models.qwen3_5_moe.configuration_qwen3_5_moe``

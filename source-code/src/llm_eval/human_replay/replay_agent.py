@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Botos Csaba. MIT License. See LICENSE for details.
 """
 ReplayAgent: Run human replay through the unified Harness pipeline.
 

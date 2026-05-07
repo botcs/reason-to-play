@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Botos Csaba. MIT License. See LICENSE for details.
 from .constants import *
 from .physics import *
 from .sprites import *

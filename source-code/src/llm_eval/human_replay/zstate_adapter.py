@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Botos Csaba. MIT License. See LICENSE for details.
 """
 ZstateAdapter: Convert Tomov 2023 zstate dicts to game engine format.
 

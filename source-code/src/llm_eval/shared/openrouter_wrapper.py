@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Botos Csaba. MIT License. See LICENSE for details.
 """
 OpenRouter LLM wrapper for the llm_eval scaffolding.
 

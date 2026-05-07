@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Botos Csaba. MIT License. See LICENSE for details.
 """
 DeepSeek V3.2 feature extraction wrapper using torchrun tensor parallelism.
 
