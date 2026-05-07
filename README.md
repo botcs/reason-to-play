@@ -1,19 +1,31 @@
-# Interactive Replay Viewer
+# Reason to Play
 
-Self-contained, offline browser application for viewing LLM and human
-gameplay replays on VGDL games.
+Behavioral and Brain Alignment Between Frontier LRMs and Human Game Learners.
 
-## Usage
+**Project page:** https://botcs.github.io/reason-to-play/
 
-Open `catalogue.html` in any modern browser (Chrome, Firefox, Safari).
-No server or internet connection required -- everything is bundled.
+## Interactive Tools
 
-## Contents
+- **Replay Catalogue** (`catalogue.html`) -- browse all human and LLM gameplay replays
+- **Replay Viewer** (`replay.html`) -- step through replays with reasoning traces and full conversation history
+- **Play the Games** (`interactive-gameplay.html`) -- try the VGDL games yourself in the browser
 
-- `catalogue.html` -- main entry point; browse and filter all replays
-- `replay.html` -- detailed single-replay viewer with step-by-step
-  playback, reasoning traces, and full conversation history
-- `interactive-gameplay.html` -- play the games yourself using the
-  same VGDL engine the LLM agents interact with
-- `catalogue-data/` -- embedded replay data (base64-encoded gzip)
-- `fonts/` -- locally bundled web fonts
+Open any `.html` file directly in a modern browser -- no server required.
+
+## Source Code
+
+The `source-code/` directory contains the LLM evaluation pipeline, VGDL game engine,
+system prompts, game definitions, and experiment sweep configurations.
+See `source-code/README.md` for details.
+
+## Acknowledgements
+
+This project builds on the VGDL framework and codebase released by
+[Cedric Colas et al.](https://github.com/ccolas/language_and_experience)
+for "Language and Experience: A Computational Model of Social Learning in Complex Tasks".
+The Browser Game Interpreter (BGI) is a JavaScript re-implementation of the
+VGDL engine for interactive visualization and replay.
+
+## License
+
+MIT License. See [LICENSE](LICENSE) for details.
