@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reason to Play</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'EB Garamond', serif;
+      font-size: 22px;
+      text-align: justify;
+      margin: 0;
+      padding: 0;
+      color: #1a1a1a;
+      background: #fdfdfc;
+    }
+    a { color: black; }
+
+    #primary-content {
+      margin: 0 auto;
+      max-width: 1000px;
+      padding: 20px 20px 60px;
+    }
+
+    section {
+      margin: 0 auto;
+      max-width: 1000px;
+      padding-top: 20px;
+      text-align: justify;
+    }
+
+    h1 { font-size: 42px; font-weight: 400; }
+    h1 b { font-weight: 700; }
+    h2 { text-align: left; font-size: 28px; font-weight: 400; margin-bottom: 10px; }
+
+    code {
+      font-family: 'Courier New', monospace;
+      font-size: 17px;
+      background: #f4f4f4;
+      padding: 1px 5px;
+      border-radius: 3px;
+    }
+
+    .bibtex-block {
+      background: #f6f5f0;
+      border: 1px solid #d4d0c8;
+      border-radius: 4px;
+      padding: 14px 18px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      line-height: 1.55;
+      overflow-x: auto;
+      white-space: pre;
+      color: #444;
+      position: relative;
+      text-align: left;
+    }
+    .bibtex-block .copy-btn {
+      position: absolute;
+      top: 8px; right: 8px;
+      font-family: 'EB Garamond', serif;
+      font-size: 13px;
+      padding: 3px 10px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      background: white;
+      cursor: pointer;
+      color: #555;
+    }
+    .bibtex-block .copy-btn:hover { background: #eee; }
+
+    /* --- App nav --- */
+    .app-nav {
+      display: flex;
+      gap: 14px;
+      margin: 20px 0 10px;
+      text-align: left;
+    }
+    .app-nav a {
+      display: block;
+      text-decoration: none;
+      padding: 10px 20px;
+      border: 1.5px solid #1a1a1a;
+      border-radius: 6px;
+      transition: background 0.15s, transform 0.15s;
+      color: #1a1a1a;
+      text-align: center;
+    }
+    .app-nav a:hover {
+      transform: translateY(-2px);
+    }
+    .app-nav .nav-title {
+      font-size: 18px; font-weight: 700;
+    }
+    .app-nav .nav-paper { background: rgba(240,240,235,0.6); }
+    .app-nav .nav-paper:hover { background: rgba(230,230,220,0.9); }
+    .app-nav .nav-code { background: rgba(240,240,235,0.6); }
+    .app-nav .nav-code:hover { background: rgba(230,230,220,0.9); }
+    .app-nav .nav-catalogue { background: rgba(253,230,153,0.35); }
+    .app-nav .nav-catalogue:hover { background: rgba(253,230,153,0.6); }
+    .app-nav .nav-play { background: rgba(180,216,170,0.3); }
+    .app-nav .nav-play:hover { background: rgba(180,216,170,0.55); }
+
+    /* --- Game widget --- */
+    .game-box {
+      width: fit-content;
+      max-width: 100%;
+      margin: 20px auto 0;
+    }
+    .canvas-wrapper {
+      position: relative;
+      display: flex;
+      justify-content: center;
+    }
+    #game-canvas {
+      border: 3px solid #ccc;
+      background: #000;
+      outline: none;
+      display: block;
+      max-width: 100%;
+      height: auto;
+    }
+    #game-canvas:focus {
+      border-color: #333;
+      box-shadow: 0 0 0 2px rgba(0,0,0,0.2);
+    }
+    .canvas-btn {
+      position: absolute;
+      background: rgba(255,255,255,0.6);
+      border: 1px solid rgba(0,0,0,0.15);
+      border-radius: 4px;
+      width: 28px; height: 28px; padding: 3px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 10;
+    }
+    .canvas-btn:hover { background: rgba(255,255,255,0.9); }
+    .canvas-btn img { width: 18px; height: 18px; }
+    #btn-cog   { top: 6px; left: 6px; }
+    #btn-play  { top: 6px; right: 38px; }
+    #btn-reset { top: 6px; right: 6px; }
+    .speed-popover {
+      display: none; position: absolute; top: 38px; left: 6px;
+      background: white; border: 1px solid #ccc; border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15); padding: 8px 10px;
+      z-index: 20; font-size: 14px;
+    }
+    .speed-popover.open { display: block; }
+    .speed-popover label { font-size: 14px; color: #333; }
+    .speed-popover select {
+      font-family: 'EB Garamond', serif; font-size: 14px;
+      padding: 2px 6px; border: 1px solid #999;
+      background: #eee; border-radius: 3px; cursor: pointer;
+    }
+    #btn-create-env {
+      display: none; position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      background: rgba(0,0,0,0.75); color: white;
+      border: 2px solid rgba(255,255,255,0.5); border-radius: 6px;
+      padding: 8px 18px; font-family: 'EB Garamond', serif;
+      font-size: 18px; cursor: pointer; z-index: 15;
+    }
+    #btn-create-env:hover { background: rgba(0,0,0,0.9); }
+    .flap-tabs { display: flex; gap: 0; }
+    .flap-tab {
+      flex: 1; text-align: center;
+      font-family: 'EB Garamond', serif; font-size: 15px;
+      padding: 4px 14px; border: 1px solid #ccc;
+      border-top: none; border-radius: 0 0 4px 4px;
+      background: #eee; color: #555; cursor: pointer;
+    }
+    .flap-tab:hover { background: #ddd; }
+    .flap-tab.active {
+      color: black; border-color: #aaa;
+      border-bottom: none; border-radius: 0;
+    }
+    #flap-tab-desc.active  { background: #f0f8f0; }
+    #flap-tab-level.active { background: #fdf0f0; }
+    .flap-panel {
+      display: none; border: 1px solid #aaa;
+      border-top: none; border-radius: 0 0 4px 4px; padding: 8px;
+    }
+    .flap-panel.open { display: block; }
+    .flap-panel-desc  { background: #f0f8f0; }
+    .flap-panel-level { background: #fdf0f0; }
+    .flap-panel textarea {
+      width: 100%; background: transparent; border: none; outline: none;
+      font-family: 'Courier New', monospace; font-size: 12px;
+      color: black; resize: vertical; tab-size: 4;
+    }
+    .flap-panel-desc  textarea { height: 300px; }
+    .flap-panel-level textarea { height: 180px; }
+    .help {
+      font-size: 14px; color: #666;
+      margin-top: 10px; text-align: center;
+    }
+    .game-selector {
+      margin: 16px auto 0;
+      border-collapse: collapse;
+      font-size: 13px;
+      font-family: 'Courier New', monospace;
+    }
+    .game-selector th {
+      padding: 3px 6px; font-weight: normal;
+      color: #888; text-align: center;
+    }
+    .game-selector th.cohort-header {
+      text-align: left; font-style: italic;
+      padding-left: 0; color: #aaa; font-size: 11px;
+    }
+    .game-selector th.level-header {
+      font-size: 16px; font-family: 'EB Garamond', serif;
+      color: #666; text-align: center; padding: 0 0 2px;
+    }
+    .game-selector td { padding: 0; text-align: center; }
+    .game-selector td.game-name {
+      text-align: right; padding-right: 8px; white-space: nowrap;
+    }
+    .game-badge {
+      display: inline-block; font-family: 'EB Garamond', serif;
+      font-size: 13px; padding: 1px 8px; border-radius: 4px;
+      border: 1px solid rgba(0,0,0,0.2); color: rgba(0,0,0,0.75);
+      line-height: 1.4;
+    }
+    .game-selector button {
+      width: 28px; height: 22px; border: 1px solid #ddd;
+      background: #f8f8f8; cursor: pointer; font-size: 11px;
+      font-family: 'Courier New', monospace; color: #555;
+      padding: 0; margin: 1px; border-radius: 2px;
+    }
+    .game-selector button:hover { border-color: #888; background: #eee; }
+    .game-selector button.active {
+      border: 2px solid #333; font-weight: bold; color: black;
+    }
+    .dpad {
+      display: none; position: relative;
+      width: 120px; height: 120px; margin: 10px auto 0;
+    }
+    .dpad-btn {
+      position: absolute; width: 38px; height: 38px;
+      background: rgba(0,0,0,0.15); border: 1px solid rgba(0,0,0,0.2);
+      border-radius: 6px; font-size: 18px; color: rgba(0,0,0,0.5);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; user-select: none;
+      -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
+    }
+    .dpad-btn:active { background: rgba(0,0,0,0.3); }
+    .dpad-up    { top: 0;    left: 41px; }
+    .dpad-down  { bottom: 0; left: 41px; }
+    .dpad-left  { top: 41px; left: 0; }
+    .dpad-right { top: 41px; right: 0; }
+    .dpad-space { top: 41px; left: 41px; font-size: 11px; font-family: 'EB Garamond', serif; }
+    @media (pointer: coarse) {
+      .help { display: none; }
+      .dpad { display: block; }
+    }
+    @media (max-width: 680px) {
+      #primary-content { padding: 10px 14px 40px; }
+      h1 { font-size: 32px; }
+      .app-nav { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <div id="primary-content">
+    <center>
+      <h1><b>Reason to Play</b></h1>
+      <h3 style="font-weight:400; font-style:italic; color:#555; margin:0 auto 10px; font-size:21px;">
+        Behavioral and Brain Alignment Between Frontier LRMs and Human Game Learners
+      </h3>
+      <h4 style="font-weight:400; font-size:17px; line-height:1.6;">
+        <a href="https://botcs.github.io/academic/">Botos Csaba</a><sup>1*</sup>,
+        <a href="https://sreejank.com/">Sreejan Kumar</a><sup>2,3*</sup>,
+        <a href="https://scholar.google.com/citations?user=austintudor">Austin Tudor David Andrews</a><sup>1*</sup>,
+        <a href="https://www.laurencehunt.com/">Laurence Hunt</a><sup>1</sup>,
+        <a href="https://www.summerfield-lab.com/">Chris Summerfield</a><sup>1</sup>,
+        <a href="https://cocosci.mit.edu/josh">Joshua B. Tenenbaum</a><sup>4</sup>
+        <br>
+        <a href="https://neuralml.github.io/">Rui Ponte Costa</a><sup>1+</sup>,
+        <a href="https://www.mattarlab.com/">Marcelo G. Mattar</a><sup>3+</sup>,
+        <a href="https://tomov.net/">Momchil Tomov</a><sup>5+</sup>
+      </h4>
+      <h5 style="font-size:15px;">
+        <sup>1</sup>University of Oxford,
+        <sup>2</sup>Columbia University,
+        <sup>3</sup>New York University,
+        <sup>4</sup>MIT,
+        <sup>5</sup>Harvard University
+        &mdash;
+        *&thinsp;Equal first authors, +&thinsp;Equal senior authors
+      </h5>
+      <nav class="app-nav" style="justify-content:center;">
+        <a href="paper.pdf" class="nav-paper">
+          <span class="nav-title">Paper</span>
+        </a>
+        <a href="https://github.com" class="nav-code">
+          <span class="nav-title">Code</span>
+        </a>
+        <a href="catalogue.html" class="nav-catalogue">
+          <span class="nav-title">Replay Catalogue</span>
+        </a>
+        <a href="interactive-gameplay.html" class="nav-play">
+          <span class="nav-title">Play the Games</span>
+        </a>
+      </nav>
+    </center>
+
+    <!-- =========================================================== -->
+    <!-- Abstract                                                    -->
+    <!-- =========================================================== -->
+    <section>
+      <h2>Abstract</h2>
+      Humans are remarkably good at picking up new environments: drop someone into an unfamiliar video game and within minutes they are forming hypotheses, testing them, and revising their understanding of how the world works.
+      Can modern AI do the same?
+      We take a set of simple grid-world video games &mdash; written in a compact language called VGDL &mdash; and have both humans (32 participants, scanned with fMRI) and a suite of frontier Large Reasoning Models play them from scratch, with no rules provided.
+      We then ask two questions: <b>Do the models learn the way humans do?</b> And <b>do they build similar internal representations?</b>
+      <br><br>
+      The short answers are yes and yes.
+      The best LRMs match human learning curves almost exactly &mdash; they discover game rules in roughly the same number of steps humans need and progress through difficulty levels at a comparable rate.
+      More strikingly, the hidden states of these models predict human fMRI BOLD responses across visual, frontoparietal, and default-mode brain regions, outperforming deep reinforcement learning baselines by a wide margin.
+      Through targeted ablations we show that what drives the brain alignment is the model's in-context representation of the current game state, not its downstream planning or reasoning.
+    </section>
+
+    <!-- =========================================================== -->
+    <!-- Try a game yourself                                         -->
+    <!-- =========================================================== -->
+    <section>
+      <h2>Try a game yourself</h2>
+      The games below are the exact same environments used in the experiment.
+      Each game is defined entirely by its VGDL description (the rules) and a level layout (the map).
+      Nobody &mdash; not the human participants, not the LLMs &mdash; was told what the rules are.
+      Open the <b>Game Description</b> flap to peek at the source code, or just start playing and see if you can figure it out.
+
+      <div class="game-box">
+        <div class="canvas-wrapper">
+          <canvas id="game-canvas" width="630" height="360" tabindex="0"></canvas>
+          <button class="canvas-btn" id="btn-cog" tabindex="-1"><img src="cog.png" alt="settings"></button>
+          <button class="canvas-btn" id="btn-play" tabindex="-1"><img id="play-icon" src="play.png" alt="play"></button>
+          <button class="canvas-btn" id="btn-reset" tabindex="-1"><img src="reset.png" alt="reset"></button>
+          <div class="speed-popover" id="speed-popover">
+            <label>Speed:
+              <select id="tick-mode">
+                <option value="action">On keypress</option>
+                <option value="2">2 FPS</option>
+                <option value="4">4 FPS</option>
+                <option value="7" selected>7 FPS</option>
+                <option value="10">10 FPS</option>
+                <option value="15">15 FPS</option>
+                <option value="30">30 FPS</option>
+              </select>
+            </label>
+          </div>
+          <button id="btn-create-env">Create New Env</button>
+        </div>
+        <div class="flap-tabs">
+          <button class="flap-tab" id="flap-tab-desc">Game Description</button>
+          <button class="flap-tab" id="flap-tab-level">Level Layout</button>
+        </div>
+        <div class="flap-panel flap-panel-desc" id="flap-panel-desc">
+          <textarea id="game-desc" spellcheck="false"></textarea>
+        </div>
+        <div class="flap-panel flap-panel-level" id="flap-panel-level">
+          <textarea id="level-text" spellcheck="false"></textarea>
+        </div>
+        <div class="help">
+          Click canvas to focus &nbsp;|&nbsp;
+          Arrow keys / WASD = move &nbsp;|&nbsp;
+          Space = action &nbsp;|&nbsp;
+          P = play/pause &nbsp;|&nbsp;
+          Enter = rebuild
+        </div>
+        <div class="dpad" id="dpad">
+          <button class="dpad-btn dpad-up" data-action="UP">^</button>
+          <button class="dpad-btn dpad-left" data-action="LEFT">&lt;</button>
+          <button class="dpad-btn dpad-space" data-action="SPACE">act</button>
+          <button class="dpad-btn dpad-right" data-action="RIGHT">&gt;</button>
+          <button class="dpad-btn dpad-down" data-action="DOWN">v</button>
+        </div>
+      </div>
+      <table class="game-selector" id="game-selector" style="display:none;"></table>
+    </section>
+
+    <!-- =========================================================== -->
+    <!-- Do LRMs learn the way humans do?                            -->
+    <!-- =========================================================== -->
+    <section>
+      <h2>Do LRMs learn the way humans do?</h2>
+      To answer this, we compare how quickly each agent discovers the rules of a game (top row below) and how far through the curriculum of increasingly difficult levels it can progress (bottom row).
+      Human participants, deep-RL baselines (DDQN, EfficientZero, EMPA), and eight frontier LRMs all play the same games under the same conditions.
+      <br><br>
+      The headline result is that the best LRMs &mdash; DeepSeek V4-Pro and Qwen3.5-35B &mdash; cluster tightly around the human learning distribution.
+      On the discovery metric, the top LRM is nearly indistinguishable from the human median; on the curriculum metric, it tracks human-level progression through all nine difficulty levels.
+      The deep-RL baselines, by contrast, are far slower and plateau much earlier.
+
+      <div style="margin-top:20px; width:100%; text-align:center;">
+        <img src="figures/behavioural_discovery_curriculum_combined.svg" style="width:95%; border:none;">
+      </div>
+      <div style="margin-top:8px; font-size:16px; color:#888; text-align:left;">
+        <b style="color:#555;">Learning efficiency and capability.</b>
+        Top: discovery-time distributions (KDE); LRMs overlap with humans while deep-RL baselines are shifted far right.
+        Bottom: curriculum progression under blocked advancement (2 consecutive wins required to advance); the best LRMs track the human staircase closely.
+      </div>
+    </section>
+
+    <!-- =========================================================== -->
+    <!-- Do LRMs think the way humans do?                            -->
+    <!-- =========================================================== -->
+    <section>
+      <h2>Do they build similar brain representations?</h2>
+      Behavioral similarity is one thing, but do these models also represent the games internally the way human brains do?
+      We extract hidden-state activations from each LRM during gameplay and use them as regressors in a voxelwise encoding model predicting the human fMRI BOLD signal, with separate regularization for the model features and nuisance regressors (game/level identity, button presses, time).
+      <br><br>
+      LRM representations predict brain activity significantly above chance across visual, frontoparietal, and default-mode regions &mdash; and outperform both DDQN and EfficientZero baselines by a wide margin.
+      Targeted ablations (prompt-only, shuffled-features, random-init controls) confirm that the signal comes from the model's in-context representation of the game state, not from surface-level prompt statistics or chance correlations.
+
+      <div style="margin-top:20px; width:100%; text-align:center;">
+        <img src="figures/encoding_groups_combined.svg" style="width:95%; border:none;">
+      </div>
+      <div style="margin-top:8px; font-size:16px; color:#888; text-align:left;">
+        <b style="color:#555;">Brain encoding accuracy by region group.</b>
+        Best-layer Pearson correlation averaged across voxels within each functional group.
+        LRM features (right) consistently outperform deep-RL baselines (left) across cortical regions.
+      </div>
+    </section>
+
+    <!-- =========================================================== -->
+    <!-- What does reasoning look like?                              -->
+    <!-- =========================================================== -->
+    <section>
+      <h2>What does LRM reasoning look like?</h2>
+      One advantage of working with language models is that we can actually read their reasoning.
+      In the copied-reasoning condition, the model's hidden chain of thought is exposed at each step.
+      Below is an example from the Bait game: the model forms hypotheses about object identities and game mechanics, tests them against observed outcomes, and revises its understanding &mdash; a process that reads strikingly like how humans describe their own learning when thinking aloud.
+
+      <div style="margin-top:20px; width:100%; text-align:center;">
+        <img src="figures/reasoning_trace_bait.svg" style="width:95%; border:none;">
+      </div>
+      <div style="margin-top:8px; font-size:16px; color:#888; text-align:left;">
+        <b style="color:#555;">Reasoning trace (Bait, level 3).</b>
+        Curated excerpts from a DeepSeek V3.2 run.
+        The model proposes candidate object identities, verifies them against observed state changes, and adapts its strategy when predictions fail.
+      </div>
+    </section>
+
+    <!-- =========================================================== -->
+    <!-- Citation                                                    -->
+    <!-- =========================================================== -->
+    <section>
+      <h2>Citation</h2>
+      <div class="bibtex-block" id="bibtex">
+        <button class="copy-btn" onclick="navigator.clipboard.writeText(document.getElementById('bibtex-text').textContent)">Copy</button>
+<span id="bibtex-text">@article{botos2026reason,
+  title   = {Reason to Play: Behavioral and Brain Alignment
+             Between Frontier LRMs and Human Game Learners},
+  author  = {Botos, Csaba and Kumar, Sreejan and
+             Andrews, Austin Tudor David and Hunt, Laurence and
+             Summerfield, Chris and Tenenbaum, Joshua B. and
+             Costa, Rui Ponte and Mattar, Marcelo G. and
+             Tomov, Momchil},
+  journal = {NeurIPS},
+  year    = {2026}
+}</span></div>
+    </section>
+
+  </div>
+
+  <script src="interactive-gameplay-bundle.js"></script>
+</body>
+</html>

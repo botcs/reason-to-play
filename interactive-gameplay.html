@@ -1,0 +1,799 @@
+<!-- developed and copyright by [AUTHOR-da0e5446], 2026 -->
+<!-- Licensed under the MIT License. See LICENSE file for details. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BGI - Interactive Gameplay</title>
+  <style>
+/* cyrillic-ext */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/SlGFmQSNjdsmc35JDF1K5GRwUjcdlttVFm-rI7e8QL9wU6i1hGFJRvzr2Q.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/SlGFmQSNjdsmc35JDF1K5GRwUjcdlttVFm-rI7e8QL95U6i1hGFJRvzr2Q.woff2) format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek-ext */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/SlGFmQSNjdsmc35JDF1K5GRwUjcdlttVFm-rI7e8QL9xU6i1hGFJRvzr2Q.woff2) format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/SlGFmQSNjdsmc35JDF1K5GRwUjcdlttVFm-rI7e8QL9-U6i1hGFJRvzr2Q.woff2) format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/SlGFmQSNjdsmc35JDF1K5GRwUjcdlttVFm-rI7e8QL9yU6i1hGFJRvzr2Q.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/SlGFmQSNjdsmc35JDF1K5GRwUjcdlttVFm-rI7e8QL9zU6i1hGFJRvzr2Q.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/SlGFmQSNjdsmc35JDF1K5GRwUjcdlttVFm-rI7e8QL99U6i1hGFJRvw.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/SlGUmQSNjdsmc35JDF1K5GR4SDk_YAPIlWk.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/SlGUmQSNjdsmc35JDF1K5GRxSDk_YAPIlWk.woff2) format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek-ext */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/SlGUmQSNjdsmc35JDF1K5GR5SDk_YAPIlWk.woff2) format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/SlGUmQSNjdsmc35JDF1K5GR2SDk_YAPIlWk.woff2) format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/SlGUmQSNjdsmc35JDF1K5GR6SDk_YAPIlWk.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/SlGUmQSNjdsmc35JDF1K5GR7SDk_YAPIlWk.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/SlGUmQSNjdsmc35JDF1K5GR1SDk_YAPI.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(fonts/SlGUmQSNjdsmc35JDF1K5GR4SDk_YAPIlWk.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(fonts/SlGUmQSNjdsmc35JDF1K5GRxSDk_YAPIlWk.woff2) format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek-ext */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(fonts/SlGUmQSNjdsmc35JDF1K5GR5SDk_YAPIlWk.woff2) format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(fonts/SlGUmQSNjdsmc35JDF1K5GR2SDk_YAPIlWk.woff2) format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(fonts/SlGUmQSNjdsmc35JDF1K5GR6SDk_YAPIlWk.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(fonts/SlGUmQSNjdsmc35JDF1K5GR7SDk_YAPIlWk.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(fonts/SlGUmQSNjdsmc35JDF1K5GR1SDk_YAPI.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/-F63fjptAgt5VM-kVkqdyU8n1iIq131nj-otFQ.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/-F63fjptAgt5VM-kVkqdyU8n1isq131nj-otFQ.woff2) format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/-F63fjptAgt5VM-kVkqdyU8n1iAq131nj-otFQ.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/-F63fjptAgt5VM-kVkqdyU8n1iEq131nj-otFQ.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/-F63fjptAgt5VM-kVkqdyU8n1i8q131nj-o.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(fonts/-F6qfjptAgt5VM-kVkqdyU8n3twJwl1FgsAXHNlYzg.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(fonts/-F6qfjptAgt5VM-kVkqdyU8n3twJwlRFgsAXHNlYzg.woff2) format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(fonts/-F6qfjptAgt5VM-kVkqdyU8n3twJwl9FgsAXHNlYzg.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(fonts/-F6qfjptAgt5VM-kVkqdyU8n3twJwl5FgsAXHNlYzg.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(fonts/-F6qfjptAgt5VM-kVkqdyU8n3twJwlBFgsAXHNk.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+  </style>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'EB Garamond', serif;
+      font-size: 22px;
+      background: white;
+      color: black;
+      min-height: 100vh;
+    }
+    a { color: black; }
+
+    .wrapper {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px 20px 60px;
+    }
+
+    header {
+      text-align: center;
+      padding-bottom: 15px;
+      border-bottom: 1.5px solid black;
+      margin-bottom: 20px;
+    }
+    header h1 {
+      font-size: 42px;
+      font-weight: normal;
+      color: black;
+      margin-bottom: 4px;
+    }
+    header .subtitle {
+      font-size: 18px;
+      color: #555;
+      font-style: italic;
+    }
+
+    /* --- Game Box --- */
+    .game-box {
+      width: fit-content;
+      max-width: 100%;
+      margin: 0 auto;
+    }
+
+    .canvas-wrapper {
+      position: relative;
+      display: flex;
+      justify-content: center;
+    }
+
+    #game-canvas {
+      border: 3px solid #ccc;
+      background: #000;
+      outline: none;
+      display: block;
+      max-width: 100%;
+      height: auto;
+    }
+    #game-canvas:focus {
+      border-color: #333;
+      box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Canvas overlay buttons */
+    .canvas-btn {
+      position: absolute;
+      background: rgba(255,255,255,0.6);
+      border: 1px solid rgba(0,0,0,0.15);
+      border-radius: 4px;
+      width: 28px;
+      height: 28px;
+      padding: 3px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+    .canvas-btn:hover { background: rgba(255,255,255,0.9); }
+    .canvas-btn img { width: 18px; height: 18px; }
+
+    #btn-cog   { top: 6px; left: 6px; }
+    #btn-play  { top: 6px; right: 38px; }
+    #btn-reset { top: 6px; right: 6px; }
+
+    /* Speed popover */
+    .speed-popover {
+      display: none;
+      position: absolute;
+      top: 38px;
+      left: 6px;
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      padding: 8px 10px;
+      z-index: 20;
+      font-size: 14px;
+    }
+    .speed-popover.open { display: block; }
+    .speed-popover label { font-size: 14px; color: #333; }
+    .speed-popover select {
+      font-family: 'EB Garamond', serif;
+      font-size: 14px;
+      padding: 2px 6px;
+      border: 1px solid #999;
+      background: #eee;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    /* Create New Env overlay button */
+    #btn-create-env {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.75);
+      color: white;
+      border: 2px solid rgba(255,255,255,0.5);
+      border-radius: 6px;
+      padding: 8px 18px;
+      font-family: 'EB Garamond', serif;
+      font-size: 18px;
+      cursor: pointer;
+      z-index: 15;
+    }
+    #btn-create-env:hover { background: rgba(0,0,0,0.9); }
+
+    /* Flap tabs */
+    .flap-tabs { display: flex; gap: 0; }
+    .flap-tab {
+      flex: 1;
+      text-align: center;
+      font-family: 'EB Garamond', serif;
+      font-size: 15px;
+      padding: 4px 14px;
+      border: 1px solid #ccc;
+      border-top: none;
+      border-radius: 0 0 4px 4px;
+      background: #eee;
+      color: #555;
+      cursor: pointer;
+    }
+    .flap-tab:hover { background: #ddd; }
+    .flap-tab.active {
+      color: black;
+      border-color: #aaa;
+      border-bottom: none;
+      border-radius: 0;
+    }
+    #flap-tab-desc.active  { background: #f0f8f0; }
+    #flap-tab-level.active { background: #fdf0f0; }
+
+    /* Flap panels */
+    .flap-panel {
+      display: none;
+      border: 1px solid #aaa;
+      border-top: none;
+      border-radius: 0 0 4px 4px;
+      padding: 8px;
+    }
+    .flap-panel.open { display: block; }
+    .flap-panel-desc  { background: #f0f8f0; }
+    .flap-panel-level { background: #fdf0f0; }
+    .flap-panel textarea {
+      width: 100%;
+      background: transparent;
+      border: none;
+      outline: none;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      color: black;
+      resize: vertical;
+      tab-size: 4;
+    }
+    .flap-panel-desc  textarea { height: 300px; }
+    .flap-panel-level textarea { height: 180px; }
+
+    /* Help text */
+    .help {
+      font-size: 14px;
+      color: #666;
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    /* --- Game selector table --- */
+    .game-selector {
+      margin: 16px auto 0;
+      border-collapse: collapse;
+      font-size: 13px;
+      font-family: 'Courier New', monospace;
+    }
+    .game-selector th {
+      padding: 3px 6px;
+      font-weight: normal;
+      color: #888;
+      text-align: center;
+    }
+    .game-selector th.cohort-header {
+      text-align: left;
+      font-style: italic;
+      padding-left: 0;
+      color: #aaa;
+      font-size: 11px;
+    }
+    .game-selector th.level-header {
+      font-size: 16px;
+      font-family: 'EB Garamond', serif;
+      color: #666;
+      text-align: center;
+      padding: 0 0 2px;
+    }
+    .game-selector td {
+      padding: 0;
+      text-align: center;
+    }
+    .game-selector td.game-name {
+      text-align: right;
+      padding-right: 8px;
+      white-space: nowrap;
+    }
+    .game-badge {
+      display: inline-block;
+      font-family: 'EB Garamond', serif;
+      font-size: 13px;
+      padding: 1px 8px;
+      border-radius: 4px;
+      border: 1px solid rgba(0,0,0,0.2);
+      color: rgba(0,0,0,0.75);
+      line-height: 1.4;
+    }
+    .game-selector button {
+      width: 28px;
+      height: 22px;
+      border: 1px solid #ddd;
+      background: #f8f8f8;
+      cursor: pointer;
+      font-size: 11px;
+      font-family: 'Courier New', monospace;
+      color: #555;
+      padding: 0;
+      margin: 1px;
+      border-radius: 2px;
+    }
+    .game-selector button:hover {
+      border-color: #888;
+      background: #eee;
+    }
+    .game-selector button.active {
+      border: 2px solid #333;
+      font-weight: bold;
+      color: black;
+    }
+
+    /* --- VGDL Guide (expandable) --- */
+    .vgdl-guide-toggle {
+      display: block;
+      width: 100%;
+      max-width: 680px;
+      margin: 24px auto 0;
+      padding: 10px 16px;
+      font-family: 'EB Garamond', serif;
+      font-size: 18px;
+      background: #f6f5f0;
+      border: 1px solid #d4d0c8;
+      border-radius: 5px;
+      cursor: pointer;
+      text-align: left;
+      color: #333;
+    }
+    .vgdl-guide-toggle:hover { background: #eeedea; }
+    .vgdl-guide-toggle .arrow {
+      display: inline-block;
+      transition: transform 0.15s;
+      margin-right: 6px;
+      font-size: 14px;
+    }
+    .vgdl-guide-toggle.open .arrow { transform: rotate(90deg); }
+    .vgdl-guide-body {
+      display: none;
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 16px 18px;
+      border: 1px solid #d4d0c8;
+      border-top: none;
+      border-radius: 0 0 5px 5px;
+      background: #faf9f6;
+      font-size: 16px;
+      color: #333;
+      line-height: 1.6;
+    }
+    .vgdl-guide-body.open { display: block; }
+    .vgdl-guide-body h4 {
+      font-size: 18px;
+      font-weight: 700;
+      margin: 14px 0 6px;
+    }
+    .vgdl-guide-body h4:first-child { margin-top: 0; }
+    .vgdl-guide-body ul { margin: 6px 0 6px 24px; }
+    .vgdl-guide-body li { margin-bottom: 3px; }
+    .vgdl-guide-body code {
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      background: #f0efea;
+      padding: 1px 4px;
+      border-radius: 3px;
+    }
+    .vgdl-guide-body p { margin-bottom: 8px; }
+    .vgdl-guide-body .critical { font-weight: 700; }
+
+    /* --- BGI description --- */
+    .bgi-description {
+      max-width: 680px;
+      margin: 36px auto 0;
+      padding-top: 24px;
+      border-top: 1px solid #ddd;
+      font-size: 18px;
+      color: #333;
+      line-height: 1.65;
+    }
+    .bgi-description p + p { margin-top: 12px; }
+    .bgi-description code {
+      font-family: 'Courier New', monospace;
+      font-size: 15px;
+      background: #f4f4f4;
+      padding: 1px 5px;
+      border-radius: 3px;
+    }
+
+    /* --- Mobile D-Pad --- */
+    .dpad {
+      display: none;
+      position: relative;
+      width: 120px;
+      height: 120px;
+      margin: 10px auto 0;
+    }
+    .dpad-btn {
+      position: absolute;
+      width: 38px;
+      height: 38px;
+      background: rgba(0,0,0,0.15);
+      border: 1px solid rgba(0,0,0,0.2);
+      border-radius: 6px;
+      font-size: 18px;
+      color: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .dpad-btn:active { background: rgba(0,0,0,0.3); }
+    .dpad-up    { top: 0;    left: 41px; }
+    .dpad-down  { bottom: 0; left: 41px; }
+    .dpad-left  { top: 41px; left: 0; }
+    .dpad-right { top: 41px; right: 0; }
+    .dpad-space { top: 41px; left: 41px; font-size: 11px; font-family: 'EB Garamond', serif; }
+
+    @media (pointer: coarse) {
+      .help { display: none; }
+      .dpad { display: block; }
+    }
+
+    @media (max-width: 680px) {
+      .wrapper { padding: 10px 10px 40px; }
+      header h1 { font-size: 32px; }
+      header .subtitle { font-size: 15px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <header>
+      <h1><b>B</b>rowser <b>G</b>ame <b>I</b>nterpreter</h1>
+      <div class="subtitle">edit the game description or map layout and play it live</div>
+    </header>
+
+    <div class="game-box">
+      <div class="canvas-wrapper">
+        <canvas id="game-canvas" width="630" height="360" tabindex="0"></canvas>
+        <button class="canvas-btn" id="btn-cog"   tabindex="-1"><img src="cog.png"  alt="settings"></button>
+        <button class="canvas-btn" id="btn-play"  tabindex="-1"><img id="play-icon" src="play.png" alt="play"></button>
+        <button class="canvas-btn" id="btn-reset" tabindex="-1"><img src="reset.png" alt="reset"></button>
+        <div class="speed-popover" id="speed-popover">
+          <label>Speed:
+            <select id="tick-mode">
+              <option value="action">On keypress</option>
+              <option value="2">2 FPS</option>
+              <option value="4">4 FPS</option>
+              <option value="7" selected>7 FPS</option>
+              <option value="10">10 FPS</option>
+              <option value="15">15 FPS</option>
+              <option value="30">30 FPS</option>
+            </select>
+          </label>
+        </div>
+        <button id="btn-create-env">Create New Env</button>
+      </div>
+
+      <div class="flap-tabs">
+        <button class="flap-tab" id="flap-tab-desc">Game Description</button>
+        <button class="flap-tab" id="flap-tab-level">Level Layout</button>
+      </div>
+      <div class="flap-panel flap-panel-desc" id="flap-panel-desc">
+        <textarea id="game-desc" spellcheck="false"></textarea>
+      </div>
+      <div class="flap-panel flap-panel-level" id="flap-panel-level">
+        <textarea id="level-text" spellcheck="false"></textarea>
+      </div>
+
+      <div class="help">
+        Click canvas to focus &nbsp;|&nbsp; Arrow keys / WASD = move &nbsp;|&nbsp; Space = action &nbsp;|&nbsp; P = play/pause &nbsp;|&nbsp; Enter = rebuild
+      </div>
+
+      <div class="dpad" id="dpad">
+        <button class="dpad-btn dpad-up"    data-action="UP">^</button>
+        <button class="dpad-btn dpad-left"  data-action="LEFT">&lt;</button>
+        <button class="dpad-btn dpad-space" data-action="SPACE">act</button>
+        <button class="dpad-btn dpad-right" data-action="RIGHT">&gt;</button>
+        <button class="dpad-btn dpad-down"  data-action="DOWN">v</button>
+      </div>
+    </div>
+
+    <table class="game-selector" id="game-selector"></table>
+
+    <div class="bgi-description">
+      <p>
+        The <b>Browser Game Interpreter</b> (BGI) is a JavaScript implementation of
+        <b>Video Game Description Language</b> (VGDL): a compact notation where a few dozen
+        lines fully specify a playable game -- its sprites, physics, interactions, and
+        termination conditions. The description and map layout above are parsed and executed
+        entirely in the browser.
+      </p>
+      <p>
+        The interpreter supports live editing. Open the <b>Game Description</b> flap and add
+        a new collectible sprite (copy an existing <code>wall</code> line, change its name and
+        color, then add a <code>killSprite</code> interaction so the avatar collects it).
+        Or open the <b>Level Layout</b> flap and place a second avatar character alongside
+        the first. Press <b>Enter</b> or click <b>Create New Env</b> to rebuild the
+        environment from your edits immediately.
+      </p>
+    </div>
+
+    <button class="vgdl-guide-toggle" id="guide-toggle" onclick="this.classList.toggle('open'); document.getElementById('guide-body').classList.toggle('open')">
+      <span class="arrow">&#9654;</span> VGDL Description Reference Guide
+    </button>
+    <div class="vgdl-guide-body" id="guide-body">
+      <h4>SpriteSet</h4>
+      <p>Defines every object type in the game. Format: <code>name &gt; Type parameters</code></p>
+      <p>Avatar types (player-controlled):</p>
+      <ul>
+        <li><code>MovingAvatar</code>: can move in four directions</li>
+        <li><code>ShootAvatar</code>: MovingAvatar that can also fire projectiles (<code>stype=projectile_name</code>) with space bar</li>
+        <li><code>FlakAvatar</code>: can only move sideways, always shoots upward</li>
+      </ul>
+      <p>Object types:</p>
+      <ul>
+        <li><code>Immovable</code>: static object, cannot move</li>
+        <li><code>Passive</code>: can be pushed by the avatar (via bounceForward interaction)</li>
+        <li><code>Resource</code> / <code>ResourcePack</code>: collectible objects</li>
+        <li><code>Flicker</code>: appears temporarily, disappears after a set number of steps (<code>total=N</code>)</li>
+        <li><code>SpawnPoint</code>: periodically creates new objects (<code>stype=what_it_spawns, prob=spawn_chance</code>)</li>
+        <li><code>Missile</code>: moves in one fixed direction at a set speed</li>
+        <li><code>Bomber</code>: missile + spawner combined</li>
+        <li><code>Chaser</code>: moves toward the nearest target object (<code>stype=target</code>)</li>
+        <li><code>RandomNPC</code>: moves in random directions</li>
+        <li><code>Portal</code>: teleports objects that touch it to an exit location</li>
+      </ul>
+      <p>The <code>img=colors/COLORNAME</code> parameter sets the object's visible color. All objects of the same color follow the same rules.</p>
+      <h4>LevelMapping</h4>
+      <p>Maps single characters to sprites for level layout. Format: <code>char &gt; sprite1 sprite2 ...</code></p>
+      <p>Multiple sprites on one character means they overlap (e.g., <code>w &gt; floor wall</code> places a wall on top of floor).</p>
+      <h4>InteractionSet</h4>
+      <p>Defines collision rules. Format: <code>spriteA spriteB &gt; effect parameters</code></p>
+      <p class="critical">When spriteA and spriteB collide, the effect is applied TO spriteA (the first sprite).</p>
+      <p>Effects:</p>
+      <ul>
+        <li><code>killSprite</code>: destroys spriteA</li>
+        <li><code>stepBack</code>: spriteA is pushed back (blocked)</li>
+        <li><code>bounceForward</code>: spriteA is pushed in the direction spriteB was moving</li>
+        <li><code>transformTo stype=X</code>: spriteA transforms into object type X</li>
+        <li><code>changeScore scoreChange=N</code>: awards N points on collision</li>
+        <li><code>changeResource resource=R value=N</code>: modifies avatar's resource R</li>
+        <li><code>killIfOtherHasMore resource=R limit=N</code>: kills spriteA only if spriteB has more than N of resource R</li>
+        <li><code>killIfHasLess resource=R limit=N</code>: kills spriteA if it has less than N of resource R</li>
+        <li><code>teleportTo stype=X</code>: teleports spriteA to the location of an X object</li>
+        <li><code>turnAround</code> / <code>reverseDirection</code>: reverses missile direction</li>
+        <li><code>undoAll</code>: reverts spriteA's position to where it was before this tick</li>
+      </ul>
+      <p>Multiple effects can apply to the same collision. <code>EOS</code> (End of Screen) interactions handle objects leaving the game boundaries.</p>
+      <h4>TerminationSet</h4>
+      <p>Defines win/lose conditions. Format: <code>ConditionType parameters win=True/False</code></p>
+      <ul>
+        <li><code>SpriteCounter stype=X limit=0 win=True</code>: game is won when all X objects are gone</li>
+        <li><code>SpriteCounter stype=X limit=0 win=False</code>: game is lost when all X objects are gone</li>
+        <li><code>MultiSpriteCounter stype1=X stype2=Y limit=0 win=True</code>: won when all X and Y are gone</li>
+        <li><code>Timeout limit=N win=False</code>: lost if N steps pass without winning</li>
+        <li><code>Survive limit=N win=True</code>: won if avatar survives N steps</li>
+      </ul>
+    </div>
+  </div>
+
+  <script src="interactive-gameplay-bundle.js"></script>
+</body>
+</html>
