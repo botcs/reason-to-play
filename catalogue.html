@@ -5,7 +5,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BGI - Gameplay Catalogue</title>
+  <title>Reason to Play - Replay Catalogue</title>
   <style>
 /* cyrillic-ext */
 @font-face {
@@ -625,6 +625,14 @@
     .game-card.is-playing .card-drawer {
       max-height: 400px;
     }
+    @media (pointer: coarse) {
+      .game-card:hover .card-drawer {
+        max-height: 0;
+      }
+      .game-card.is-playing .card-drawer {
+        max-height: 400px;
+      }
+    }
     .card-drawer-inner {
       padding: 4px 4px 2px;
     }
@@ -657,7 +665,7 @@
 <body>
   <div class="wrapper">
     <header>
-      <h1><b>B</b>rowser <b>G</b>ame <b>I</b>nterpreter &mdash; Gameplay Catalogue</h1>
+      <h1><a href="index.html" style="text-decoration:none; color:inherit;"><b>Reason to Play</b></a> &mdash; Replay Catalogue</h1>
       <div class="subtitle">Browse human and LLM gameplay sessions across all games</div>
     </header>
 
@@ -670,6 +678,9 @@
     <div id="catalogue-root">
       <div class="catalogue-loading">Loading experiment data...</div>
     </div>
+    <footer style="text-align:center; font-size:14px; color:#888; border-top:1px solid #d4d0c8; padding-top:16px; margin-top:40px;">
+      All games rendered using the Browser Game Interpreter (BGI) &mdash; an interpreter for VGDL implemented in JavaScript
+    </footer>
   </div>
 
   <script src="catalogue-bundle.js"></script>
