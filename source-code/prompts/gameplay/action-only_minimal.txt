@@ -1,4 +1,0 @@
-Respond with valid JSON only:
-```json
-{"action": "<up|down|left|right|action|wait>"}
-```
