@@ -85,30 +85,48 @@
     /* --- App nav --- */
     .app-nav {
       display: flex;
-      gap: 14px;
-      margin: 20px 0 10px;
+      gap: 10px;
+      margin: 16px 0 8px;
       text-align: left;
     }
     .app-nav a {
+      flex: 1;
       display: block;
       text-decoration: none;
-      padding: 10px 20px;
-      border: 1.5px solid #1a1a1a;
-      border-radius: 6px;
+      padding: 4px 22px;
+      border: 1.25px solid #1a1a1a;
+      border-radius: 5px;
       transition: background 0.15s, transform 0.15s;
       color: #1a1a1a;
       text-align: center;
+      line-height: 1.3;
     }
     .app-nav a:hover {
-      transform: translateY(-2px);
+      transform: translateY(-1px);
     }
     .app-nav .nav-title {
-      font-size: 18px; font-weight: 700;
+      font-size: 17px; font-weight: 700;
     }
     .app-nav .nav-paper { background: rgba(240,240,235,0.6); }
     .app-nav .nav-paper:hover { background: rgba(230,230,220,0.9); }
     .app-nav .nav-code { background: rgba(240,240,235,0.6); }
     .app-nav .nav-code:hover { background: rgba(230,230,220,0.9); }
+    .app-nav .nav-data {
+      background: rgba(220,220,220,0.5);
+      color: #777;
+      border-color: #aaa;
+      border-style: dashed;
+      cursor: default;
+      pointer-events: none;
+    }
+    .app-nav .nav-data .nav-title { color: #666; }
+    .app-nav .nav-data .nav-title small {
+      font-size: 12px;
+      font-weight: 400;
+      font-style: italic;
+      color: #888;
+      margin-left: 4px;
+    }
     .app-nav .nav-catalogue { background: rgba(253,230,153,0.35); }
     .app-nav .nav-catalogue:hover { background: rgba(253,230,153,0.6); }
     .app-nav .nav-play { background: rgba(180,216,170,0.3); }
@@ -272,7 +290,79 @@
       h1 { font-size: 32px; }
       .app-nav { flex-direction: column; }
     }
+
+    /* Spacer around the inlined representation viewer */
+    .rep-embed { margin: 20px 0 0; width: 100%; }
+
+    /* Big call-to-action button row that sits under each section's main
+       artifact. Three equal-width buttons; stacks on mobile. */
+    .section-cta {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin: 24px 0 0;
+    }
+    .section-cta.two   { grid-template-columns: repeat(2, 1fr); }
+    .section-cta a {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      text-decoration: none;
+      padding: 18px 14px;
+      border: 1.5px solid #1a1a1a;
+      border-radius: 8px;
+      transition: background 0.15s, transform 0.15s;
+      color: #1a1a1a;
+      text-align: center;
+      font-size: 19px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+    .section-cta a small {
+      display: block;
+      font-size: 14px;
+      font-weight: 400;
+      color: #666;
+      margin-top: 4px;
+    }
+    .section-cta a:hover { transform: translateY(-2px); }
+    .section-cta .cta-rep   { background: rgba(150,200,235,0.28); }
+    .section-cta .cta-rep:hover   { background: rgba(150,200,235,0.55); }
+    .section-cta .cta-cat   { background: rgba(253,230,153,0.32); }
+    .section-cta .cta-cat:hover   { background: rgba(253,230,153,0.55); }
+    .section-cta .cta-play  { background: rgba(180,216,170,0.32); }
+    .section-cta .cta-play:hover  { background: rgba(180,216,170,0.55); }
+    .section-cta .cta-trace { background: rgba(195,210,240,0.32); }
+    .section-cta .cta-trace:hover { background: rgba(195,210,240,0.55); }
+    @media (max-width: 680px) {
+      .section-cta { grid-template-columns: 1fr; }
+      .section-cta.two { grid-template-columns: 1fr; }
+    }
+
+    /* Section B catalogue tiles: three games (bait, chase, zelda) all
+       played by DeepSeek-V3.2, mounted inline (no iframe). Wrapper
+       reserves margin only; the cards themselves are styled by the
+       scoped catalogue-embed.css. */
+    .replay-embed {
+      width: 100%;
+      margin: 18px auto 8px;
+    }
+
+    /* Section figure block (used in Section C: text -> figure -> text -> figure) */
+    .section-figure { margin: 24px 0 6px; width: 100%; text-align: center; }
+    .section-figure img { width: 95%; border: none; }
+    .section-figure-caption {
+      margin: 8px 0 0;
+      font-size: 16px;
+      color: #888;
+      text-align: left;
+    }
+    .section-figure-caption b { color: #555; }
   </style>
+  <link rel="stylesheet" href="representation-embed.css">
+  <link rel="stylesheet" href="catalogue-embed.css">
 </head>
 <body>
   <div id="primary-content">
@@ -306,8 +396,11 @@
         <a href="paper.pdf" class="nav-paper">
           <span class="nav-title">Paper</span>
         </a>
-        <a href="https://github.com/botcs/reason-to-play" class="nav-code">
+        <a href="https://github.com/botcs/reason-to-play-src" class="nav-code">
           <span class="nav-title">Code</span>
+        </a>
+        <a class="nav-data" aria-disabled="true" tabindex="-1">
+          <span class="nav-title">Data <small>(coming soon)</small></span>
         </a>
         <a href="catalogue.html" class="nav-catalogue">
           <span class="nav-title">Replay Catalogue</span>
@@ -325,135 +418,298 @@
       <h2>Abstract</h2>
       Humans are remarkably good at picking up new environments: drop someone into an unfamiliar video game and within minutes they are forming hypotheses, testing them, and revising their understanding of how the world works.
       Can modern AI do the same?
-      We take a set of simple grid-world video games &mdash; written in a compact language called VGDL &mdash; and have both humans (32 participants, scanned with fMRI) and a suite of frontier Large Reasoning Models play them from scratch, with no rules provided.
+      We take a set of simple grid-world video games, written in a compact language called VGDL, and have both humans (32 participants, scanned with fMRI) and a suite of frontier Large Reasoning Models play them from scratch, with no rules provided.
       We then ask two questions: <b>Do the models learn the way humans do?</b> And <b>do they build similar internal representations?</b>
       <br><br>
-      On the behavioral side, the best LRMs match human learning curves remarkably well &mdash; they discover game rules in roughly the same number of steps humans need and progress through difficulty levels at a comparable rate.
-      On the neural side, the hidden states of these models predict human fMRI BOLD responses across cortical and subcortical regions &mdash; the first demonstration that LRM representations systematically align with human brain activity during active game learning.
+      On the behavioral side, the best LRMs match human learning curves remarkably well: they discover game rules in roughly the same number of steps humans need and progress through difficulty levels at a comparable rate.
+      On the neural side, the hidden states of these models predict human fMRI BOLD responses across cortical and subcortical regions, the first demonstration that LRM representations systematically align with human brain activity during active game learning.
       Through targeted ablations we show that what drives the brain alignment is the model's in-context representation of the sequence of game states.
     </section>
 
     <!-- =========================================================== -->
-    <!-- Try a game yourself                                         -->
+    <!-- Representational Alignment                                  -->
     <!-- =========================================================== -->
     <section>
-      <h2>Try a game yourself</h2>
-      The games below are the exact same environments used in the experiment.
-      Each game is defined entirely by its VGDL description (the rules) and a level layout (the map).
-      Nobody &mdash; not the human participants, not the LLMs &mdash; was told what the rules are.
-      Open the <b>Game Description</b> flap to peek at the source code, or just start playing and see if you can figure it out.
+      <h2>Do Models Represent the Games as Humans do?</h2>
+      The games on this page are the exact same environments used in the experiment, including the randomized colour assignment.
+      Nobody, neither the human participants nor the LLMs, was told what the rules are.
+      On the left side you see a human participant's gameplay (<b>top left</b>),
+      their neural representation evolving during in-context learning (<b>bottom left</b>),
+      while on the (<b>top right</b>) you see what the LLM sees and
+      in (<b>bottom right</b>) how their representation formed for the same gameplay.
 
-      <div class="game-box">
-        <div class="canvas-wrapper">
-          <canvas id="game-canvas" width="630" height="360" tabindex="0"></canvas>
-          <button class="canvas-btn" id="btn-cog" tabindex="-1"><img src="cog.png" alt="settings"></button>
-          <button class="canvas-btn" id="btn-play" tabindex="-1"><img id="play-icon" src="play.png" alt="play"></button>
-          <button class="canvas-btn" id="btn-reset" tabindex="-1"><img src="reset.png" alt="reset"></button>
-          <div class="speed-popover" id="speed-popover">
-            <label>Speed:
-              <select id="tick-mode">
-                <option value="action">On keypress</option>
-                <option value="2">2 FPS</option>
-                <option value="4">4 FPS</option>
-                <option value="7" selected>7 FPS</option>
-                <option value="10">10 FPS</option>
-                <option value="15">15 FPS</option>
-                <option value="30">30 FPS</option>
-              </select>
-            </label>
+      <div class="rep-embed">
+        <div class="bgi-rep">
+
+          <!-- Loading placeholder. Sits in front of the (hidden)
+               main-container until representation-main.js calls
+               main-container.classList.add('visible'); the embed CSS
+               then fades this overlay out via :has(). -->
+          <div class="rep-loading">
+            <div class="rep-spinner" aria-hidden="true"></div>
+            <div>Loading representational viewer&hellip;</div>
           </div>
-          <button id="btn-create-env">Create New Env</button>
-        </div>
-        <div class="flap-tabs">
-          <button class="flap-tab" id="flap-tab-desc">Game Description</button>
-          <button class="flap-tab" id="flap-tab-level">Level Layout</button>
-        </div>
-        <div class="flap-panel flap-panel-desc" id="flap-panel-desc">
-          <textarea id="game-desc" spellcheck="false"></textarea>
-        </div>
-        <div class="flap-panel flap-panel-level" id="flap-panel-level">
-          <textarea id="level-text" spellcheck="false"></textarea>
-        </div>
-        <div class="help">
-          Click canvas to focus &nbsp;|&nbsp;
-          Arrow keys / WASD = move &nbsp;|&nbsp;
-          Space = action &nbsp;|&nbsp;
-          P = play/pause &nbsp;|&nbsp;
-          Enter = rebuild
-        </div>
-        <div class="dpad" id="dpad">
-          <button class="dpad-btn dpad-up" data-action="UP">^</button>
-          <button class="dpad-btn dpad-left" data-action="LEFT">&lt;</button>
-          <button class="dpad-btn dpad-space" data-action="SPACE">act</button>
-          <button class="dpad-btn dpad-right" data-action="RIGHT">&gt;</button>
-          <button class="dpad-btn dpad-down" data-action="DOWN">v</button>
+
+          <!-- Hidden DOM that representation-main.js still queries by id.
+               The CSS keeps the selector bar, expand button, picker
+               overlay, help bar and Try-Me tab invisible in embed mode. -->
+          <div class="selector-bar" id="selector-bar">
+            <label>Subject:</label>
+            <select id="select-subject"><option value="">--</option></select>
+            <label>Game:</label>
+            <select id="select-game" disabled><option value="">--</option></select>
+            <label>Model:</label>
+            <select id="select-model" disabled><option value="">--</option></select>
+            <label>Stream:</label>
+            <select id="select-stream" disabled><option value="">--</option></select>
+            <button class="load-btn" id="btn-load" disabled>Load</button>
+            <span class="status-text" id="load-status">Loading manifest...</span>
+          </div>
+
+          <div class="main-container" id="main-container">
+            <!-- Top row: 2 cards (canvas + conversation). Translation arrow
+                 floats absolutely between them; the gap stays constant so
+                 the cards never resize on hover. -->
+            <div class="top-row">
+              <div class="canvas-wrapper" id="canvas-wrapper">
+                <canvas id="game-canvas" width="640" height="480"></canvas>
+                <div class="play-indicator" id="play-indicator">
+                  <svg viewBox="0 0 24 24" fill="white"><polygon points="6,3 20,12 6,21"/></svg>
+                </div>
+                <div class="game-status" id="game-status"></div>
+                <div class="try-tab" id="try-tab" title="Open the interactive game">Try Me</div>
+              </div>
+
+              <div class="translation-arrow" aria-hidden="true">
+                <span>translated</span>
+                <svg viewBox="0 0 60 18" xmlns="http://www.w3.org/2000/svg">
+                  <line x1="2" y1="9" x2="56" y2="9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                  <polyline points="44,3 56,9 44,15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>to text</span>
+              </div>
+
+              <div class="conversation-panel" id="conversation-panel">
+                <h3>Conversation</h3>
+                <div class="conversation-content" id="conversation-content">
+                  <em style="color:#888">Load a unit to see conversation...</em>
+                </div>
+              </div>
+            </div>
+
+            <!-- Fixed-height gap zone between top row and ROI row. Holds
+                 the scrubber + speed spinner (left half) and the model
+                 switcher (right half). Always reserves vertical space so
+                 the page below doesn't jump on hover. -->
+            <div class="gap-row">
+              <div class="scrubber-row" id="scrubber-row">
+                <div class="scrubber-line">
+                  <div class="speed-spinner">
+                    <button id="btn-speed-down" title="Slower">&minus;</button>
+                    <div class="speed-value" id="speed-value">1x</div>
+                    <button id="btn-speed-up" title="Faster">+</button>
+                  </div>
+                  <button class="play-pause-btn" id="btn-play-pause" type="button"
+                          data-state="paused" aria-label="Play" title="Play">
+                    <svg class="icon-play"  viewBox="0 0 16 16" aria-hidden="true">
+                      <polygon points="4,3 13,8 4,13" fill="currentColor"/>
+                    </svg>
+                    <svg class="icon-pause" viewBox="0 0 16 16" aria-hidden="true">
+                      <rect x="4" y="3" width="3" height="10" fill="currentColor"/>
+                      <rect x="9" y="3" width="3" height="10" fill="currentColor"/>
+                    </svg>
+                  </button>
+                  <div class="scrubber-track-wrap" id="scrubber-track-wrap">
+                    <div class="scrubber-bg"></div>
+                    <div class="scrubber-marks" id="scrubber-marks"></div>
+                    <div class="scrubber-window" id="scrubber-window"></div>
+                    <div class="scrub-thumb-label scrub-back-label"  id="scrub-back-label">FROM 0</div>
+                    <div class="scrub-thumb-label scrub-front-label" id="scrub-front-label">TR 0 / 0</div>
+                    <input type="range" id="scrubber-back"  min="0" max="0" value="0">
+                    <input type="range" id="scrubber-front" min="0" max="0" value="0">
+                  </div>
+                </div>
+              </div>
+              <div class="model-switcher" id="model-switcher">
+                <button class="cycle" id="btn-model-prev" title="Previous model">&lsaquo;</button>
+                <button class="center" id="select-model-quick" type="button"
+                        title="Choose model">--</button>
+                <button class="cycle" id="btn-model-next" title="Next model">&rsaquo;</button>
+              </div>
+            </div>
+
+            <div class="panels-area">
+              <div class="roi-grid" id="roi-grid"></div>
+              <button class="expand-btn" id="btn-expand-all">View all Brain Regions</button>
+            </div>
+          </div>
+
+          <div class="roi-picker-overlay" id="roi-picker-overlay">
+            <div class="roi-picker" id="roi-picker">
+              <h2>Select Brain Region</h2>
+              <div id="roi-picker-groups"></div>
+            </div>
+          </div>
+
+          <div class="model-picker-overlay" id="model-picker-overlay">
+            <div class="model-picker">
+              <h2>Select Model</h2>
+              <div class="model-picker-items" id="model-picker-items"></div>
+            </div>
+          </div>
+
         </div>
       </div>
-      <table class="game-selector" id="game-selector" style="display:none;"></table>
+
+      <nav class="section-cta">
+        <a id="open-rep-viewer" class="cta-rep"
+           href="representation.html?subject=sub-13&game=bait&model=dsv4_pro&stream=main&roi=SFG&layer=51">
+          Open in Representation Viewer
+          <small>scrub through TRs and switch ROI / layer / model</small>
+        </a>
+        <a class="cta-cat" href="catalogue.html">
+          Browse the Replay Catalogue
+          <small>every participant, every game, every model</small>
+        </a>
+        <a class="cta-play" href="interactive-gameplay.html">
+          Try the Game Yourself
+          <small>play the same VGDL environments, no rules given</small>
+        </a>
+      </nav>
     </section>
 
     <!-- =========================================================== -->
-    <!-- Do LRMs learn the way humans do?                            -->
+    <!-- Section B: How does the model think while it plays?        -->
     <!-- =========================================================== -->
     <section>
-      <h2>Do LRMs learn the way humans do?</h2>
-      To answer this, we compare how quickly each agent discovers the rules of a game (top row below) and how far through the curriculum of increasingly difficult levels it can progress (bottom row).
-      Human participants, deep-RL baselines (DDQN, EfficientZero, EMPA), and eight frontier LRMs all play the same games under the same conditions.
-      <br><br>
-      The headline result is that the best LRMs &mdash; DeepSeek V4-Pro and Qwen3.5-35B &mdash; cluster tightly around the human learning distribution.
-      On the discovery metric, the top LRM is nearly indistinguishable from the human median; on the curriculum metric, it tracks human-level progression through all nine difficulty levels.
-      The deep-RL baselines, by contrast, are far slower and plateau much earlier.
+      <h2>How does the model think while it plays?</h2>
+      Working with language models has one big advantage over silent neural networks: we can <b>read the model's reasoning</b>.
+      In the <i>copied-reasoning</i> condition, the model's hidden chain of thought is exposed at each step.
+      Below is one such run: DeepSeek-V3.2 playing <i>Bait</i> level 3 with no rules provided.
+      Step through the gameplay yourself, then read the curated reasoning trace underneath.
+      The model proposes candidate object identities, tests them against observed state changes, and revises its understanding when predictions fail, in a way that reads strikingly like how human participants describe their own learning when thinking aloud.
+      <b>Click on the game cards to start the replay, or the titles to watch the full trace</b>
 
-      <div style="margin-top:20px; width:100%; text-align:center;">
-        <img src="figures/behavioural_discovery_curriculum_combined.svg" style="width:95%; border:none;">
+      <div class="replay-embed cat-embed">
+        <div class="cat-embed-grid">
+          <div class="cat-embed-card"
+               data-game="bait_vgfmri4"
+               data-mode="llm"
+               data-path="llm_catalogue/lrm-cr/deepseek/deepseek-v3.2/bait_vgfmri4.replay.json.gz"></div>
+          <div class="cat-embed-card"
+               data-game="chase_vgfmri4"
+               data-mode="llm"
+               data-path="llm_catalogue/lrm-cr/deepseek/deepseek-v3.2/chase_vgfmri4.replay.json.gz"></div>
+          <div class="cat-embed-card"
+               data-game="zelda_vgfmri4"
+               data-mode="llm"
+               data-path="llm_catalogue/lrm-cr/deepseek/deepseek-v3.2/zelda_vgfmri4.replay.json.gz"></div>
+        </div>
       </div>
-      <div style="margin-top:8px; font-size:16px; color:#888; text-align:left;">
-        <b style="color:#555;">Learning efficiency and capability.</b>
-        Top: discovery-time distributions (KDE); LRMs overlap with humans while deep-RL baselines are shifted far right.
-        Bottom: curriculum progression under blocked advancement (2 consecutive wins required to advance); the best LRMs track the human staircase closely.
+
+      <p>
+        Above is the model's <i>actual gameplay</i>: each frame is one
+        action chosen from the same observation a human
+        participant would see, and the text panel prints the
+        complete chain of thought the model wrote down before picking
+        it.
+        For illustrating if there are any similarities between human <i>Response Times (RT)</i>,
+        we stagger the gameplay here by waiting until the model <i>Reasoning Traces (RT, convenient huh?)</i>
+        is completed in the text panel.
+        Step through the run, open the <b>Game Description</b> flap
+        to peek at the rules the model never saw, and watch how its
+        hypotheses about object identities evolve across attempts.
+      </p>
+      <p>
+        The figure below distils the same run into a short, readable
+        narrative: only the moments where the model commits to or
+        revises a hypothesis are kept, and arrows show how each
+        observation feeds back into the next decision. Read it as a
+        <i>"think aloud" transcript</i>: the live viewer is the
+        primary source, the figure is the curated commentary.
+      </p>
+
+      <div class="section-figure">
+        <img src="figures/reasoning_trace_bait.svg" alt="Reasoning trace (Bait, level 3)">
+        <div class="section-figure-caption">
+          <b>Reasoning trace (Bait, level 3).</b>
+          Curated excerpts from the DeepSeek-V3.2 run shown above.
+          The model proposes candidate object identities, verifies them against observed state changes, and adapts its strategy when predictions fail.
+        </div>
       </div>
+
+      <nav class="section-cta two">
+        <a class="cta-trace" href="replay.html?grid-key=llm_catalogue/lrm-cr/deepseek/deepseek-v3.2/bait_vgfmri4.replay.json.gz">
+          See the full Reasoning Trace
+          <small>every observation, every chain of thought, every action</small>
+        </a>
+        <a class="cta-cat" href="catalogue.html">
+          Browse the Replay Catalogue
+          <small>compare runs across models, games and participants</small>
+        </a>
+      </nav>
     </section>
 
     <!-- =========================================================== -->
-    <!-- Do LRMs think the way humans do?                            -->
+    <!-- Section C: Quantitative results                            -->
     <!-- =========================================================== -->
     <section>
-      <h2>Do they build similar brain representations?</h2>
-      Behavioral similarity is one thing, but do these models also represent the games internally the way human brains do?
-      We extract hidden-state activations from each LRM during gameplay and use them as regressors in a voxelwise encoding model predicting the human fMRI BOLD signal, with separate regularization for the model features and nuisance regressors (game/level identity, button presses, time).
-      <br><br>
-      LRM representations predict brain activity significantly above chance across visual, frontoparietal, and default-mode regions &mdash; and outperform both DDQN and EfficientZero baselines by a wide margin.
+      <h2>How well do the matches hold up?</h2>
+      The viewer above and the reasoning trace are striking <i>qualitatively</i>, but a research claim needs more than a single visually compelling case.
+      We need to <b>quantify</b> two things: how closely the models <i>behave</i> like human game-learners, and how closely their internal <i>representations</i> match human brain activity.
+
+      <h3 style="margin-top:24px; font-size:21px; font-weight:400; color:#333;">Quantifying behaviour</h3>
+      To compare learning behaviour, we measure two things: (i) <b>rule-discovery time</b>, the number of steps each agent takes to first satisfy the win condition of a game; and (ii) <b>curriculum progression</b>, how far through nine difficulty levels each agent advances under blocked advancement (two consecutive wins required to move on).
+      Human participants, deep-RL baselines (DDQN, EfficientZero, EMPA) and eight frontier LRMs all play the same games under the same conditions.
+
+      <div class="section-figure">
+        <img src="figures/behavioural_discovery_curriculum_combined.svg" alt="Learning efficiency and capability">
+        <div class="section-figure-caption">
+          <b>Learning efficiency and capability.</b>
+          Top: discovery-time distributions (KDE); LRMs overlap with humans while deep-RL baselines are shifted far right.
+          Bottom: curriculum progression under blocked advancement (2 consecutive wins required to advance); the best LRMs track the human staircase closely.
+        </div>
+      </div>
+
+      <h3 style="margin-top:24px; font-size:21px; font-weight:400; color:#333;">Quantifying representational similarity</h3>
+      To compare internal representations, we extract hidden-state activations from each LRM during gameplay and use them as regressors in a voxelwise <b>encoding model</b> that predicts the human fMRI BOLD signal, with separate regularisation for the model features and the nuisance regressors (game/level identity, button presses, time).
+      We then average best-layer Pearson correlations within functional region groups.
       Targeted ablations (prompt-only, shuffled-features, random-init controls) confirm that the signal comes from the model's in-context representation of the game state, not from surface-level prompt statistics or chance correlations.
 
-      <div style="margin-top:20px; width:100%; text-align:center;">
-        <img src="figures/encoding_groups_combined.svg" style="width:95%; border:none;">
-      </div>
-      <div style="margin-top:8px; font-size:16px; color:#888; text-align:left;">
-        <b style="color:#555;">Brain encoding accuracy by region group.</b>
-        Best-layer Pearson correlation averaged across voxels within each functional group.
-        LRM features (right) consistently outperform deep-RL baselines (left) across cortical regions.
+      <div class="section-figure">
+        <img src="figures/encoding_groups_combined.svg" alt="Brain encoding accuracy by region group">
+        <div class="section-figure-caption">
+          <b>Brain encoding accuracy by region group.</b>
+          Best-layer Pearson correlation averaged across voxels within each functional group.
+          LRM features (right) consistently outperform deep-RL baselines (left) across cortical regions.
+        </div>
       </div>
     </section>
 
     <!-- =========================================================== -->
-    <!-- What does reasoning look like?                              -->
+    <!-- Where can this go?                                          -->
     <!-- =========================================================== -->
     <section>
-      <h2>What does LRM reasoning look like?</h2>
-      One advantage of working with language models is that we can actually read their reasoning.
-      In the copied-reasoning condition, the model's hidden chain of thought is exposed at each step.
-      Below is an example from the Bait game: the model forms hypotheses about object identities and game mechanics, tests them against observed outcomes, and revises its understanding &mdash; a process that reads strikingly like how humans describe their own learning when thinking aloud.
+      <h2>Where can this go?</h2>
+      Two threads suggest themselves naturally from the results above.
 
-      <div style="margin-top:20px; width:100%; text-align:center;">
-        <img src="figures/reasoning_trace_bait.svg" style="width:95%; border:none;">
-      </div>
-      <div style="margin-top:8px; font-size:16px; color:#888; text-align:left;">
-        <b style="color:#555;">Reasoning trace (Bait, level 3).</b>
-        Curated excerpts from a DeepSeek V3.2 run.
-        The model proposes candidate object identities, verifies them against observed state changes, and adapts its strategy when predictions fail.
-        You can step through the full reasoning trace of this run &mdash; every observation, every chain of thought, every action &mdash; in the
-        <a href="replay.html?local-key=llm_catalogue/lrm-cr/deepseek/deepseek-v3.2/bait_vgfmri4.replay.json.gz">replay viewer</a>.
-      </div>
+      <h3 style="margin-top:24px; font-size:21px; font-weight:400; color:#333;">Closing the active-learning gap</h3>
+      The brain alignment we report is mostly about <i>what</i> the world is: the structure of game states, encoded in the model's hidden activations.
+      It is much harder to read off the brain signal of active learning and planning <i>itself</i> &mdash; the moments where a participant forms a hypothesis, decides to test it, and revises when the prediction fails.
+      Language representations are surprisingly good proxies for perceptual content (<a href="https://arxiv.org/abs/2206.04105" target="_blank" rel="noopener">Marjieh et&nbsp;al. 2022</a>; <a href="https://www.nature.com/articles/nature17637" target="_blank" rel="noopener">Huth et&nbsp;al. 2016</a>), but cognitive operations like search, planning and retrieval leave a different kind of footprint (<a href="https://www.nature.com/articles/s41586-024-07522-w" target="_blank" rel="noopener">Fedorenko et&nbsp;al. 2024</a>).
+      A natural next step is to commit to a <b>richer harness</b>: external memory, explicit reasoning scratchpads, cognitive-architecture choices that mirror what humans do (<a href="https://arxiv.org/abs/2309.02427" target="_blank" rel="noopener">Sumers et&nbsp;al. 2023</a>), and a way to align the model's own gameplay trajectory back to the individual participant's.
+      Once models can actively engage with the environment in a way that <i>matches</i> a specific human run, we expect the encoding analysis to recover signal it currently misses.
+
+      <h3 style="margin-top:24px; font-size:21px; font-weight:400; color:#333;">A standardised testbed for theory comparison</h3>
+      Once the active-learning gap is closed, this paradigm offers cognitive science something it has rarely had: a way to test competing accounts of human learning and planning jointly against <b>both behaviour and the brain</b>, on the same humans, the same games, the same TR axis.
+      Candidate accounts &mdash; Bayesian program induction, schema-based reasoning, language-as-thought, planning-by-search &mdash; can each be operationalised as a harness on a frontier LRM and scored simultaneously on rule-discovery time, curriculum progression, and per-voxel encoding accuracy.
+      The interactive surfaces above (the replay viewer in Section&nbsp;B, the representation viewer in Section&nbsp;A) are a first attempt to make those comparisons <i>inspectable</i>, not buried behind a regression coefficient table.
+
+      <h3 style="margin-top:24px; font-size:21px; font-weight:400; color:#333;">Caveats</h3>
+      Two things bound the scope of our claims.
+      First, estimating per-voxel noise ceilings is genuinely hard when every gameplay trajectory is unique, so cross-region comparisons of absolute encoding accuracy mostly reflect regional signal-to-noise; the cleanly interpretable claim is the <i>relative ordering</i> across model classes, not the absolute numbers.
+      Second, LRMs retain general priors from their (opaque) training corpora that we cannot fully control for. Every model class in our comparison has access to some game-relevant information through one channel or another &mdash; deep-RL receives weight updates from specific levels, EMPA has the ground-truth VGDL ontology, LRMs have their pretraining mix &mdash; but the channels are not equivalent.
+      We see this as motivating, not deflating: the <i>profile</i> of LRM priors is closer to how a human approaches a novel game than from-scratch training, and that's exactly why the comparison is informative in the first place.
     </section>
 
     <!-- =========================================================== -->
@@ -461,12 +717,10 @@
     <!-- =========================================================== -->
     <section>
       <h2>Citation</h2>
-      <div class="bibtex-block" id="bibtex">
-        <button class="copy-btn" onclick="navigator.clipboard.writeText(document.getElementById('bibtex-text').textContent)">Copy</button>
-<span id="bibtex-text">@article{botos2026reason,
+      <div class="bibtex-block" id="bibtex"><button class="copy-btn" onclick="navigator.clipboard.writeText(document.getElementById('bibtex-text').textContent)">Copy</button><span id="bibtex-text">@article{botos2026reason,
   title   = {Reason to Play: Behavioral and Brain Alignment
              Between Frontier LRMs and Human Game Learners},
-  author  = {Botos, Csaba and Kumar, Sreejan and
+  author  = {Csaba, Botos and Kumar, Sreejan and
              Andrews, Austin Tudor David and Hunt, Laurence and
              Summerfield, Chris and Tenenbaum, Joshua B. and
              Costa, Rui Ponte and Mattar, Marcelo G. and
@@ -477,6 +731,24 @@
 
   </div>
 
-  <script src="interactive-gameplay-bundle.js"></script>
+  <script>
+    // Configuration for the inlined representation viewer. Picked up by
+    // representation-main.js (window.EMBED_CONFIG takes precedence over
+    // URL params, which only matter for the standalone representation.html).
+    window.EMBED_CONFIG = {
+      subject: 'sub-13',
+      game:    'bait',
+      model:   'dsv4_pro',
+      stream:  'main',
+      roi:     'SFG',
+      layer:   51,
+      level:   6,
+      episode: 0,
+    };
+  </script>
+  <script type="module" src="representation-main.js"></script>
+  <!-- catalogue-main.js detects the .cat-embed-card mount points in
+       this document and mounts a GameCard in each (no iframe). -->
+  <script type="module" src="catalogue-main.js"></script>
 </body>
 </html>

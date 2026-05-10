@@ -863,7 +863,42 @@
       .reasoning-chart-box.histogram,
       .reasoning-chart-box.lineplot { flex: 1; }
     }
+
+    /* ===========================================================
+       Embed mode (?embed=1)
+
+       Used when the viewer is iframed into another page (e.g. the
+       landing page's "How does the model think?" section). We strip
+       the page chrome -- header, footer, file drop zone, help bar,
+       reasoning-charts, share/reset buttons -- so the iframe shows
+       only the live replay surface (canvas + flap + scrubber +
+       conversation).
+
+       The embed-mode class is applied to documentElement by the
+       synchronous head-script below, BEFORE the first paint, to
+       avoid the flash of unstyled chrome before the module script
+       gets a chance to run. */
+    html.embed-mode body { background: transparent; }
+    html.embed-mode .wrapper {
+      max-width: 100%;
+      padding: 6px 10px;
+    }
+    html.embed-mode header,
+    html.embed-mode footer,
+    html.embed-mode .file-drop-zone,
+    html.embed-mode .help-bar,
+    html.embed-mode .reasoning-charts,
+    html.embed-mode #btn-share,
+    html.embed-mode #btn-reset {
+      display: none !important;
+    }
   </style>
+  <script>
+    // Synchronous: applies embed-mode BEFORE first paint.
+    if (new URLSearchParams(location.search).get('embed') === '1') {
+      document.documentElement.classList.add('embed-mode');
+    }
+  </script>
 </head>
 <body>
   <div class="wrapper">
