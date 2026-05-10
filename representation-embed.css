@@ -1,0 +1,965 @@
+/* developed and copyright by Botos Csaba (botos.official@gmail.com), 2026
+   Licensed under the MIT License. See LICENSE file for details.
+
+   Scoped stylesheet for the representation viewer when inlined as a
+   4-card widget (e.g. on the landing page).
+
+   Core design rules:
+   1. Layout never reflows on hover. Gaps between cards stay constant; the
+      "spread" effect is a CSS transform only. Inter-card glue
+      (translation arrow, scrubber, model switcher, ROI cycle controls)
+      is absolutely positioned so it never takes layout space.
+   2. All four cards share the same outer dimensions. The game canvas's
+      rendered height is the source of truth: representation-main.js sets
+      --card-h on .main-container and the other three cards mirror it.
+   3. RDM panels are the primary content of the bottom cards: they fill
+      the card height (square via aspect-ratio); brain images and the
+      layer strip take the remaining horizontal width.
+*/
+
+/* ---- Scoped reset ---- */
+.bgi-rep, .bgi-rep * { margin: 0; padding: 0; }
+.bgi-rep, .bgi-rep *, .bgi-rep *::before, .bgi-rep *::after { box-sizing: border-box; }
+.bgi-rep {
+  font-family: 'EB Garamond', serif;
+  font-size: 17px;
+  color: black;
+  background: transparent;
+  position: relative;
+}
+
+/* ---- Loading placeholder (visible while the widget boots) ----------
+   The min-height lives HERE rather than on .bgi-rep. While the widget
+   is loading, the placeholder occupies a body of vertical space that
+   roughly matches the assembled widget, so the page below doesn't drop
+   into place when data arrives. Once main-container becomes visible
+   the placeholder is display:none'd via :has() and .bgi-rep collapses
+   to the natural content height (no leftover gap). */
+.bgi-rep .rep-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 720px;            /* approx. assembled widget height for the bait_vgfmri4 game */
+  color: #888;
+  font-style: italic;
+  font-size: 16px;
+  transition: opacity 0.25s ease;
+}
+.bgi-rep .rep-loading .rep-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid #e2e2e2;
+  border-top-color: #888;
+  border-radius: 50%;
+  animation: bgi-rep-spin 0.9s linear infinite;
+}
+@keyframes bgi-rep-spin { to { transform: rotate(360deg); } }
+.bgi-rep:has(.main-container.visible) .rep-loading {
+  display: none;
+}
+
+/* ---- Hide chrome unconditionally in embed mode ---- */
+.bgi-rep .selector-bar,
+.bgi-rep .help-bar,
+.bgi-rep #btn-expand-all,
+.bgi-rep .try-tab,
+.bgi-rep .scrubber-marks {
+  display: none !important;
+}
+
+/* ---- Top-level container ---- */
+.bgi-rep .main-container {
+  display: none;
+  position: relative;
+  /* Per-card height. JS overwrites this from canvas.offsetHeight whenever
+     the canvas resizes, so all four cards stay locked to the game card. */
+  --card-h: 360px;
+  --card-pad: 8px;
+  /* Inter-row gap zone height stays equal to --col-gap so the collapsed
+     view has matching horizontal/vertical gaps. The scrubber-row and
+     model-switcher are absolutely centred on this strip; they overflow
+     the strip into the cards above/below but stay invisible (opacity 0)
+     until hover. On hover the cards translate apart by --spread-y on
+     each side, opening up gap-h + 2*spread-y of visual space -- enough
+     to display the scrubber (22px) and model switcher (32px). */
+  --gap-h: 6px;
+  --col-gap: 6px;
+  --spread-x: 17px;
+  --spread-y: 17px;
+  --anim: 0.32s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.bgi-rep .main-container.visible { display: block; }
+
+.bgi-rep .panels-area {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ---- Top row (canvas | conversation) -------------------------------- */
+/* Two equal columns; gap stays constant. Translation arrow floats
+   absolutely in the gap. */
+.bgi-rep .top-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  column-gap: var(--col-gap);
+  align-items: stretch;
+}
+
+.bgi-rep .translation-arrow {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: #888;
+  font-size: 11px;
+  font-style: italic;
+  text-align: center;
+  line-height: 1.1;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s ease;
+  z-index: 2;
+}
+.bgi-rep .translation-arrow svg { width: 56px; height: 18px; }
+.bgi-rep .main-container:hover .translation-arrow {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ---- Canvas card --------------------------------------------------- */
+.bgi-rep .canvas-wrapper {
+  position: relative;
+  display: block;
+  background: #000;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform var(--anim);
+  will-change: transform;
+}
+.bgi-rep #game-canvas {
+  background: #000;
+  display: block;
+  width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+}
+.bgi-rep .play-indicator {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+.bgi-rep .play-indicator.flash { opacity: 1; }
+.bgi-rep .play-indicator svg {
+  width: 56px; height: 56px;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5));
+}
+.bgi-rep .game-status {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 8px 24px;
+  background: rgba(80, 80, 80, 0.85);
+  color: white;
+  font-family: 'EB Garamond', serif;
+  font-size: 28px;
+  font-weight: bold;
+  letter-spacing: 0.12em;
+  border-radius: 10px;
+  pointer-events: none;
+  display: none;
+  z-index: 6;
+  filter: drop-shadow(0 3px 10px rgba(0,0,0,0.4));
+}
+.bgi-rep .game-status.visible { display: block; }
+.bgi-rep .game-status.win  { background: rgba(40, 110, 60, 0.85); }
+.bgi-rep .game-status.lose { background: rgba(150, 60, 60, 0.85); }
+
+/* ---- Conversation card -------------------------------------------- */
+.bgi-rep .conversation-panel {
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  height: var(--card-h);
+  overflow: hidden;
+  flex-shrink: 0;
+  background: white;
+  transition: transform var(--anim);
+  will-change: transform;
+}
+.bgi-rep .conversation-panel h3 {
+  font-size: 15px;
+  margin-bottom: 6px;
+  color: #333;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 4px;
+}
+.bgi-rep .conversation-content {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+.bgi-rep .conversation-content .msg {
+  padding: 5px 7px;
+  margin-bottom: 4px;
+  border-radius: 3px;
+}
+.bgi-rep .conversation-content .msg-user {
+  background: #f0f4ff;
+  border-left: 3px solid #6688cc;
+}
+.bgi-rep .conversation-content .msg-assistant {
+  background: #f4fff0;
+  border-left: 3px solid #66aa66;
+}
+.bgi-rep .conversation-content .msg-system {
+  background: #fff8f0;
+  border-left: 3px solid #cc8844;
+}
+.bgi-rep .conversation-content .msg-label {
+  font-weight: bold;
+  font-size: 10px;
+  text-transform: uppercase;
+  color: #888;
+  margin-bottom: 2px;
+}
+.bgi-rep .conversation-content .msg.active {
+  box-shadow: 0 0 0 2px #f6c350;
+}
+
+/* ---- Gap row (between top-row and ROI row) ------------------------- */
+/* Fixed-height row that always reserves vertical space for the scrubber
+   and model switcher. Children are absolutely positioned so they can
+   fade in/out without changing the row's height. */
+.bgi-rep .gap-row {
+  position: relative;
+  height: var(--gap-h);
+  width: 100%;
+}
+
+.bgi-rep .gap-row .scrubber-row {
+  position: absolute;
+  top: 50%;
+  /* translateY centers vertically; on hover we add a horizontal slide so
+     the row tracks the canvas card (which translates -spread-x on hover). */
+  transform: translate(0, -50%);
+  left: 0;
+  width: calc(50% - var(--col-gap) / 2);
+  padding: 0 4px;
+  border: none;
+  background: transparent;
+  opacity: 0;
+  pointer-events: none;
+  transition: transform var(--anim), opacity 0.28s ease;
+}
+.bgi-rep .main-container:hover .gap-row .scrubber-row {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(calc(-1 * var(--spread-x)), -50%);
+}
+.bgi-rep .scrubber-line {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.bgi-rep .scrubber-track-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: 18px;
+  cursor: pointer;
+  overflow: visible;
+}
+.bgi-rep .scrubber-track-wrap input[type=range] {
+  position: absolute;
+  bottom: -3px;
+  left: 0;
+  width: 100%;
+  pointer-events: none;
+  background: transparent;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 22px;
+  margin: 0;
+}
+.bgi-rep .scrubber-track-wrap input[type=range]::-webkit-slider-runnable-track {
+  height: 4px;
+  background: transparent;
+}
+.bgi-rep .scrubber-track-wrap input[type=range]::-moz-range-track {
+  height: 4px;
+  background: transparent;
+}
+.bgi-rep .scrubber-track-wrap input[type=range]::-webkit-slider-thumb {
+  pointer-events: auto;
+  -webkit-appearance: none;
+  appearance: none;
+  width: 11px;
+  height: 16px;
+  border-radius: 2px;
+  cursor: pointer;
+  margin-top: -6px;
+}
+.bgi-rep .scrubber-track-wrap input[type=range]::-moz-range-thumb {
+  pointer-events: auto;
+  width: 11px;
+  height: 16px;
+  border-radius: 2px;
+  cursor: pointer;
+  border: none;
+}
+.bgi-rep .scrubber-track-wrap input#scrubber-back::-webkit-slider-thumb {
+  background: #b0b0b0; border: 1.5px solid #555;
+}
+.bgi-rep .scrubber-track-wrap input#scrubber-back::-moz-range-thumb {
+  background: #b0b0b0; border: 1.5px solid #555;
+}
+.bgi-rep .scrubber-track-wrap input#scrubber-front::-webkit-slider-thumb {
+  background: #f6c350; border: 1.5px solid #8a5e0a;
+}
+.bgi-rep .scrubber-track-wrap input#scrubber-front::-moz-range-thumb {
+  background: #f6c350; border: 1.5px solid #8a5e0a;
+}
+.bgi-rep .scrubber-bg {
+  position: absolute;
+  bottom: 7px;
+  left: 0; right: 0;
+  height: 4px;
+  background: #ddd;
+  border-radius: 2px;
+}
+.bgi-rep .scrubber-window {
+  position: absolute;
+  bottom: 7px;
+  height: 4px;
+  background: #f6c350;
+  border-radius: 2px;
+  opacity: 0.55;
+}
+
+/* Speed spinner */
+.bgi-rep .speed-spinner {
+  display: grid;
+  grid-template-columns: 22px 44px 22px;
+  align-items: stretch;
+  height: 18px;
+  width: 88px;
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  font-family: 'EB Garamond', serif;
+  font-size: 15px;
+  line-height: 1;
+}
+.bgi-rep .speed-spinner button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  font-size: 15px;
+  font-weight: bold;
+  color: #555;
+}
+.bgi-rep .speed-spinner button:hover { color: #000; }
+.bgi-rep .speed-spinner button:disabled { opacity: 0.2; cursor: not-allowed; }
+.bgi-rep .speed-spinner .speed-value {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #333;
+  font-weight: bold;
+}
+
+/* Play/pause button -- minimal gray, sits between speed spinner and scrub track. */
+.bgi-rep .play-pause-btn {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #f5f5f5;
+  color: #555;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.bgi-rep .play-pause-btn:hover {
+  background: #ebebeb;
+  border-color: #999;
+  color: #222;
+}
+.bgi-rep .play-pause-btn svg { width: 12px; height: 12px; display: block; }
+.bgi-rep .play-pause-btn .icon-pause { display: none; }
+.bgi-rep .play-pause-btn[data-state="playing"] .icon-play  { display: none; }
+.bgi-rep .play-pause-btn[data-state="playing"] .icon-pause { display: block; }
+
+/* Model switcher */
+.bgi-rep .gap-row .model-switcher {
+  position: absolute;
+  top: 50%;
+  /* Mirrors the scrubber-row: translate horizontally on hover to track
+     the conversation card (which translates +spread-x). */
+  transform: translate(0, -50%);
+  right: 0;
+  width: calc(50% - var(--col-gap) / 2);
+  display: grid;
+  grid-template-columns: 28px 1fr 28px;
+  align-items: stretch;
+  height: 32px;
+  border: none;
+  background: transparent;
+  font-family: 'EB Garamond', serif;
+  opacity: 0;
+  pointer-events: none;
+  transition: transform var(--anim), opacity 0.28s ease;
+}
+.bgi-rep .main-container:hover .gap-row .model-switcher {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(var(--spread-x), -50%);
+}
+.bgi-rep .model-switcher button.cycle {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 22px;
+  font-weight: bold;
+  color: #555;
+  padding: 0;
+  transition: color 0.15s;
+}
+.bgi-rep .model-switcher button.cycle:hover { color: #000; }
+.bgi-rep .model-switcher button.cycle:disabled { opacity: 0.2; cursor: not-allowed; }
+.bgi-rep .model-switcher select.center {
+  -webkit-appearance: none;
+  appearance: none;
+  border: none;
+  background: transparent;
+  font-family: 'EB Garamond', serif;
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+  text-align-last: center;
+  cursor: pointer;
+  min-width: 0;
+  color: #222;
+  height: 32px;
+}
+.bgi-rep .model-switcher select.center:hover { color: #000; }
+
+/* ---- Bottom row (human card | model card) -------------------------- */
+.bgi-rep .roi-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.bgi-rep .roi-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  column-gap: var(--col-gap);
+  align-items: stretch;
+}
+
+.bgi-rep .roi-card {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 8px;
+  padding: var(--card-pad);
+  border: 1px solid #e6e6e6;
+  border-radius: 8px;
+  background: white;
+  height: var(--card-h);
+  min-width: 0;
+  transition: transform var(--anim);
+  will-change: transform;
+  overflow: hidden;
+}
+.bgi-rep .roi-row.active .roi-card {
+  background: #fffbf0;
+  border-color: #f6c350;
+  box-shadow: 0 0 0 1px #f6c350;
+}
+
+/* RDM panel: square, fills the card content height -> drives sizing.
+   The brain column / layer strip take the remaining width. */
+.bgi-rep .panel-cell {
+  position: relative;
+  background: #fafafa;
+  border: 1px solid #e8e8e8;
+  border-radius: 3px;
+  overflow: hidden;
+  height: 100%;
+  aspect-ratio: 1 / 1;
+  flex: 0 0 auto;
+}
+.bgi-rep .panel-cell .panel-cell-title {
+  position: absolute;
+  top: 2px;
+  left: 4px;
+  font-size: 11px;
+  color: #666;
+  pointer-events: none;
+  z-index: 2;
+  background: rgba(255,255,255,0.6);
+  padding: 0 4px;
+  border-radius: 2px;
+}
+.bgi-rep .panel-cell canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Row controls: absolutely positioned in the gap between cards. */
+.bgi-rep .row-controls {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 60px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s;
+  z-index: 2;
+}
+.bgi-rep .main-container:hover .row-controls {
+  opacity: 1;
+  pointer-events: auto;
+}
+.bgi-rep .row-btn {
+  width: 28px; height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #ccc;
+  background: #f8f8f8;
+  cursor: pointer;
+  border-radius: 4px;
+  font-family: 'EB Garamond', serif;
+  font-size: 14px;
+  padding: 0;
+}
+.bgi-rep .row-btn:hover { background: #eee; border-color: #999; }
+.bgi-rep .row-btn.pick { font-size: 12px; }
+
+/* Brain column (human card): flex-fills remaining width. Brain images
+   are stacked vertically and stretch to fit the available height. */
+.bgi-rep .roi-brain {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 4px;
+  flex: 1 1 0;
+  min-width: 0;
+  height: 100%;
+}
+.bgi-rep .roi-brain-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 100%;
+  flex: 1 1 0;
+  min-height: 0;
+  cursor: pointer;
+  outline: none;
+}
+.bgi-rep .roi-brain-stack:focus-visible {
+  outline: 2px solid #f6c350;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+.bgi-rep .roi-brain .brain-view {
+  width: 100%;
+  flex: 1 1 0;
+  min-height: 0;
+  height: auto;
+  max-height: 100%;
+  object-fit: contain;
+  /* Hover-scale is a pure transform, so the surrounding flex layout
+     (RDM panel, layer strip, neighbouring card) doesn't reflow. */
+  transition: transform 0.15s ease;
+  transform-origin: center;
+}
+.bgi-rep .roi-brain-stack:hover .brain-view,
+.bgi-rep .roi-brain-stack:focus-visible .brain-view {
+  transform: scale(1.08);
+}
+.bgi-rep .roi-brain .roi-name {
+  font-weight: bold;
+  font-size: 14px;
+  color: #222;
+  text-align: center;
+  line-height: 1.15;
+  flex: 0 0 auto;
+}
+.bgi-rep .roi-brain .roi-meta {
+  font-size: 11px;
+  color: #888;
+  text-align: center;
+  font-family: 'Courier New', monospace;
+  flex: 0 0 auto;
+}
+
+/* Layer strip column (model card). The actual block heights are sized
+   by sizeRowGeometry() in JS, which reads .panel-cell.offsetHeight; we
+   give the column itself a flex-fill so it occupies the remaining width
+   beside the square RDM. */
+.bgi-rep .layer-strip-col {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: center;
+  gap: 6px;
+  flex: 1 1 0;
+  min-width: 0;
+  height: 100%;
+}
+.bgi-rep .row-layer-strip {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 1px;
+  background: transparent;
+  border: none;
+}
+.bgi-rep .layer-block {
+  border-radius: 2px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.bgi-rep .layer-block:hover { outline: 1.5px solid #8a5e0a; }
+.bgi-rep .layer-block.active {
+  background: #f6c350;
+  outline: 2px solid #8a5e0a;
+  box-shadow: 0 0 0 1px #fff inset;
+}
+.bgi-rep .layer-block.peak { background: #f0a020; }
+.bgi-rep .layer-block.peak.active {
+  background: #d68310;
+  outline: 2px solid #4a2e0a;
+}
+.bgi-rep .layer-current-label {
+  writing-mode: vertical-rl;
+  font-family: 'EB Garamond', serif;
+  font-size: 16px;
+  font-weight: bold;
+  color: #222;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 2px;
+  user-select: none;
+  flex: 0 0 auto;
+}
+
+/* ---- Hover: push the four cards diagonally apart (transform only) -- */
+.bgi-rep .main-container:hover .canvas-wrapper      { transform: translate(calc(-1 * var(--spread-x)), calc(-1 * var(--spread-y))); }
+.bgi-rep .main-container:hover .conversation-panel  { transform: translate(var(--spread-x), calc(-1 * var(--spread-y))); }
+.bgi-rep .main-container:hover .roi-card-human      { transform: translate(calc(-1 * var(--spread-x)), var(--spread-y)); }
+.bgi-rep .main-container:hover .roi-card-model      { transform: translate(var(--spread-x), var(--spread-y)); }
+
+/* ---- Floating thumb labels (FROM / TR x of N) --------------------- */
+.bgi-rep .scrub-thumb-label {
+  position: absolute;
+  top: -22px;
+  transform: translateX(-50%);
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  pointer-events: none;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.15s;
+  z-index: 5;
+}
+.bgi-rep .scrubber-row:hover .scrub-thumb-label,
+.bgi-rep .main-container:hover .scrub-thumb-label { opacity: 1; }
+.bgi-rep .scrub-back-label {
+  background: #c8c8c8;
+  color: #1f1f1f;
+  border: 1px solid #888;
+}
+.bgi-rep .scrub-front-label {
+  background: #f6c350;
+  color: #2a1d04;
+  border: 1px solid #8a5e0a;
+  font-weight: bold;
+  z-index: 3;
+}
+
+/* ---- ROI picker overlay (used when row 'pick' button is clicked) --- */
+.bgi-rep .roi-picker-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.18);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+.bgi-rep .roi-picker-overlay.open { display: flex; }
+.bgi-rep .roi-picker {
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 18px 22px;
+  max-width: 920px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+}
+.bgi-rep .roi-picker h2 {
+  font-size: 18px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 6px;
+}
+.bgi-rep .roi-picker-group { margin-bottom: 14px; }
+.bgi-rep .roi-picker-group h4 {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 6px;
+  font-style: italic;
+}
+.bgi-rep .roi-picker-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.bgi-rep .roi-picker-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fcfcfc;
+  cursor: pointer;
+  font-family: 'EB Garamond', serif;
+  width: 170px;
+}
+.bgi-rep .roi-picker-item:hover {
+  background: #fff8e8;
+  border-color: #f6c350;
+}
+.bgi-rep .roi-picker-item.active {
+  background: #fff3d6;
+  border-color: #d68310;
+}
+.bgi-rep .roi-picker-item .picker-views {
+  display: flex;
+  flex-direction: row;
+  gap: 2px;
+  justify-content: center;
+}
+.bgi-rep .roi-picker-item .brain-view {
+  width: 70px;
+  height: auto;
+  max-height: 56px;
+  object-fit: contain;
+}
+.bgi-rep .roi-picker-item .name {
+  font-size: 13px;
+  font-weight: bold;
+  color: #222;
+  text-align: center;
+  line-height: 1.15;
+}
+
+/* ---- Model picker overlay (replaces the model dropdown) ------------ */
+.bgi-rep .model-picker-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.18);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+.bgi-rep .model-picker-overlay.open { display: flex; }
+.bgi-rep .model-picker {
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 18px 22px;
+  max-width: 540px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+}
+.bgi-rep .model-picker h2 {
+  font-size: 18px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 6px;
+}
+.bgi-rep .model-picker-items {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 360px;
+}
+.bgi-rep .model-picker-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fcfcfc;
+  font-family: 'EB Garamond', serif;
+}
+.bgi-rep .model-picker-item:hover {
+  background: #fff8e8;
+  border-color: #f6c350;
+}
+.bgi-rep .model-picker-item.active {
+  background: #fff3d6;
+  border-color: #d68310;
+}
+.bgi-rep .model-picker-item .name-btn {
+  flex: 1;
+  text-align: left;
+  font-size: 15px;
+  font-weight: bold;
+  color: #222;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-family: 'EB Garamond', serif;
+}
+.bgi-rep .model-picker-item .name-btn:hover { color: #000; }
+.bgi-rep .model-picker-item .hf-link {
+  font-size: 13px;
+  color: #555;
+  text-decoration: none;
+  border: 1px solid #ddd;
+  padding: 2px 8px;
+  border-radius: 3px;
+  background: #fff;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+.bgi-rep .model-picker-item .hf-link:hover {
+  background: #f0e4c0;
+  border-color: #b58a30;
+  color: #2a1d04;
+}
+
+/* ---- Model switcher button replacing the central <select> --------- */
+.bgi-rep .model-switcher button.center {
+  -webkit-appearance: none;
+  appearance: none;
+  border: none;
+  background: transparent;
+  font-family: 'EB Garamond', serif;
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+  cursor: pointer;
+  min-width: 0;
+  color: #222;
+  height: 32px;
+  padding: 0 4px;
+}
+.bgi-rep .model-switcher button.center:hover { color: #000; }
+
+/* ---- Mobile: stack into a single column --------------------------- */
+@media (max-width: 900px) {
+  .bgi-rep .top-row,
+  .bgi-rep .roi-row {
+    grid-template-columns: 1fr;
+    row-gap: 10px;
+  }
+  .bgi-rep .roi-card { height: auto; min-height: 220px; }
+  .bgi-rep .gap-row { height: auto; min-height: 60px; padding: 8px 0; }
+  .bgi-rep .gap-row .scrubber-row,
+  .bgi-rep .gap-row .model-switcher {
+    position: static;
+    width: 100%;
+    transform: none;
+    margin: 4px 0;
+  }
+  .bgi-rep .main-container:hover .canvas-wrapper,
+  .bgi-rep .main-container:hover .conversation-panel,
+  .bgi-rep .main-container:hover .roi-card-human,
+  .bgi-rep .main-container:hover .roi-card-model {
+    transform: none;
+  }
+  /* Model card on mobile: layer strip + label sit on the LEFT of the RDM,
+     and the "Layer N" label is rotated counter-clockwise so it reads
+     bottom-to-top along the far-left edge. row-reverse on both the card
+     and the strip column achieves [label][strip][RDM] left-to-right. */
+  .bgi-rep .roi-card-model { flex-direction: row-reverse; }
+  .bgi-rep .layer-strip-col {
+    flex-direction: row-reverse;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 6px;
+    height: 100%;
+  }
+  .bgi-rep .row-layer-strip {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    width: auto;
+    height: auto !important;
+    padding: 0;
+    gap: 1px;
+  }
+  .bgi-rep .layer-block {
+    flex: 1;
+    min-width: 0;
+    width: 24px !important;
+    height: auto !important;
+    min-height: 3px;
+  }
+  .bgi-rep .layer-current-label {
+    writing-mode: sideways-lr;
+    transform: none;
+    font-size: 14px;
+    text-align: center;
+    padding: 4px 2px;
+  }
+}

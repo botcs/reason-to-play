@@ -1,0 +1,1778 @@
+<!-- developed and copyright by Botos Csaba (botos.official@gmail.com), 2026 -->
+<!-- Licensed under the MIT License. See LICENSE file for details. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BGI - Representation Viewer v2</title>
+  <link rel="icon" href="data:,">
+  <link rel="icon" type="image/png" href="play.png">
+  <style>
+/* cyrillic-ext */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/SlGFmQSNjdsmc35JDF1K5GRwUjcdlttVFm-rI7e8QL9wU6i1hGFJRvzr2Q.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/SlGFmQSNjdsmc35JDF1K5GRwUjcdlttVFm-rI7e8QL95U6i1hGFJRvzr2Q.woff2) format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek-ext */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/SlGFmQSNjdsmc35JDF1K5GRwUjcdlttVFm-rI7e8QL9xU6i1hGFJRvzr2Q.woff2) format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/SlGFmQSNjdsmc35JDF1K5GRwUjcdlttVFm-rI7e8QL9-U6i1hGFJRvzr2Q.woff2) format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/SlGFmQSNjdsmc35JDF1K5GRwUjcdlttVFm-rI7e8QL9yU6i1hGFJRvzr2Q.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/SlGFmQSNjdsmc35JDF1K5GRwUjcdlttVFm-rI7e8QL9zU6i1hGFJRvzr2Q.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/SlGFmQSNjdsmc35JDF1K5GRwUjcdlttVFm-rI7e8QL99U6i1hGFJRvw.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/SlGUmQSNjdsmc35JDF1K5GR4SDk_YAPIlWk.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/SlGUmQSNjdsmc35JDF1K5GRxSDk_YAPIlWk.woff2) format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek-ext */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/SlGUmQSNjdsmc35JDF1K5GR5SDk_YAPIlWk.woff2) format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/SlGUmQSNjdsmc35JDF1K5GR2SDk_YAPIlWk.woff2) format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/SlGUmQSNjdsmc35JDF1K5GR6SDk_YAPIlWk.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/SlGUmQSNjdsmc35JDF1K5GR7SDk_YAPIlWk.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/SlGUmQSNjdsmc35JDF1K5GR1SDk_YAPI.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(fonts/SlGUmQSNjdsmc35JDF1K5GR4SDk_YAPIlWk.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(fonts/SlGUmQSNjdsmc35JDF1K5GRxSDk_YAPIlWk.woff2) format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek-ext */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(fonts/SlGUmQSNjdsmc35JDF1K5GR5SDk_YAPIlWk.woff2) format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(fonts/SlGUmQSNjdsmc35JDF1K5GR2SDk_YAPIlWk.woff2) format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(fonts/SlGUmQSNjdsmc35JDF1K5GR6SDk_YAPIlWk.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(fonts/SlGUmQSNjdsmc35JDF1K5GR7SDk_YAPIlWk.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(fonts/SlGUmQSNjdsmc35JDF1K5GR1SDk_YAPI.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/-F63fjptAgt5VM-kVkqdyU8n1iIq131nj-otFQ.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/-F63fjptAgt5VM-kVkqdyU8n1isq131nj-otFQ.woff2) format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/-F63fjptAgt5VM-kVkqdyU8n1iAq131nj-otFQ.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/-F63fjptAgt5VM-kVkqdyU8n1iEq131nj-otFQ.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/-F63fjptAgt5VM-kVkqdyU8n1i8q131nj-o.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(fonts/-F6qfjptAgt5VM-kVkqdyU8n3twJwl1FgsAXHNlYzg.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(fonts/-F6qfjptAgt5VM-kVkqdyU8n3twJwlRFgsAXHNlYzg.woff2) format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(fonts/-F6qfjptAgt5VM-kVkqdyU8n3twJwl9FgsAXHNlYzg.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(fonts/-F6qfjptAgt5VM-kVkqdyU8n3twJwl5FgsAXHNlYzg.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(fonts/-F6qfjptAgt5VM-kVkqdyU8n3twJwlBFgsAXHNk.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+  </style>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'EB Garamond', serif;
+      font-size: 17px;
+      background: white;
+      color: black;
+      min-height: 100vh;
+    }
+    a { color: black; }
+
+    .wrapper {
+      max-width: 85vw;
+      margin: 0 auto;
+      padding: 20px 20px;
+    }
+
+    header {
+      text-align: center;
+      padding-bottom: 12px;
+      border-bottom: 1.5px solid black;
+      margin-bottom: 16px;
+    }
+    header h1 {
+      font-size: 36px;
+      font-weight: normal;
+    }
+    header .subtitle {
+      font-size: 16px;
+      color: #555;
+    }
+
+    /* --- Selector bar: collapsed-by-default "Configuration" card.
+       Click the header to expand and reveal the subject/game/model
+       /stream selects + Load button. Same behavior on desktop and
+       mobile. --- */
+    .selector-bar {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 8px 16px;
+      margin: 0 auto 16px;
+      max-width: 380px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      background: #fafafa;
+    }
+    .selector-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 4px 0;
+      border: none;
+      background: transparent;
+      font-family: 'EB Garamond', serif;
+      font-size: 16px;
+      font-weight: bold;
+      color: #444;
+      cursor: pointer;
+      letter-spacing: 0.02em;
+    }
+    .selector-toggle:hover { color: #000; }
+    .selector-chevron {
+      font-size: 12px;
+      color: #888;
+      transition: transform 0.2s ease;
+      transform: rotate(0deg);
+    }
+    .selector-bar.collapsed .selector-chevron { transform: rotate(-90deg); }
+    .selector-body {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      column-gap: 12px;
+      row-gap: 6px;
+      align-items: center;
+    }
+    .selector-bar.collapsed .selector-body { display: none; }
+    .selector-body label {
+      font-size: 14px;
+      font-weight: bold;
+      color: #444;
+      text-align: right;
+      white-space: nowrap;
+    }
+    .selector-body select {
+      font-family: 'EB Garamond', serif;
+      font-size: 15px;
+      padding: 3px 8px;
+      border: 1px solid #999;
+      border-radius: 4px;
+      background: white;
+      cursor: pointer;
+      width: 100%;
+      justify-self: start;
+    }
+    .selector-body .load-btn {
+      grid-column: 2;
+      justify-self: start;
+      font-family: 'EB Garamond', serif;
+      font-size: 15px;
+      padding: 5px 18px;
+      border: 1px solid #333;
+      border-radius: 4px;
+      background: #333;
+      color: white;
+      cursor: pointer;
+      margin-top: 4px;
+    }
+    .selector-body .load-btn:hover { background: #555; }
+    .selector-body .load-btn:disabled {
+      opacity: 0.4;
+      cursor: wait;
+    }
+    .selector-body .status-text {
+      grid-column: 1 / -1;
+      font-size: 13px;
+      color: #888;
+      text-align: center;
+      margin: 4px 0 0;
+    }
+
+    /* --- Main layout --- */
+    .main-container { display: none; }
+    .main-container.visible { display: block; }
+
+    /* Top row: game canvas (left) + translation arrow + conversation (right) */
+    .top-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 60px minmax(0, 1fr);
+      gap: 16px;
+      align-items: stretch;
+      margin-bottom: 4px;            /* tighter gap into the RDM grid below */
+    }
+    .translation-arrow {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      color: #888;
+      font-size: 11px;
+      font-style: italic;
+      text-align: center;
+      line-height: 1.1;
+    }
+    .translation-arrow svg {
+      width: 56px;
+      height: 18px;
+    }
+
+    .replay-left {
+      display: flex;
+      flex-direction: column;
+      gap: 0;             /* no gap between canvas and the slide-down flaps */
+      min-width: 0;
+    }
+    .replay-left .scrubber-row { margin-top: 4px; }
+    .canvas-wrapper {
+      position: relative;
+      display: block;
+      background: #000;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 0;
+      cursor: pointer;
+      overflow: hidden;
+    }
+    #game-canvas {
+      background: #000;
+      display: block;
+      width: 100%;        /* stretch to fill the game card */
+      height: auto;
+      image-rendering: pixelated;
+    }
+    /* Catalogue-style play indicator: fades in briefly on click */
+    .play-indicator {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.35s ease;
+    }
+    .play-indicator.flash { opacity: 1; }
+    .play-indicator svg {
+      width: 56px;
+      height: 56px;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5));
+    }
+    /* Win/Lose status banner over the canvas */
+    .game-status {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 8px 24px;
+      background: rgba(80, 80, 80, 0.85);
+      color: white;
+      font-family: 'EB Garamond', serif;
+      font-size: 28px;
+      font-weight: bold;
+      letter-spacing: 0.12em;
+      border-radius: 10px;
+      pointer-events: none;
+      display: none;
+      z-index: 6;
+      filter: drop-shadow(0 3px 10px rgba(0,0,0,0.4));
+    }
+    .game-status.visible { display: block; }
+    .game-status.win  { background: rgba(40, 110, 60, 0.85); }
+    .game-status.lose { background: rgba(150, 60, 60, 0.85); }
+    /* Right-edge Try Me tab on the game card */
+    .try-tab {
+      position: absolute;
+      top: 50%;
+      right: 0;
+      transform: translateY(-50%);
+      writing-mode: vertical-rl;
+      transform-origin: center;
+      padding: 8px 4px;
+      background: #e8edf8;
+      color: #2a3a78;
+      font-family: 'EB Garamond', serif;
+      font-size: 14px;          /* JS overrides this to fit short canvases */
+      font-weight: bold;
+      letter-spacing: 0.08em;
+      border: 1px solid #ccc;
+      border-right: none;
+      border-radius: 4px 0 0 4px;
+      cursor: pointer;
+      z-index: 5;
+      user-select: none;
+      white-space: nowrap;       /* never break "Try Me" onto two lines */
+      line-height: 1;
+      transition: background 0.15s, padding-right 0.15s, font-size 0.1s;
+    }
+    .try-tab:hover {
+      background: #d4ddf0;
+      padding-right: 8px;
+    }
+
+    /* Right column: conversation top-aligned with the canvas, model
+       switcher pinned to the bottom (same vertical position as the
+       scrubber on the left). */
+    .replay-right {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-width: 0;
+      gap: 6px;
+    }
+    /* Model switcher -- same minimalist style as the speed spinner. Plain
+       text by default, < / > cycle buttons fade in on hover. No card. */
+    .model-switcher {
+      display: grid;
+      grid-template-columns: 28px 1fr 28px;
+      align-items: stretch;
+      border: none;
+      background: transparent;
+      font-family: 'EB Garamond', serif;
+      height: 32px;
+      flex-shrink: 0;
+    }
+    .model-switcher button.cycle {
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 22px;
+      font-weight: bold;
+      color: #555;
+      padding: 0;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s, color 0.15s;
+    }
+    .model-switcher:hover button.cycle { opacity: 1; pointer-events: auto; }
+    .model-switcher button.cycle:hover { color: #000; }
+    .model-switcher button.cycle:disabled { opacity: 0.2; cursor: not-allowed; }
+    .model-switcher select.center,
+    .model-switcher button.center {
+      -webkit-appearance: none;
+      appearance: none;
+      border: none;
+      background: transparent;
+      font-family: 'EB Garamond', serif;
+      font-size: 18px;
+      font-weight: bold;
+      text-align: center;
+      text-align-last: center;
+      cursor: pointer;
+      padding: 0 4px;
+      min-width: 0;
+      color: #222;
+      height: 32px;
+    }
+    .model-switcher select.center:hover,
+    .model-switcher button.center:hover { color: #000; }
+
+    /* --- Model picker (mirrors the ROI picker style; rendered when the
+       central button in the model switcher is clicked) --- */
+    .model-picker-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.18);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+    .model-picker-overlay.open { display: flex; }
+    .model-picker {
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 18px 22px;
+      max-width: 540px;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    }
+    .model-picker h2 {
+      font-size: 18px;
+      margin-bottom: 10px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 6px;
+    }
+    .model-picker-items {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 360px;
+    }
+    .model-picker-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background: #fcfcfc;
+      font-family: 'EB Garamond', serif;
+    }
+    .model-picker-item:hover {
+      background: #fff8e8;
+      border-color: #f6c350;
+    }
+    .model-picker-item.active {
+      background: #fff3d6;
+      border-color: #d68310;
+    }
+    .model-picker-item .name-btn {
+      flex: 1;
+      text-align: left;
+      font-size: 15px;
+      font-weight: bold;
+      color: #222;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      font-family: 'EB Garamond', serif;
+    }
+    .model-picker-item .name-btn:hover { color: #000; }
+    .model-picker-item .hf-link {
+      font-size: 13px;
+      color: #555;
+      text-decoration: none;
+      border: 1px solid #ddd;
+      padding: 2px 8px;
+      border-radius: 3px;
+      background: #fff;
+      white-space: nowrap;
+      flex: 0 0 auto;
+    }
+    .model-picker-item .hf-link:hover {
+      background: #f0e4c0;
+      border-color: #b58a30;
+      color: #2a1d04;
+    }
+    .conversation-panel {
+      border: 2px solid #ddd;
+      border-radius: 6px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      /* Locked to the canvas's rendered height so the right column's top
+         edge aligns with the game card's. Inner content scrolls. */
+      height: var(--canvas-h, 400px);
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .conversation-panel h3 {
+      font-size: 15px;
+      margin-bottom: 6px;
+      color: #333;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 4px;
+    }
+    .conversation-content {
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      overflow-y: auto;
+      flex: 1;
+      min-height: 0;
+    }
+    .conversation-content .msg {
+      padding: 5px 7px;
+      margin-bottom: 4px;
+      border-radius: 3px;
+    }
+    .conversation-content .msg-user {
+      background: #f0f4ff;
+      border-left: 3px solid #6688cc;
+    }
+    .conversation-content .msg-assistant {
+      background: #f4fff0;
+      border-left: 3px solid #66aa66;
+    }
+    .conversation-content .msg-system {
+      background: #fff8f0;
+      border-left: 3px solid #cc8844;
+    }
+    .conversation-content .msg-label {
+      font-weight: bold;
+      font-size: 10px;
+      text-transform: uppercase;
+      color: #888;
+      margin-bottom: 2px;
+    }
+    .conversation-content .msg.active {
+      box-shadow: 0 0 0 2px #f6c350;
+    }
+
+    /* No card chrome -- just the scrub line and the spinner inline. The
+       row never changes dimensions; only the floating labels above the
+       thumbs appear on hover. */
+    .scrubber-row {
+      padding: 0 4px;
+      border: none;
+      background: transparent;
+    }
+    .scrubber-line {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .scrubber-track-wrap {
+      position: relative;
+      flex: 1;
+      min-width: 0;
+      height: 18px;        /* fixed; no grow on hover */
+      padding-top: 0;
+      cursor: pointer;
+    }
+    .scrubber-track-wrap input[type=range] {
+      position: absolute;
+      bottom: -3px;               /* anchored to bottom of wrap */
+      top: auto;
+      left: 0;
+      width: 100%;
+      pointer-events: none;
+      background: transparent;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 22px;
+      margin: 0;
+    }
+    .scrubber-track-wrap input[type=range]::-webkit-slider-runnable-track {
+      height: 4px;
+      background: transparent;
+    }
+    .scrubber-track-wrap input[type=range]::-moz-range-track {
+      height: 4px;
+      background: transparent;
+    }
+    /* Fixed thumb size -- 70% of original. No size change on hover. */
+    .scrubber-track-wrap input[type=range]::-webkit-slider-thumb {
+      pointer-events: auto;
+      -webkit-appearance: none;
+      appearance: none;
+      width: 11px;
+      height: 16px;
+      border-radius: 2px;
+      cursor: pointer;
+      margin-top: -6px;
+    }
+    .scrubber-track-wrap input[type=range]::-moz-range-thumb {
+      pointer-events: auto;
+      width: 11px;
+      height: 16px;
+      border-radius: 2px;
+      cursor: pointer;
+      border: none;
+    }
+    .scrubber-track-wrap input#scrubber-back::-webkit-slider-thumb {
+      background: #b0b0b0;
+      border: 1.5px solid #555;
+    }
+    .scrubber-track-wrap input#scrubber-back::-moz-range-thumb {
+      background: #b0b0b0;
+      border: 1.5px solid #555;
+    }
+    .scrubber-track-wrap input#scrubber-front::-webkit-slider-thumb {
+      background: #f6c350;
+      border: 1.5px solid #8a5e0a;
+    }
+    .scrubber-track-wrap input#scrubber-front::-moz-range-thumb {
+      background: #f6c350;
+      border: 1.5px solid #8a5e0a;
+    }
+    .scrubber-bg {
+      position: absolute;
+      bottom: 7px;
+      left: 0; right: 0;
+      height: 4px;
+      background: #ddd;
+      border-radius: 2px;
+    }
+    /* Boundary ticks (run / level only), labelled R<i>L<j> and L<j>.
+       Sit BELOW the track so they don't collide with the FROM/TR labels
+       that float above the thumbs. Hidden by default; fade in on hover. */
+    .scrubber-row { overflow: visible; }
+    .scrubber-track-wrap { overflow: visible; }
+    .scrubber-marks {
+      position: absolute;
+      /* The bg track sits at y=7..11 inside the 18px wrap. Anchor the
+         marks at y=11 so each tick stick starts exactly at the bottom
+         edge of the track and points downwards. */
+      top: 11px;
+      left: 8px;
+      right: 8px;
+      height: 18px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+    .scrubber-row:hover .scrubber-marks { opacity: 1; }
+    .scrubber-marks .mark {
+      position: absolute;
+      top: 0;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1px;
+      pointer-events: none;
+    }
+    .scrubber-marks .mark .stick {
+      width: 1px;
+      height: 6px;
+    }
+    .scrubber-marks .mark .lab {
+      font-family: 'Courier New', monospace;
+      font-size: 9px;
+      line-height: 1;
+      padding: 1px 3px;
+      border-radius: 2px;
+      white-space: nowrap;
+    }
+    .scrubber-marks .mark.run   .stick { background: #2c3e50; height: 9px; }
+    .scrubber-marks .mark.run   .lab   { background: #2c3e50; color: #fff; }
+    .scrubber-marks .mark.level .stick { background: #6688aa; }
+    .scrubber-marks .mark.level .lab   { background: #6688aa; color: #fff; }
+    .scrubber-window {
+      position: absolute;
+      bottom: 7px;        /* anchored to bottom, same as scrubber-bg */
+      height: 4px;
+      background: #f6c350;
+      border-radius: 2px;
+      opacity: 0.55;
+    }
+    /* Floating labels riding the thumbs. Float ABOVE the track-wrap so
+       they don't take layout space (the row never grows on hover). */
+    .scrub-thumb-label {
+      position: absolute;
+      top: -22px;
+      transform: translateX(-50%);
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 3px;
+      pointer-events: none;
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity 0.15s;
+      z-index: 5;
+    }
+    .scrubber-row:hover .scrub-thumb-label { opacity: 1; }
+    .scrub-back-label {
+      background: #c8c8c8;
+      color: #1f1f1f;
+      border: 1px solid #888;
+    }
+    .scrub-front-label {
+      background: #f6c350;
+      color: #2a1d04;
+      border: 1px solid #8a5e0a;
+      font-weight: bold;
+      z-index: 3;
+    }
+    .scrub-window-label {
+      background: rgba(255,255,255,0.85);
+      color: #8a5e0a;
+      border: 1px dashed #c8a45a;
+      font-style: italic;
+      font-size: 10px;
+      z-index: 1;
+    }
+
+    .playback-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .playback-controls .play-btn {
+      font-family: 'EB Garamond', serif;
+      font-size: 15px;
+      padding: 6px 18px;
+      border: 1px solid #333;
+      border-radius: 4px;
+      background: #333;
+      color: white;
+      cursor: pointer;
+      min-width: 78px;
+    }
+    .playback-controls .play-btn:hover { background: #555; }
+    /* Speed spinner -- inline, compact, no card. Width is fixed so the
+       scrub track to the right never shifts on hover. */
+    .speed-spinner {
+      display: grid;
+      grid-template-columns: 22px 44px 22px;
+      align-items: stretch;
+      height: 18px;
+      width: 88px;
+      flex-shrink: 0;
+      border: none;
+      background: transparent;
+      font-family: 'EB Garamond', serif;
+      font-size: 15px;
+      line-height: 1;
+    }
+    .speed-spinner button {
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      padding: 0;
+      font-size: 15px;
+      font-weight: bold;
+      color: #555;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s;
+    }
+    .scrubber-row:hover .speed-spinner button {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .speed-spinner button:hover { color: #000; }
+    .speed-spinner button:disabled { opacity: 0.2; cursor: not-allowed; }
+    .speed-spinner .speed-value {
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #333;
+      font-weight: bold;
+    }
+    /* Play/pause button -- minimal gray, sits between speed spinner and
+       scrub track. Icon is swapped via data-state set by JS. */
+    .play-pause-btn {
+      flex: 0 0 auto;
+      width: 22px;
+      height: 22px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: #f5f5f5;
+      color: #555;
+      cursor: pointer;
+      padding: 0;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .play-pause-btn:hover {
+      background: #ebebeb;
+      border-color: #999;
+      color: #222;
+    }
+    .play-pause-btn svg { width: 12px; height: 12px; display: block; }
+    .play-pause-btn .icon-pause { display: none; }
+    .play-pause-btn[data-state="playing"] .icon-play  { display: none; }
+    .play-pause-btn[data-state="playing"] .icon-pause { display: block; }
+    .step-meta-label {
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      color: #555;
+      white-space: nowrap;
+    }
+
+    /* --- Panel grid (single column; no global sidebar) --- */
+    .panels-area {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .roi-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* Each ROI row is two cards with controls floating between:
+       [brain + HUMAN-RDM] | row-controls | [MODEL-RDM + layer-strip] */
+    .roi-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 60px minmax(0, 1fr);
+      gap: 16px;
+      align-items: stretch;
+      background: transparent;
+      border: none;
+      padding: 0;
+      min-height: 360px;
+    }
+    .roi-card {
+      display: grid;
+      gap: 12px;
+      padding: 12px;
+      border: 1px solid #e6e6e6;
+      border-radius: 8px;
+      background: white;
+      align-items: start;       /* let panel size by JS, not stretch */
+    }
+    /* Same brain-column width on both cards so the human and model RDM
+       panels resolve to identical widths. Panels are sized to a square
+       in JS (sizeRowGeometry) -- aspect-ratio CSS conflicts with grid. */
+    .roi-card-human  { grid-template-columns: 220px minmax(0, 1fr); }
+    .roi-card-model  { grid-template-columns: minmax(0, 1fr) 220px; }
+    .roi-row.active .roi-card {
+      background: #fffbf0;
+      border-color: #f6c350;
+      box-shadow: 0 0 0 1px #f6c350;
+    }
+
+    /* Brain cell (two views stacked vertically + label) */
+    .roi-brain {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 6px;
+      padding: 4px;
+    }
+    .roi-brain-stack {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      width: 100%;
+      cursor: pointer;
+      outline: none;
+    }
+    .roi-brain-stack:focus-visible {
+      outline: 2px solid #f6c350;
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+    .roi-brain .brain-view {
+      width: 200px;
+      height: auto;
+      max-height: 130px;
+      object-fit: contain;
+      /* Hover-scale via transform only -- doesn't reflow the card
+         layout, so the RDM panel beside it never resizes. */
+      transition: transform 0.15s ease;
+      transform-origin: center;
+    }
+    .roi-brain-stack:hover .brain-view,
+    .roi-brain-stack:focus-visible .brain-view {
+      transform: scale(1.08);
+    }
+    .roi-brain .roi-name {
+      font-weight: bold;
+      font-size: 16px;
+      color: #222;
+      text-align: center;
+      line-height: 1.15;
+      margin-top: 4px;
+    }
+    .roi-brain .roi-meta {
+      font-size: 12px;
+      color: #888;
+      text-align: center;
+      font-family: 'Courier New', monospace;
+    }
+    /* Per-row run/level/play readout (FROM / TO) lives below the ROI meta. */
+    .roi-tr-meta {
+      width: 100%;
+      margin-top: 6px;
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      color: #555;
+      border-top: 1px solid #eee;
+      padding-top: 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .roi-tr-meta .row {
+      display: grid;
+      grid-template-columns: 36px 1fr;
+      gap: 4px;
+      align-items: baseline;
+    }
+    .roi-tr-meta .row .lab {
+      color: #888;
+      font-weight: bold;
+    }
+    .roi-tr-meta .row.from .lab { color: #666; }
+    .roi-tr-meta .row.to   .lab { color: #8a5e0a; }
+
+    /* RDM panel cells. Width is from the grid column; aspect-ratio keeps
+       it square as soon as layout resolves (so the canvas inside has the
+       right pixel dimensions on first render -- no 50% scaling artefact). */
+    .panel-cell {
+      position: relative;
+      background: #fafafa;
+      border: 1px solid #e8e8e8;
+      border-radius: 3px;
+      overflow: hidden;
+      aspect-ratio: 1 / 1;
+      align-self: start;
+    }
+    .panel-cell .panel-cell-title {
+      position: absolute;
+      top: 2px;
+      left: 4px;
+      font-size: 11px;
+      color: #666;
+      pointer-events: none;
+      z-index: 2;
+      background: rgba(255,255,255,0.6);
+      padding: 0 4px;
+      border-radius: 2px;
+    }
+    .panel-cell canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Inter-RDM controls (between human and model) */
+    .row-controls {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .row-btn {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #ccc;
+      background: #f8f8f8;
+      cursor: pointer;
+      border-radius: 4px;
+      font-family: 'EB Garamond', serif;
+      font-size: 14px;
+      padding: 0;
+    }
+    .row-btn:hover { background: #eee; border-color: #999; }
+    .row-btn.pick { font-size: 12px; }
+
+    /* Strip column = vertically-stacked layer blocks (left) + rotated
+       bold "Layer N" label (right, vertical text like "Try Me"). The
+       whole column's height is JS-locked to the model RDM. */
+    .layer-strip-col {
+      display: flex;
+      flex-direction: row;
+      align-items: stretch;
+      justify-content: center;     /* centred in the right column */
+      gap: 8px;
+    }
+    /* No background panel -- the yellow->red gradient on the blocks
+       themselves carries the relevance information. */
+    .row-layer-strip {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: center;
+      gap: 1px;
+      padding: 0;
+      background: transparent;
+      border: none;
+    }
+    .layer-block {
+      border-radius: 2px;
+      cursor: pointer;
+      flex-shrink: 0;
+      /* fill colour set per-block in JS based on similarity */
+    }
+    .layer-block:hover { outline: 1.5px solid #444; }
+    .layer-block.active {
+      outline: 2px solid #111;
+      box-shadow: 0 0 0 1px #fff inset;
+    }
+    /* Vertical "Layer N" label -- same clockwise reading as the Try Me
+       tab (writing-mode: vertical-rl, no extra rotate). */
+    .layer-current-label {
+      writing-mode: vertical-rl;
+      font-family: 'EB Garamond', serif;
+      font-size: 18px;
+      font-weight: bold;
+      color: #222;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 2px;
+      user-select: none;
+    }
+    .layer-block:hover { outline: 1.5px solid #8a5e0a; }
+    .layer-block.active {
+      background: #f6c350;
+      outline: 2px solid #8a5e0a;
+    }
+    .layer-block.peak { background: #f0a020; }
+    .layer-block.peak.active {
+      background: #d68310;
+      outline: 2px solid #4a2e0a;
+    }
+
+    /* ROI picker popup */
+    .roi-picker-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.18);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+    .roi-picker-overlay.open { display: flex; }
+    .roi-picker {
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 18px 22px;
+      max-width: 920px;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    }
+    .roi-picker h2 {
+      font-size: 18px;
+      margin-bottom: 10px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 6px;
+    }
+    .roi-picker-group {
+      margin-bottom: 14px;
+    }
+    .roi-picker-group h4 {
+      font-size: 14px;
+      color: #555;
+      margin-bottom: 6px;
+      font-style: italic;
+    }
+    .roi-picker-items {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .roi-picker-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background: #fcfcfc;
+      cursor: pointer;
+      font-family: 'EB Garamond', serif;
+      width: 170px;
+    }
+    .roi-picker-item:hover {
+      background: #fff8e8;
+      border-color: #f6c350;
+    }
+    .roi-picker-item.active {
+      background: #fff3d6;
+      border-color: #d68310;
+    }
+    .roi-picker-item .picker-views {
+      display: flex;
+      flex-direction: row;
+      gap: 2px;
+      justify-content: center;
+    }
+    .roi-picker-item .brain-view {
+      width: 70px;
+      height: auto;
+      max-height: 56px;
+      object-fit: contain;
+    }
+    .roi-picker-item .name {
+      font-size: 13px;
+      font-weight: bold;
+      color: #222;
+      text-align: center;
+      line-height: 1.15;
+    }
+
+    /* Expand-all toggle */
+    .expand-btn {
+      align-self: center;
+      font-family: 'EB Garamond', serif;
+      font-size: 14px;
+      padding: 6px 16px;
+      border: 1px solid #999;
+      background: #f8f8f8;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .expand-btn:hover { background: #eee; }
+
+    .help-bar {
+      font-size: 13px;
+      color: #888;
+      text-align: center;
+      padding: 8px 0 14px 0;
+    }
+
+    /* "How to read this" explainer at the bottom of the page */
+    .explainer {
+      max-width: 820px;
+      margin: 36px auto 0;
+      padding: 0 16px;
+      font-size: 17px;
+      line-height: 1.55;
+      color: #1a1a1a;
+    }
+    .explainer h2 {
+      font-size: 26px;
+      font-weight: normal;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 6px;
+      margin-bottom: 14px;
+    }
+    .explainer h3 {
+      font-size: 19px;
+      font-weight: 700;
+      margin: 22px 0 6px;
+      color: #222;
+    }
+    .explainer p { margin: 0 0 10px; }
+    .explainer ul {
+      margin: 0 0 10px;
+      padding-left: 22px;
+    }
+    .explainer ul li { margin: 0 0 8px; }
+    .explainer b { color: #111; }
+    .explainer i { color: #444; }
+    body.embed-mode .explainer { display: none !important; }
+    html.embed-mode .explainer { display: none !important; }
+    .help-mobile { display: none; }
+    @media (pointer: coarse), (max-width: 900px) {
+      .help-desktop { display: none; }
+      .help-mobile  { display: block; }
+    }
+
+    /* Mobile / narrow-viewport: switch to a single-column layout for the
+       whole page (game -> arrow -> conversation -> human RDM -> model
+       RDM). The ROI cycle controls move to the bottom of each pair, the
+       arrow rotates to point downwards, and the View-all button hides. */
+    @media (max-width: 900px) {
+      .wrapper { max-width: 95vw; padding: 12px; }
+
+      .top-row {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
+        gap: 10px;
+      }
+      .translation-arrow {
+        flex-direction: row;
+        gap: 8px;
+      }
+      .translation-arrow svg {
+        transform: rotate(90deg);
+        width: 18px;
+        height: 56px;
+      }
+
+      .roi-row {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+      .roi-card-human,
+      .roi-card-model {
+        grid-template-columns: 1fr;
+      }
+      .roi-card-human .roi-brain {
+        flex-direction: row;
+        gap: 12px;
+        align-items: center;
+        justify-content: flex-start;
+      }
+      .roi-card-human .roi-brain-stack {
+        flex-direction: row;
+        width: auto;
+        gap: 4px;
+      }
+      .roi-card-human .roi-brain .brain-view {
+        width: 90px;
+        max-height: 80px;
+      }
+      /* Model card on mobile: strip + label sit on the LEFT of the RDM,
+         with the "Layer N" label rotated counter-clockwise (sideways-lr)
+         along the far-left edge. */
+      .roi-card-model {
+        grid-template-columns: auto 1fr;     /* strip column | RDM */
+      }
+      .roi-card-model .layer-strip-col { order: 0; }
+      .roi-card-model .panel-cell      { order: 1; }
+      .layer-strip-col {
+        flex-direction: row-reverse;
+        align-items: stretch;
+        justify-content: flex-start;
+        gap: 6px;
+        height: auto;
+      }
+      .row-layer-strip {
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: center;
+        width: auto;
+        height: auto !important;
+        padding: 0;
+        gap: 1px;
+      }
+      .layer-block {
+        flex: 1;
+        min-width: 0;
+        width: 28px !important;
+        height: auto !important;
+        min-height: 3px;
+      }
+      .layer-current-label {
+        writing-mode: sideways-lr;
+        transform: none;
+        font-size: 15px;
+        text-align: center;
+        padding: 4px 2px;
+      }
+
+      .roi-card-human { order: 1; }
+      .roi-card-model { order: 2; }
+      .row-controls {
+        order: 3;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        gap: 16px;
+      }
+
+      /* Drop the expand-all toggle on mobile -- single-row only. */
+      #btn-expand-all { display: none; }
+    }
+
+    /* ===========================================================
+       Embed mode (?embed=1)
+
+       Used when the viewer is iframed into the landing page. We
+       strip everything that isn't one of the 4 cards
+       (canvas, conversation, human RDM card, model RDM card),
+       hide the inter-card glue (arrow, scrubber, model switcher,
+       ROI cycle controls) and bring it back only on hover -- the
+       cards spread diagonally and the hidden items fade in.
+       =========================================================== */
+    body.embed-mode { background: transparent; }
+    body.embed-mode .wrapper {
+      max-width: 100%;
+      padding: 8px;
+    }
+    body.embed-mode header,
+    body.embed-mode .selector-bar,
+    body.embed-mode footer,
+    body.embed-mode .help-bar,
+    body.embed-mode #btn-expand-all,
+    body.embed-mode .roi-picker-overlay,
+    body.embed-mode .try-tab,
+    body.embed-mode .scrubber-marks,
+    body.embed-mode .scrub-thumb-label {
+      display: none !important;
+    }
+    body.embed-mode .main-container { display: block; }
+    body.embed-mode .panels-area { gap: 0; }
+
+    /* The 4 cards translate apart on hover; the inter-card items fade in. */
+    body.embed-mode .canvas-wrapper,
+    body.embed-mode .conversation-panel,
+    body.embed-mode .roi-card-human,
+    body.embed-mode .roi-card-model {
+      transition: transform 0.32s cubic-bezier(0.2, 0.7, 0.2, 1);
+      will-change: transform;
+    }
+    body.embed-mode .translation-arrow,
+    body.embed-mode .scrubber-row,
+    body.embed-mode .model-switcher,
+    body.embed-mode .row-controls {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.28s ease, visibility 0s linear 0.28s;
+    }
+    /* Use the main-container as the hover sensor so moving between cards
+       keeps everything spread; reveal hidden controls + spread cards. */
+    body.embed-mode .main-container:hover .canvas-wrapper {
+      transform: translate(-14px, -10px);
+    }
+    body.embed-mode .main-container:hover .conversation-panel {
+      transform: translate(14px, -10px);
+    }
+    body.embed-mode .main-container:hover .roi-card-human {
+      transform: translate(-14px, 10px);
+    }
+    body.embed-mode .main-container:hover .roi-card-model {
+      transform: translate(14px, 10px);
+    }
+    body.embed-mode .main-container:hover .translation-arrow,
+    body.embed-mode .main-container:hover .scrubber-row,
+    body.embed-mode .main-container:hover .model-switcher,
+    body.embed-mode .main-container:hover .row-controls {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transition: opacity 0.28s ease, visibility 0s;
+    }
+
+    /* Mobile embed: the existing 900px media query already collapses to
+       a single column, but its row order puts the model card after a
+       full-width row of controls. In embed mode we want the cards still
+       grouped 4 together so hover/tap still expands them. We turn off
+       the diagonal translation on touch devices and just toggle reveal. */
+    @media (pointer: coarse) {
+      body.embed-mode .main-container:hover .canvas-wrapper,
+      body.embed-mode .main-container:hover .conversation-panel,
+      body.embed-mode .main-container:hover .roi-card-human,
+      body.embed-mode .main-container:hover .roi-card-model {
+        transform: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <header>
+      <h1><b>B</b>rowser <b>G</b>ame <b>I</b>nterpreter &mdash; Representation Viewer v2</h1>
+      <div class="subtitle">Per-TR RDMs across human ROIs and LLM hidden layers</div>
+    </header>
+
+    <div class="selector-bar collapsed" id="selector-bar">
+      <button class="selector-toggle" id="selector-toggle" type="button"
+              aria-expanded="false" aria-controls="selector-body">
+        <span>Configuration</span>
+        <span class="selector-chevron" aria-hidden="true">&#9662;</span>
+      </button>
+      <div class="selector-body" id="selector-body">
+        <label>Subject:</label>
+        <select id="select-subject"><option value="">-- select --</option></select>
+
+        <label>Game:</label>
+        <select id="select-game" disabled><option value="">-- select subject first --</option></select>
+
+        <label>Model:</label>
+        <select id="select-model" disabled><option value="">-- select game first --</option></select>
+
+        <label>Stream:</label>
+        <select id="select-stream" disabled><option value="">--</option></select>
+
+        <button class="load-btn" id="btn-load" disabled>Load</button>
+        <span class="status-text" id="load-status">Loading manifest...</span>
+      </div>
+    </div>
+    <script>
+      // Toggle the Configuration card. Default state is collapsed; on
+      // click the chevron rotates and the body slides into view.
+      (function () {
+        const bar = document.getElementById('selector-bar');
+        const btn = document.getElementById('selector-toggle');
+        if (!bar || !btn) return;
+        btn.addEventListener('click', () => {
+          const collapsed = bar.classList.toggle('collapsed');
+          btn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+        });
+      })();
+    </script>
+
+    <div class="main-container" id="main-container">
+
+      <div class="top-row">
+        <div class="replay-left">
+          <div class="canvas-wrapper" id="canvas-wrapper">
+            <canvas id="game-canvas" width="640" height="480"></canvas>
+            <div class="play-indicator" id="play-indicator">
+              <svg viewBox="0 0 24 24" fill="white"><polygon points="6,3 20,12 6,21"/></svg>
+            </div>
+            <div class="game-status" id="game-status"></div>
+            <div class="try-tab" id="try-tab" title="Open the interactive game">Try Me</div>
+          </div>
+
+          <div class="scrubber-row" id="scrubber-row">
+            <div class="scrubber-line">
+              <div class="speed-spinner">
+                <button id="btn-speed-down" title="Slower">&minus;</button>
+                <div class="speed-value" id="speed-value">1x</div>
+                <button id="btn-speed-up" title="Faster">+</button>
+              </div>
+              <button class="play-pause-btn" id="btn-play-pause" type="button"
+                      data-state="paused" aria-label="Play" title="Play">
+                <svg class="icon-play"  viewBox="0 0 16 16" aria-hidden="true">
+                  <polygon points="4,3 13,8 4,13" fill="currentColor"/>
+                </svg>
+                <svg class="icon-pause" viewBox="0 0 16 16" aria-hidden="true">
+                  <rect x="4" y="3" width="3" height="10" fill="currentColor"/>
+                  <rect x="9" y="3" width="3" height="10" fill="currentColor"/>
+                </svg>
+              </button>
+              <div class="scrubber-track-wrap" id="scrubber-track-wrap">
+                <div class="scrubber-bg"></div>
+                <div class="scrubber-marks" id="scrubber-marks"></div>
+                <div class="scrubber-window" id="scrubber-window"></div>
+                <div class="scrub-thumb-label scrub-back-label"  id="scrub-back-label">FROM 0</div>
+                <div class="scrub-thumb-label scrub-front-label" id="scrub-front-label">TR 0 / 0</div>
+                <input type="range" id="scrubber-back" min="0" max="0" value="0">
+                <input type="range" id="scrubber-front" min="0" max="0" value="0">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="translation-arrow" aria-hidden="true">
+          <span>translated</span>
+          <svg viewBox="0 0 60 18" xmlns="http://www.w3.org/2000/svg">
+            <line x1="2" y1="9" x2="56" y2="9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            <polyline points="44,3 56,9 44,15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>to text</span>
+        </div>
+
+        <div class="replay-right">
+          <div class="conversation-panel" id="conversation-panel">
+            <h3>Conversation</h3>
+            <div class="conversation-content" id="conversation-content">
+              <em style="color:#888">Load a unit to see conversation...</em>
+            </div>
+          </div>
+          <div class="model-switcher" id="model-switcher">
+            <button class="cycle" id="btn-model-prev" title="Previous model">&lsaquo;</button>
+            <button class="center" id="select-model-quick" type="button"
+                    title="Choose model">--</button>
+            <button class="cycle" id="btn-model-next" title="Next model">&rsaquo;</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panels-area">
+        <div class="roi-grid" id="roi-grid"></div>
+        <button class="expand-btn" id="btn-expand-all">View all Brain Regions</button>
+      </div>
+    </div>
+
+    <!-- ROI picker (shown when the row's centre button is clicked) -->
+    <div class="roi-picker-overlay" id="roi-picker-overlay">
+      <div class="roi-picker" id="roi-picker">
+        <h2>Select Brain Region</h2>
+        <div id="roi-picker-groups"></div>
+      </div>
+    </div>
+
+    <!-- Model picker (replaces the dropdown in the model switcher) -->
+    <div class="model-picker-overlay" id="model-picker-overlay">
+      <div class="model-picker">
+        <h2>Select Model</h2>
+        <div class="model-picker-items" id="model-picker-items"></div>
+      </div>
+    </div>
+
+    <div class="help-bar help-desktop">
+      Yellow thumb = current TR. Grey thumb = window start.
+      &larr;/&rarr; = step | Space = play/pause | Shift+&larr;/&rarr; = move window start
+    </div>
+    <div class="help-bar help-mobile">
+      Tap the game to play/pause. Drag the scrub line to seek.
+      Tap &#9650;&nbsp;/&nbsp;&#9660; to switch ROI, &#9863; to pick one from the list.
+    </div>
+
+    <!-- ===========================================================
+         How to read this viewer
+         =========================================================== -->
+    <section class="explainer">
+      <h2>How to read this viewer</h2>
+
+      <h3>What is displayed</h3>
+      <p>
+        Four cards, time-locked to the same gameplay session.
+      </p>
+      <ul>
+        <li><b>Top left, gameplay.</b> The actual frames the
+          participant played, reconstructed from their behavioural log.
+          Press play, scrub the line below, or grab the yellow thumb to
+          jump to a specific TR (one fMRI volume = 2&nbsp;s). The grey
+          thumb on the same line marks the start of the comparison
+          window; everything between the grey and yellow thumb is what
+          the two RDMs below summarise.
+        </li>
+        <li><b>Top right, the LLM's view.</b> The exact text the
+          model receives at each step: a system prompt at the start, then
+          a per-step user message describing the current observation, plus
+          the assistant's stated rationale and chosen action. Highlighting
+          tracks the current TR, so you can see what the model was reading
+          when the participant pressed the corresponding key.
+        </li>
+        <li><b>Bottom left, the human RDM.</b> A symmetric
+          (TR&nbsp;&times;&nbsp;TR) representational dissimilarity matrix
+          for the chosen brain region of interest, masked to the current
+          window. Dark cells = the BOLD pattern at those two TRs is
+          similar; bright cells = dissimilar. The eight thin coloured
+          bars on the top and left edges are the first eight principal
+          components of the BOLD signal, colour-coded by amplitude.
+        </li>
+        <li><b>Bottom right, the model RDM.</b> Same kind of
+          matrix, but computed from the LLM's hidden-state activations
+          at the chosen layer. The bottom card lets you click through
+          all transformer layers and watch how representational geometry
+          changes with depth; the heat-coloured strip on the side
+          encodes how well each layer explains the human ROI (yellow =
+          weakly explanatory, dark red = strongly explanatory).
+        </li>
+      </ul>
+
+      <h3>RSA vs. encoding performance</h3>
+      <p>
+        The viewer is a <i>representational similarity</i> (RSA) tool by
+        design. RSA compares <i>geometries</i>: two systems are aligned
+        when the pair-wise dissimilarity structure of their state
+        representations matches, regardless of how each system encodes
+        an individual state. We use it here because the eye is far
+        better at spotting structural similarity in two RDMs side by
+        side than at parsing a regression coefficient table: if the
+        human and model matrices light up in the same places, the
+        alignment is doing real work.
+      </p>
+      <p>
+        We use a <i>different</i> measure for the headline statistical
+        results in the paper: <b>encoding-model performance</b>, i.e.
+        how well a regularised regression from the model's hidden states
+        predicts each fMRI voxel's BOLD time-course. You can think of
+        encoding performance as the correlation between the eight thin
+        principal-component bars on top of the model RDM and the
+        corresponding bars on top of the human RDM: if those coloured
+        strips track each other tick-for-tick, the encoding score is
+        high. RSA is the faster qualitative read; encoding is the
+        rigorous quantitative claim.
+      </p>
+    </section>
+
+    <footer style="text-align:center; font-size:14px; color:#888; border-top:1px solid #d4d0c8; padding-top:16px; margin-top:40px;">
+      All games rendered using the Browser Game Interpreter (BGI) &mdash; an interpreter for VGDL implemented in JavaScript
+    </footer>
+  </div>
+
+  <script src="representation-bundle.js"></script>
+</body>
+</html>

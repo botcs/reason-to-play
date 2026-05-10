@@ -1,0 +1,267 @@
+/* developed and copyright by Botos Csaba (botos.official@gmail.com), 2026
+   Licensed under the MIT License. See LICENSE file for details.
+
+   Scoped stylesheet for catalogue cards mounted INLINE on another page
+   (e.g. the landing page's section B). All rules are scoped under a
+   .cat-embed wrapper so the catalogue's reset (* { margin: 0 ... }) and
+   typography don't leak into the host page. Mirrors the visual design
+   of catalogue.html's standalone cards. */
+
+/* ---- Reset scoped to the wrapper ---- */
+.cat-embed, .cat-embed * { margin: 0; padding: 0; }
+.cat-embed, .cat-embed *, .cat-embed *::before, .cat-embed *::after {
+  box-sizing: border-box;
+}
+.cat-embed {
+  --cat-ink: #1a1a1a;
+  --cat-paper: #fdfdfc;
+  --cat-rule: #d4d0c8;
+  --cat-muted: #888;
+  --cat-card-bg: #f9f8f6;
+  --cat-flap-green: #e8f0e8;
+  --cat-flap-green-active: #f0f8f0;
+  --cat-flap-red: #f0e8e8;
+  --cat-flap-red-active: #fdf0f0;
+  --cat-flap-blue: #e8edf8;
+  --cat-flap-blue-hover: #d4ddf0;
+  --cat-reasoning-bg: #f5f4ee;
+  --cat-reasoning-border: #ddd9c8;
+  font-family: 'EB Garamond', Georgia, serif;
+  font-size: 18px;
+  color: var(--cat-ink);
+  line-height: 1.5;
+}
+
+/* ---- Embed grid: three slots laid out as a 3-column grid ---------- */
+.cat-embed-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: 14px;
+  /* rows can grow tall when a drawer opens; the drawer is absolute and
+     overlays into the empty space below each card -- we reserve a
+     stable amount via row-gap so opening a flap doesn't push the
+     paragraph below the cards down on the page. */
+  row-gap: 28px;
+  align-items: start;
+}
+@media (max-width: 700px) {
+  .cat-embed-grid { grid-template-columns: 1fr; row-gap: 14px; }
+}
+
+/* ---- Card ---------------------------------------------------------- */
+.cat-embed .game-card {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  /* Establishes a CSS container so child elements (specifically the
+     flap-tab labels) can size their fonts based on the card's actual
+     width, not the global viewport. Lets "Game Description" / "Level
+     Layout" / "Try Yourself" always fit on one line, even when the
+     card is mounted in a narrow 3-column slot in section B. */
+  container-type: inline-size;
+  container-name: catcard;
+}
+.cat-embed .game-card-title {
+  display: block;
+  font-size: 15px;
+  font-weight: 700;
+  text-align: center;
+  padding: 0 0 3px;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  color: var(--cat-ink);
+  position: relative;
+  cursor: pointer;
+}
+.cat-embed .game-card-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 1.5px;
+  background: var(--cat-ink);
+  transition: width 0.25s ease, left 0.25s ease;
+}
+.cat-embed .game-card-title:hover::after { width: 60%; left: 20%; }
+
+/* Canvas container -- bg set by JS to the level's wall colour */
+.cat-embed .canvas-container {
+  height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(68, 90, 100);
+  position: relative;
+  cursor: pointer;
+}
+.cat-embed .canvas-container canvas {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+}
+.cat-embed .canvas-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(68, 90, 100, 0.7);
+  color: #ddd;
+  font-size: 14px;
+  font-style: italic;
+}
+.cat-embed .canvas-overlay.hidden { display: none; }
+
+/* Play/pause icon overlay on canvas */
+.cat-embed .play-indicator {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+.cat-embed .play-indicator.flash { opacity: 1; }
+.cat-embed .play-indicator svg {
+  width: 48px; height: 48px;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4));
+}
+
+/* ---- Flap tabs ---------------------------------------------------- */
+.cat-embed .flap-tabs { display: flex; gap: 0; }
+.cat-embed .flap-tab {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  font-family: inherit;
+  /* Scales with the card width via the catcard container query (set
+     on .game-card above). 3.4cqw ~ 11-13 px across the realistic
+     range of card widths; clamped at 10-13 px so nothing is ever too
+     small or too large. white-space: nowrap prevents the labels from
+     ever breaking onto a second line. */
+  font-size: clamp(10px, 3.4cqw, 13px);
+  white-space: nowrap;
+  padding: 3px 4px;
+  border: 1px solid #ccc;
+  border-top: none;
+  border-radius: 0 0 3px 3px;
+  color: #666;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.cat-embed .flap-tab-desc { background: var(--cat-flap-green); }
+.cat-embed .flap-tab-level { background: var(--cat-flap-red); }
+.cat-embed .flap-tab-try { background: var(--cat-flap-blue); }
+.cat-embed .flap-tab-desc:hover { background: #dce8dc; }
+.cat-embed .flap-tab-level:hover { background: #e8dcdc; }
+.cat-embed .flap-tab-try:hover { background: var(--cat-flap-blue-hover); }
+.cat-embed .flap-tab.active {
+  color: var(--cat-ink);
+  border-color: #aaa;
+  border-bottom: none;
+  border-radius: 0;
+  font-weight: 700;
+}
+.cat-embed .flap-tab-desc.active { background: var(--cat-flap-green-active); }
+.cat-embed .flap-tab-level.active { background: var(--cat-flap-red-active); }
+
+.cat-embed .flap-panel {
+  display: none;
+  border: 1px solid #aaa;
+  border-top: none;
+  border-radius: 0 0 3px 3px;
+  padding: 4px;
+}
+.cat-embed .flap-panel.open { display: block; }
+.cat-embed .flap-panel-desc { background: var(--cat-flap-green-active); }
+.cat-embed .flap-panel-level { background: var(--cat-flap-red-active); }
+.cat-embed .flap-panel textarea {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: 'IBM Plex Mono', 'Courier New', monospace;
+  font-size: 10px;
+  color: var(--cat-ink);
+  resize: none;
+  tab-size: 4;
+  cursor: default;
+  overflow-y: auto;
+}
+.cat-embed .flap-panel-desc textarea { height: 120px; }
+.cat-embed .flap-panel-level textarea { min-height: 40px; max-height: 160px; }
+
+/* ---- Reasoning stripe -------------------------------------------- */
+.cat-embed .reasoning-stripe {
+  height: 76px;
+  font-family: 'IBM Plex Mono', 'Courier New', monospace;
+  font-size: 10.5px;
+  line-height: 1.45;
+  color: #444;
+  padding: 5px 7px;
+  overflow: hidden;
+  position: relative;
+  background: var(--cat-reasoning-bg);
+  border: 1px solid var(--cat-reasoning-border);
+  border-top: none;
+  cursor: default;
+  transition: background 0.15s;
+}
+.cat-embed .reasoning-stripe:hover { background: #eae8dc; }
+.cat-embed .reasoning-stripe .reasoning-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.cat-embed .reasoning-stripe .click-hint {
+  display: none;
+  position: absolute;
+  bottom: 3px;
+  right: 6px;
+  font-family: inherit;
+  font-size: 11px;
+  font-style: italic;
+  color: #777;
+  background: rgba(245, 244, 238, 0.92);
+  padding: 1px 6px;
+  border-radius: 2px;
+}
+.cat-embed .reasoning-stripe:hover .click-hint { display: block; }
+.cat-embed .reasoning-stripe.no-reasoning {
+  color: #bbb;
+  font-style: italic;
+}
+
+/* ---- Slide-out drawer (absolute, no layout shift on open) -------- */
+.cat-embed .card-drawer-anchor { position: relative; height: 0; }
+.cat-embed .card-drawer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+  background: var(--cat-paper);
+  border: 1px solid var(--cat-rule);
+  border-top: none;
+  border-radius: 0 0 5px 5px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+.cat-embed .game-card:hover .card-drawer,
+.cat-embed .game-card.is-playing .card-drawer {
+  max-height: 400px;
+}
+@media (pointer: coarse) {
+  .cat-embed .game-card:hover .card-drawer { max-height: 0; }
+  .cat-embed .game-card.is-playing .card-drawer { max-height: 400px; }
+}
+.cat-embed .card-drawer-inner { padding: 4px 4px 2px; }
+.cat-embed .card-drawer input[type="range"] {
+  width: 100%;
+  margin: 0;
+  display: block;
+}
