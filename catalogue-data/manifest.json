@@ -1,0 +1,778 @@
+{
+  "cohort3": {
+    "sub-01": {
+      "stats": {
+        "wins": 203,
+        "losses": 93
+      },
+      "replays": {
+        "bait_vgfmri3": "llm_catalogue/cohort3/sub-01/bait_vgfmri3.replay.json.gz",
+        "chase_vgfmri3": "llm_catalogue/cohort3/sub-01/chase_vgfmri3.replay.json.gz",
+        "helper_vgfmri3": "llm_catalogue/cohort3/sub-01/helper_vgfmri3.replay.json.gz",
+        "lemmings_vgfmri3": "llm_catalogue/cohort3/sub-01/lemmings_vgfmri3.replay.json.gz",
+        "zelda_vgfmri3": "llm_catalogue/cohort3/sub-01/zelda_vgfmri3.replay.json.gz",
+        "plaqueAttack_vgfmri3": "llm_catalogue/cohort3/sub-01/plaqueAttack_vgfmri3.replay.json.gz"
+      }
+    },
+    "sub-02": {
+      "stats": {
+        "wins": 208,
+        "losses": 77
+      },
+      "replays": {
+        "bait_vgfmri3": "llm_catalogue/cohort3/sub-02/bait_vgfmri3.replay.json.gz",
+        "chase_vgfmri3": "llm_catalogue/cohort3/sub-02/chase_vgfmri3.replay.json.gz",
+        "helper_vgfmri3": "llm_catalogue/cohort3/sub-02/helper_vgfmri3.replay.json.gz",
+        "lemmings_vgfmri3": "llm_catalogue/cohort3/sub-02/lemmings_vgfmri3.replay.json.gz",
+        "zelda_vgfmri3": "llm_catalogue/cohort3/sub-02/zelda_vgfmri3.replay.json.gz",
+        "plaqueAttack_vgfmri3": "llm_catalogue/cohort3/sub-02/plaqueAttack_vgfmri3.replay.json.gz"
+      }
+    },
+    "sub-03": {
+      "stats": {
+        "wins": 145,
+        "losses": 96
+      },
+      "replays": {
+        "bait_vgfmri3": "llm_catalogue/cohort3/sub-03/bait_vgfmri3.replay.json.gz",
+        "chase_vgfmri3": "llm_catalogue/cohort3/sub-03/chase_vgfmri3.replay.json.gz",
+        "helper_vgfmri3": "llm_catalogue/cohort3/sub-03/helper_vgfmri3.replay.json.gz",
+        "lemmings_vgfmri3": "llm_catalogue/cohort3/sub-03/lemmings_vgfmri3.replay.json.gz",
+        "zelda_vgfmri3": "llm_catalogue/cohort3/sub-03/zelda_vgfmri3.replay.json.gz",
+        "plaqueAttack_vgfmri3": "llm_catalogue/cohort3/sub-03/plaqueAttack_vgfmri3.replay.json.gz"
+      }
+    },
+    "sub-04": {
+      "stats": {
+        "wins": 162,
+        "losses": 96
+      },
+      "replays": {
+        "bait_vgfmri3": "llm_catalogue/cohort3/sub-04/bait_vgfmri3.replay.json.gz",
+        "chase_vgfmri3": "llm_catalogue/cohort3/sub-04/chase_vgfmri3.replay.json.gz",
+        "helper_vgfmri3": "llm_catalogue/cohort3/sub-04/helper_vgfmri3.replay.json.gz",
+        "lemmings_vgfmri3": "llm_catalogue/cohort3/sub-04/lemmings_vgfmri3.replay.json.gz",
+        "zelda_vgfmri3": "llm_catalogue/cohort3/sub-04/zelda_vgfmri3.replay.json.gz",
+        "plaqueAttack_vgfmri3": "llm_catalogue/cohort3/sub-04/plaqueAttack_vgfmri3.replay.json.gz"
+      }
+    },
+    "sub-05": {
+      "stats": {
+        "wins": 118,
+        "losses": 117
+      },
+      "replays": {
+        "bait_vgfmri3": "llm_catalogue/cohort3/sub-05/bait_vgfmri3.replay.json.gz",
+        "chase_vgfmri3": "llm_catalogue/cohort3/sub-05/chase_vgfmri3.replay.json.gz",
+        "helper_vgfmri3": "llm_catalogue/cohort3/sub-05/helper_vgfmri3.replay.json.gz",
+        "lemmings_vgfmri3": "llm_catalogue/cohort3/sub-05/lemmings_vgfmri3.replay.json.gz",
+        "zelda_vgfmri3": "llm_catalogue/cohort3/sub-05/zelda_vgfmri3.replay.json.gz",
+        "plaqueAttack_vgfmri3": "llm_catalogue/cohort3/sub-05/plaqueAttack_vgfmri3.replay.json.gz"
+      }
+    },
+    "sub-06": {
+      "stats": {
+        "wins": 173,
+        "losses": 87
+      },
+      "replays": {
+        "bait_vgfmri3": "llm_catalogue/cohort3/sub-06/bait_vgfmri3.replay.json.gz",
+        "chase_vgfmri3": "llm_catalogue/cohort3/sub-06/chase_vgfmri3.replay.json.gz",
+        "helper_vgfmri3": "llm_catalogue/cohort3/sub-06/helper_vgfmri3.replay.json.gz",
+        "lemmings_vgfmri3": "llm_catalogue/cohort3/sub-06/lemmings_vgfmri3.replay.json.gz",
+        "zelda_vgfmri3": "llm_catalogue/cohort3/sub-06/zelda_vgfmri3.replay.json.gz",
+        "plaqueAttack_vgfmri3": "llm_catalogue/cohort3/sub-06/plaqueAttack_vgfmri3.replay.json.gz"
+      }
+    },
+    "sub-07": {
+      "stats": {
+        "wins": 122,
+        "losses": 114
+      },
+      "replays": {
+        "bait_vgfmri3": "llm_catalogue/cohort3/sub-07/bait_vgfmri3.replay.json.gz",
+        "chase_vgfmri3": "llm_catalogue/cohort3/sub-07/chase_vgfmri3.replay.json.gz",
+        "helper_vgfmri3": "llm_catalogue/cohort3/sub-07/helper_vgfmri3.replay.json.gz",
+        "lemmings_vgfmri3": "llm_catalogue/cohort3/sub-07/lemmings_vgfmri3.replay.json.gz",
+        "zelda_vgfmri3": "llm_catalogue/cohort3/sub-07/zelda_vgfmri3.replay.json.gz",
+        "plaqueAttack_vgfmri3": "llm_catalogue/cohort3/sub-07/plaqueAttack_vgfmri3.replay.json.gz"
+      }
+    },
+    "sub-08": {
+      "stats": {
+        "wins": 115,
+        "losses": 106
+      },
+      "replays": {
+        "bait_vgfmri3": "llm_catalogue/cohort3/sub-08/bait_vgfmri3.replay.json.gz",
+        "chase_vgfmri3": "llm_catalogue/cohort3/sub-08/chase_vgfmri3.replay.json.gz",
+        "helper_vgfmri3": "llm_catalogue/cohort3/sub-08/helper_vgfmri3.replay.json.gz",
+        "lemmings_vgfmri3": "llm_catalogue/cohort3/sub-08/lemmings_vgfmri3.replay.json.gz",
+        "zelda_vgfmri3": "llm_catalogue/cohort3/sub-08/zelda_vgfmri3.replay.json.gz",
+        "plaqueAttack_vgfmri3": "llm_catalogue/cohort3/sub-08/plaqueAttack_vgfmri3.replay.json.gz"
+      }
+    },
+    "sub-09": {
+      "stats": {
+        "wins": 128,
+        "losses": 63
+      },
+      "replays": {
+        "bait_vgfmri3": "llm_catalogue/cohort3/sub-09/bait_vgfmri3.replay.json.gz",
+        "chase_vgfmri3": "llm_catalogue/cohort3/sub-09/chase_vgfmri3.replay.json.gz",
+        "helper_vgfmri3": "llm_catalogue/cohort3/sub-09/helper_vgfmri3.replay.json.gz",
+        "lemmings_vgfmri3": "llm_catalogue/cohort3/sub-09/lemmings_vgfmri3.replay.json.gz",
+        "zelda_vgfmri3": "llm_catalogue/cohort3/sub-09/zelda_vgfmri3.replay.json.gz",
+        "plaqueAttack_vgfmri3": "llm_catalogue/cohort3/sub-09/plaqueAttack_vgfmri3.replay.json.gz"
+      }
+    },
+    "sub-10": {
+      "stats": {
+        "wins": 124,
+        "losses": 81
+      },
+      "replays": {
+        "bait_vgfmri3": "llm_catalogue/cohort3/sub-10/bait_vgfmri3.replay.json.gz",
+        "chase_vgfmri3": "llm_catalogue/cohort3/sub-10/chase_vgfmri3.replay.json.gz",
+        "helper_vgfmri3": "llm_catalogue/cohort3/sub-10/helper_vgfmri3.replay.json.gz",
+        "lemmings_vgfmri3": "llm_catalogue/cohort3/sub-10/lemmings_vgfmri3.replay.json.gz",
+        "zelda_vgfmri3": "llm_catalogue/cohort3/sub-10/zelda_vgfmri3.replay.json.gz",
+        "plaqueAttack_vgfmri3": "llm_catalogue/cohort3/sub-10/plaqueAttack_vgfmri3.replay.json.gz"
+      }
+    },
+    "sub-11": {
+      "stats": {
+        "wins": 96,
+        "losses": 77
+      },
+      "replays": {
+        "bait_vgfmri3": "llm_catalogue/cohort3/sub-11/bait_vgfmri3.replay.json.gz",
+        "chase_vgfmri3": "llm_catalogue/cohort3/sub-11/chase_vgfmri3.replay.json.gz",
+        "helper_vgfmri3": "llm_catalogue/cohort3/sub-11/helper_vgfmri3.replay.json.gz",
+        "lemmings_vgfmri3": "llm_catalogue/cohort3/sub-11/lemmings_vgfmri3.replay.json.gz",
+        "zelda_vgfmri3": "llm_catalogue/cohort3/sub-11/zelda_vgfmri3.replay.json.gz",
+        "plaqueAttack_vgfmri3": "llm_catalogue/cohort3/sub-11/plaqueAttack_vgfmri3.replay.json.gz"
+      }
+    }
+  },
+  "cohort4": {
+    "sub-12": {
+      "stats": {
+        "wins": 78,
+        "losses": 118
+      },
+      "replays": {
+        "bait_vgfmri4": "llm_catalogue/cohort4/sub-12/bait_vgfmri4.replay.json.gz",
+        "chase_vgfmri4": "llm_catalogue/cohort4/sub-12/chase_vgfmri4.replay.json.gz",
+        "helper_vgfmri4": "llm_catalogue/cohort4/sub-12/helper_vgfmri4.replay.json.gz",
+        "lemmings_vgfmri4": "llm_catalogue/cohort4/sub-12/lemmings_vgfmri4.replay.json.gz",
+        "zelda_vgfmri4": "llm_catalogue/cohort4/sub-12/zelda_vgfmri4.replay.json.gz",
+        "avoidGeorge_vgfmri4": "llm_catalogue/cohort4/sub-12/avoidGeorge_vgfmri4.replay.json.gz"
+      }
+    },
+    "sub-13": {
+      "stats": {
+        "wins": 99,
+        "losses": 109
+      },
+      "replays": {
+        "bait_vgfmri4": "llm_catalogue/cohort4/sub-13/bait_vgfmri4.replay.json.gz",
+        "chase_vgfmri4": "llm_catalogue/cohort4/sub-13/chase_vgfmri4.replay.json.gz",
+        "helper_vgfmri4": "llm_catalogue/cohort4/sub-13/helper_vgfmri4.replay.json.gz",
+        "lemmings_vgfmri4": "llm_catalogue/cohort4/sub-13/lemmings_vgfmri4.replay.json.gz",
+        "zelda_vgfmri4": "llm_catalogue/cohort4/sub-13/zelda_vgfmri4.replay.json.gz",
+        "avoidGeorge_vgfmri4": "llm_catalogue/cohort4/sub-13/avoidGeorge_vgfmri4.replay.json.gz"
+      }
+    },
+    "sub-14": {
+      "stats": {
+        "wins": 118,
+        "losses": 98
+      },
+      "replays": {
+        "bait_vgfmri4": "llm_catalogue/cohort4/sub-14/bait_vgfmri4.replay.json.gz",
+        "chase_vgfmri4": "llm_catalogue/cohort4/sub-14/chase_vgfmri4.replay.json.gz",
+        "helper_vgfmri4": "llm_catalogue/cohort4/sub-14/helper_vgfmri4.replay.json.gz",
+        "lemmings_vgfmri4": "llm_catalogue/cohort4/sub-14/lemmings_vgfmri4.replay.json.gz",
+        "zelda_vgfmri4": "llm_catalogue/cohort4/sub-14/zelda_vgfmri4.replay.json.gz",
+        "avoidGeorge_vgfmri4": "llm_catalogue/cohort4/sub-14/avoidGeorge_vgfmri4.replay.json.gz"
+      }
+    },
+    "sub-15": {
+      "stats": {
+        "wins": 117,
+        "losses": 104
+      },
+      "replays": {
+        "bait_vgfmri4": "llm_catalogue/cohort4/sub-15/bait_vgfmri4.replay.json.gz",
+        "chase_vgfmri4": "llm_catalogue/cohort4/sub-15/chase_vgfmri4.replay.json.gz",
+        "helper_vgfmri4": "llm_catalogue/cohort4/sub-15/helper_vgfmri4.replay.json.gz",
+        "lemmings_vgfmri4": "llm_catalogue/cohort4/sub-15/lemmings_vgfmri4.replay.json.gz",
+        "zelda_vgfmri4": "llm_catalogue/cohort4/sub-15/zelda_vgfmri4.replay.json.gz",
+        "avoidGeorge_vgfmri4": "llm_catalogue/cohort4/sub-15/avoidGeorge_vgfmri4.replay.json.gz"
+      }
+    },
+    "sub-16": {
+      "stats": {
+        "wins": 89,
+        "losses": 118
+      },
+      "replays": {
+        "bait_vgfmri4": "llm_catalogue/cohort4/sub-16/bait_vgfmri4.replay.json.gz",
+        "chase_vgfmri4": "llm_catalogue/cohort4/sub-16/chase_vgfmri4.replay.json.gz",
+        "helper_vgfmri4": "llm_catalogue/cohort4/sub-16/helper_vgfmri4.replay.json.gz",
+        "lemmings_vgfmri4": "llm_catalogue/cohort4/sub-16/lemmings_vgfmri4.replay.json.gz",
+        "zelda_vgfmri4": "llm_catalogue/cohort4/sub-16/zelda_vgfmri4.replay.json.gz",
+        "avoidGeorge_vgfmri4": "llm_catalogue/cohort4/sub-16/avoidGeorge_vgfmri4.replay.json.gz"
+      }
+    },
+    "sub-17": {
+      "stats": {
+        "wins": 119,
+        "losses": 85
+      },
+      "replays": {
+        "bait_vgfmri4": "llm_catalogue/cohort4/sub-17/bait_vgfmri4.replay.json.gz",
+        "chase_vgfmri4": "llm_catalogue/cohort4/sub-17/chase_vgfmri4.replay.json.gz",
+        "helper_vgfmri4": "llm_catalogue/cohort4/sub-17/helper_vgfmri4.replay.json.gz",
+        "lemmings_vgfmri4": "llm_catalogue/cohort4/sub-17/lemmings_vgfmri4.replay.json.gz",
+        "zelda_vgfmri4": "llm_catalogue/cohort4/sub-17/zelda_vgfmri4.replay.json.gz",
+        "avoidGeorge_vgfmri4": "llm_catalogue/cohort4/sub-17/avoidGeorge_vgfmri4.replay.json.gz"
+      }
+    },
+    "sub-18": {
+      "stats": {
+        "wins": 120,
+        "losses": 101
+      },
+      "replays": {
+        "bait_vgfmri4": "llm_catalogue/cohort4/sub-18/bait_vgfmri4.replay.json.gz",
+        "chase_vgfmri4": "llm_catalogue/cohort4/sub-18/chase_vgfmri4.replay.json.gz",
+        "helper_vgfmri4": "llm_catalogue/cohort4/sub-18/helper_vgfmri4.replay.json.gz",
+        "lemmings_vgfmri4": "llm_catalogue/cohort4/sub-18/lemmings_vgfmri4.replay.json.gz",
+        "zelda_vgfmri4": "llm_catalogue/cohort4/sub-18/zelda_vgfmri4.replay.json.gz",
+        "avoidGeorge_vgfmri4": "llm_catalogue/cohort4/sub-18/avoidGeorge_vgfmri4.replay.json.gz"
+      }
+    },
+    "sub-19": {
+      "stats": {
+        "wins": 137,
+        "losses": 96
+      },
+      "replays": {
+        "bait_vgfmri4": "llm_catalogue/cohort4/sub-19/bait_vgfmri4.replay.json.gz",
+        "chase_vgfmri4": "llm_catalogue/cohort4/sub-19/chase_vgfmri4.replay.json.gz",
+        "helper_vgfmri4": "llm_catalogue/cohort4/sub-19/helper_vgfmri4.replay.json.gz",
+        "lemmings_vgfmri4": "llm_catalogue/cohort4/sub-19/lemmings_vgfmri4.replay.json.gz",
+        "zelda_vgfmri4": "llm_catalogue/cohort4/sub-19/zelda_vgfmri4.replay.json.gz",
+        "avoidGeorge_vgfmri4": "llm_catalogue/cohort4/sub-19/avoidGeorge_vgfmri4.replay.json.gz"
+      }
+    },
+    "sub-20": {
+      "stats": {
+        "wins": 100,
+        "losses": 91
+      },
+      "replays": {
+        "bait_vgfmri4": "llm_catalogue/cohort4/sub-20/bait_vgfmri4.replay.json.gz",
+        "chase_vgfmri4": "llm_catalogue/cohort4/sub-20/chase_vgfmri4.replay.json.gz",
+        "helper_vgfmri4": "llm_catalogue/cohort4/sub-20/helper_vgfmri4.replay.json.gz",
+        "lemmings_vgfmri4": "llm_catalogue/cohort4/sub-20/lemmings_vgfmri4.replay.json.gz",
+        "zelda_vgfmri4": "llm_catalogue/cohort4/sub-20/zelda_vgfmri4.replay.json.gz",
+        "avoidGeorge_vgfmri4": "llm_catalogue/cohort4/sub-20/avoidGeorge_vgfmri4.replay.json.gz"
+      }
+    },
+    "sub-21": {
+      "stats": {
+        "wins": 93,
+        "losses": 106
+      },
+      "replays": {
+        "bait_vgfmri4": "llm_catalogue/cohort4/sub-21/bait_vgfmri4.replay.json.gz",
+        "chase_vgfmri4": "llm_catalogue/cohort4/sub-21/chase_vgfmri4.replay.json.gz",
+        "helper_vgfmri4": "llm_catalogue/cohort4/sub-21/helper_vgfmri4.replay.json.gz",
+        "lemmings_vgfmri4": "llm_catalogue/cohort4/sub-21/lemmings_vgfmri4.replay.json.gz",
+        "zelda_vgfmri4": "llm_catalogue/cohort4/sub-21/zelda_vgfmri4.replay.json.gz",
+        "avoidGeorge_vgfmri4": "llm_catalogue/cohort4/sub-21/avoidGeorge_vgfmri4.replay.json.gz"
+      }
+    },
+    "sub-22": {
+      "stats": {
+        "wins": 117,
+        "losses": 141
+      },
+      "replays": {
+        "bait_vgfmri4": "llm_catalogue/cohort4/sub-22/bait_vgfmri4.replay.json.gz",
+        "chase_vgfmri4": "llm_catalogue/cohort4/sub-22/chase_vgfmri4.replay.json.gz",
+        "helper_vgfmri4": "llm_catalogue/cohort4/sub-22/helper_vgfmri4.replay.json.gz",
+        "lemmings_vgfmri4": "llm_catalogue/cohort4/sub-22/lemmings_vgfmri4.replay.json.gz",
+        "zelda_vgfmri4": "llm_catalogue/cohort4/sub-22/zelda_vgfmri4.replay.json.gz",
+        "avoidGeorge_vgfmri4": "llm_catalogue/cohort4/sub-22/avoidGeorge_vgfmri4.replay.json.gz"
+      }
+    },
+    "sub-23": {
+      "stats": {
+        "wins": 114,
+        "losses": 90
+      },
+      "replays": {
+        "bait_vgfmri4": "llm_catalogue/cohort4/sub-23/bait_vgfmri4.replay.json.gz",
+        "chase_vgfmri4": "llm_catalogue/cohort4/sub-23/chase_vgfmri4.replay.json.gz",
+        "helper_vgfmri4": "llm_catalogue/cohort4/sub-23/helper_vgfmri4.replay.json.gz",
+        "lemmings_vgfmri4": "llm_catalogue/cohort4/sub-23/lemmings_vgfmri4.replay.json.gz",
+        "zelda_vgfmri4": "llm_catalogue/cohort4/sub-23/zelda_vgfmri4.replay.json.gz",
+        "avoidGeorge_vgfmri4": "llm_catalogue/cohort4/sub-23/avoidGeorge_vgfmri4.replay.json.gz"
+      }
+    },
+    "sub-24": {
+      "stats": {
+        "wins": 88,
+        "losses": 103
+      },
+      "replays": {
+        "bait_vgfmri4": "llm_catalogue/cohort4/sub-24/bait_vgfmri4.replay.json.gz",
+        "chase_vgfmri4": "llm_catalogue/cohort4/sub-24/chase_vgfmri4.replay.json.gz",
+        "helper_vgfmri4": "llm_catalogue/cohort4/sub-24/helper_vgfmri4.replay.json.gz",
+        "lemmings_vgfmri4": "llm_catalogue/cohort4/sub-24/lemmings_vgfmri4.replay.json.gz",
+        "zelda_vgfmri4": "llm_catalogue/cohort4/sub-24/zelda_vgfmri4.replay.json.gz",
+        "avoidGeorge_vgfmri4": "llm_catalogue/cohort4/sub-24/avoidGeorge_vgfmri4.replay.json.gz"
+      }
+    },
+    "sub-25": {
+      "stats": {
+        "wins": 108,
+        "losses": 102
+      },
+      "replays": {
+        "bait_vgfmri4": "llm_catalogue/cohort4/sub-25/bait_vgfmri4.replay.json.gz",
+        "chase_vgfmri4": "llm_catalogue/cohort4/sub-25/chase_vgfmri4.replay.json.gz",
+        "helper_vgfmri4": "llm_catalogue/cohort4/sub-25/helper_vgfmri4.replay.json.gz",
+        "lemmings_vgfmri4": "llm_catalogue/cohort4/sub-25/lemmings_vgfmri4.replay.json.gz",
+        "zelda_vgfmri4": "llm_catalogue/cohort4/sub-25/zelda_vgfmri4.replay.json.gz",
+        "avoidGeorge_vgfmri4": "llm_catalogue/cohort4/sub-25/avoidGeorge_vgfmri4.replay.json.gz"
+      }
+    },
+    "sub-26": {
+      "stats": {
+        "wins": 114,
+        "losses": 109
+      },
+      "replays": {
+        "bait_vgfmri4": "llm_catalogue/cohort4/sub-26/bait_vgfmri4.replay.json.gz",
+        "chase_vgfmri4": "llm_catalogue/cohort4/sub-26/chase_vgfmri4.replay.json.gz",
+        "helper_vgfmri4": "llm_catalogue/cohort4/sub-26/helper_vgfmri4.replay.json.gz",
+        "lemmings_vgfmri4": "llm_catalogue/cohort4/sub-26/lemmings_vgfmri4.replay.json.gz",
+        "zelda_vgfmri4": "llm_catalogue/cohort4/sub-26/zelda_vgfmri4.replay.json.gz",
+        "avoidGeorge_vgfmri4": "llm_catalogue/cohort4/sub-26/avoidGeorge_vgfmri4.replay.json.gz"
+      }
+    },
+    "sub-27": {
+      "stats": {
+        "wins": 87,
+        "losses": 123
+      },
+      "replays": {
+        "bait_vgfmri4": "llm_catalogue/cohort4/sub-27/bait_vgfmri4.replay.json.gz",
+        "chase_vgfmri4": "llm_catalogue/cohort4/sub-27/chase_vgfmri4.replay.json.gz",
+        "helper_vgfmri4": "llm_catalogue/cohort4/sub-27/helper_vgfmri4.replay.json.gz",
+        "lemmings_vgfmri4": "llm_catalogue/cohort4/sub-27/lemmings_vgfmri4.replay.json.gz",
+        "zelda_vgfmri4": "llm_catalogue/cohort4/sub-27/zelda_vgfmri4.replay.json.gz",
+        "avoidGeorge_vgfmri4": "llm_catalogue/cohort4/sub-27/avoidGeorge_vgfmri4.replay.json.gz"
+      }
+    },
+    "sub-28": {
+      "stats": {
+        "wins": 105,
+        "losses": 111
+      },
+      "replays": {
+        "bait_vgfmri4": "llm_catalogue/cohort4/sub-28/bait_vgfmri4.replay.json.gz",
+        "chase_vgfmri4": "llm_catalogue/cohort4/sub-28/chase_vgfmri4.replay.json.gz",
+        "helper_vgfmri4": "llm_catalogue/cohort4/sub-28/helper_vgfmri4.replay.json.gz",
+        "lemmings_vgfmri4": "llm_catalogue/cohort4/sub-28/lemmings_vgfmri4.replay.json.gz",
+        "zelda_vgfmri4": "llm_catalogue/cohort4/sub-28/zelda_vgfmri4.replay.json.gz",
+        "avoidGeorge_vgfmri4": "llm_catalogue/cohort4/sub-28/avoidGeorge_vgfmri4.replay.json.gz"
+      }
+    },
+    "sub-29": {
+      "stats": {
+        "wins": 118,
+        "losses": 85
+      },
+      "replays": {
+        "bait_vgfmri4": "llm_catalogue/cohort4/sub-29/bait_vgfmri4.replay.json.gz",
+        "chase_vgfmri4": "llm_catalogue/cohort4/sub-29/chase_vgfmri4.replay.json.gz",
+        "helper_vgfmri4": "llm_catalogue/cohort4/sub-29/helper_vgfmri4.replay.json.gz",
+        "lemmings_vgfmri4": "llm_catalogue/cohort4/sub-29/lemmings_vgfmri4.replay.json.gz",
+        "zelda_vgfmri4": "llm_catalogue/cohort4/sub-29/zelda_vgfmri4.replay.json.gz",
+        "avoidGeorge_vgfmri4": "llm_catalogue/cohort4/sub-29/avoidGeorge_vgfmri4.replay.json.gz"
+      }
+    },
+    "sub-30": {
+      "stats": {
+        "wins": 99,
+        "losses": 89
+      },
+      "replays": {
+        "bait_vgfmri4": "llm_catalogue/cohort4/sub-30/bait_vgfmri4.replay.json.gz",
+        "chase_vgfmri4": "llm_catalogue/cohort4/sub-30/chase_vgfmri4.replay.json.gz",
+        "helper_vgfmri4": "llm_catalogue/cohort4/sub-30/helper_vgfmri4.replay.json.gz",
+        "lemmings_vgfmri4": "llm_catalogue/cohort4/sub-30/lemmings_vgfmri4.replay.json.gz",
+        "zelda_vgfmri4": "llm_catalogue/cohort4/sub-30/zelda_vgfmri4.replay.json.gz",
+        "avoidGeorge_vgfmri4": "llm_catalogue/cohort4/sub-30/avoidGeorge_vgfmri4.replay.json.gz"
+      }
+    },
+    "sub-31": {
+      "stats": {
+        "wins": 91,
+        "losses": 117
+      },
+      "replays": {
+        "bait_vgfmri4": "llm_catalogue/cohort4/sub-31/bait_vgfmri4.replay.json.gz",
+        "chase_vgfmri4": "llm_catalogue/cohort4/sub-31/chase_vgfmri4.replay.json.gz",
+        "helper_vgfmri4": "llm_catalogue/cohort4/sub-31/helper_vgfmri4.replay.json.gz",
+        "lemmings_vgfmri4": "llm_catalogue/cohort4/sub-31/lemmings_vgfmri4.replay.json.gz",
+        "zelda_vgfmri4": "llm_catalogue/cohort4/sub-31/zelda_vgfmri4.replay.json.gz",
+        "avoidGeorge_vgfmri4": "llm_catalogue/cohort4/sub-31/avoidGeorge_vgfmri4.replay.json.gz"
+      }
+    },
+    "sub-32": {
+      "stats": {
+        "wins": 66,
+        "losses": 120
+      },
+      "replays": {
+        "bait_vgfmri4": "llm_catalogue/cohort4/sub-32/bait_vgfmri4.replay.json.gz",
+        "chase_vgfmri4": "llm_catalogue/cohort4/sub-32/chase_vgfmri4.replay.json.gz",
+        "helper_vgfmri4": "llm_catalogue/cohort4/sub-32/helper_vgfmri4.replay.json.gz",
+        "lemmings_vgfmri4": "llm_catalogue/cohort4/sub-32/lemmings_vgfmri4.replay.json.gz",
+        "zelda_vgfmri4": "llm_catalogue/cohort4/sub-32/zelda_vgfmri4.replay.json.gz",
+        "avoidGeorge_vgfmri4": "llm_catalogue/cohort4/sub-32/avoidGeorge_vgfmri4.replay.json.gz"
+      }
+    }
+  },
+  "lrm-cr": {
+    "deepseek/deepseek-v3.2": {
+      "stats": {
+        "wins": 138,
+        "losses": 58
+      },
+      "replays": {
+        "bait_vgfmri3": "llm_catalogue/lrm-cr/deepseek/deepseek-v3.2/bait_vgfmri3.replay.json.gz",
+        "chase_vgfmri3": "llm_catalogue/lrm-cr/deepseek/deepseek-v3.2/chase_vgfmri3.replay.json.gz",
+        "helper_vgfmri3": "llm_catalogue/lrm-cr/deepseek/deepseek-v3.2/helper_vgfmri3.replay.json.gz",
+        "lemmings_vgfmri3": "llm_catalogue/lrm-cr/deepseek/deepseek-v3.2/lemmings_vgfmri3.replay.json.gz",
+        "zelda_vgfmri3": "llm_catalogue/lrm-cr/deepseek/deepseek-v3.2/zelda_vgfmri3.replay.json.gz",
+        "plaqueAttack_vgfmri3": "llm_catalogue/lrm-cr/deepseek/deepseek-v3.2/plaqueAttack_vgfmri3.replay.json.gz",
+        "bait_vgfmri4": "llm_catalogue/lrm-cr/deepseek/deepseek-v3.2/bait_vgfmri4.replay.json.gz",
+        "chase_vgfmri4": "llm_catalogue/lrm-cr/deepseek/deepseek-v3.2/chase_vgfmri4.replay.json.gz",
+        "helper_vgfmri4": "llm_catalogue/lrm-cr/deepseek/deepseek-v3.2/helper_vgfmri4.replay.json.gz",
+        "lemmings_vgfmri4": "llm_catalogue/lrm-cr/deepseek/deepseek-v3.2/lemmings_vgfmri4.replay.json.gz",
+        "zelda_vgfmri4": "llm_catalogue/lrm-cr/deepseek/deepseek-v3.2/zelda_vgfmri4.replay.json.gz",
+        "avoidGeorge_vgfmri4": "llm_catalogue/lrm-cr/deepseek/deepseek-v3.2/avoidGeorge_vgfmri4.replay.json.gz"
+      }
+    },
+    "deepseek/deepseek-v4-flash": {
+      "stats": {
+        "wins": 140,
+        "losses": 53
+      },
+      "replays": {
+        "bait_vgfmri3": "llm_catalogue/lrm-cr/deepseek/deepseek-v4-flash/bait_vgfmri3.replay.json.gz",
+        "chase_vgfmri3": "llm_catalogue/lrm-cr/deepseek/deepseek-v4-flash/chase_vgfmri3.replay.json.gz",
+        "helper_vgfmri3": "llm_catalogue/lrm-cr/deepseek/deepseek-v4-flash/helper_vgfmri3.replay.json.gz",
+        "lemmings_vgfmri3": "llm_catalogue/lrm-cr/deepseek/deepseek-v4-flash/lemmings_vgfmri3.replay.json.gz",
+        "zelda_vgfmri3": "llm_catalogue/lrm-cr/deepseek/deepseek-v4-flash/zelda_vgfmri3.replay.json.gz",
+        "plaqueAttack_vgfmri3": "llm_catalogue/lrm-cr/deepseek/deepseek-v4-flash/plaqueAttack_vgfmri3.replay.json.gz",
+        "bait_vgfmri4": "llm_catalogue/lrm-cr/deepseek/deepseek-v4-flash/bait_vgfmri4.replay.json.gz",
+        "chase_vgfmri4": "llm_catalogue/lrm-cr/deepseek/deepseek-v4-flash/chase_vgfmri4.replay.json.gz",
+        "helper_vgfmri4": "llm_catalogue/lrm-cr/deepseek/deepseek-v4-flash/helper_vgfmri4.replay.json.gz",
+        "lemmings_vgfmri4": "llm_catalogue/lrm-cr/deepseek/deepseek-v4-flash/lemmings_vgfmri4.replay.json.gz",
+        "zelda_vgfmri4": "llm_catalogue/lrm-cr/deepseek/deepseek-v4-flash/zelda_vgfmri4.replay.json.gz",
+        "avoidGeorge_vgfmri4": "llm_catalogue/lrm-cr/deepseek/deepseek-v4-flash/avoidGeorge_vgfmri4.replay.json.gz"
+      }
+    },
+    "deepseek/deepseek-v4-pro": {
+      "stats": {
+        "wins": 82,
+        "losses": 22
+      },
+      "replays": {
+        "bait_vgfmri3": "llm_catalogue/lrm-cr/deepseek/deepseek-v4-pro/bait_vgfmri3.replay.json.gz",
+        "chase_vgfmri3": "llm_catalogue/lrm-cr/deepseek/deepseek-v4-pro/chase_vgfmri3.replay.json.gz",
+        "helper_vgfmri3": "llm_catalogue/lrm-cr/deepseek/deepseek-v4-pro/helper_vgfmri3.replay.json.gz",
+        "lemmings_vgfmri3": "llm_catalogue/lrm-cr/deepseek/deepseek-v4-pro/lemmings_vgfmri3.replay.json.gz",
+        "zelda_vgfmri3": "llm_catalogue/lrm-cr/deepseek/deepseek-v4-pro/zelda_vgfmri3.replay.json.gz",
+        "plaqueAttack_vgfmri3": "llm_catalogue/lrm-cr/deepseek/deepseek-v4-pro/plaqueAttack_vgfmri3.replay.json.gz",
+        "bait_vgfmri4": "llm_catalogue/lrm-cr/deepseek/deepseek-v4-pro/bait_vgfmri4.replay.json.gz",
+        "chase_vgfmri4": "llm_catalogue/lrm-cr/deepseek/deepseek-v4-pro/chase_vgfmri4.replay.json.gz",
+        "helper_vgfmri4": "llm_catalogue/lrm-cr/deepseek/deepseek-v4-pro/helper_vgfmri4.replay.json.gz",
+        "lemmings_vgfmri4": "llm_catalogue/lrm-cr/deepseek/deepseek-v4-pro/lemmings_vgfmri4.replay.json.gz",
+        "zelda_vgfmri4": "llm_catalogue/lrm-cr/deepseek/deepseek-v4-pro/zelda_vgfmri4.replay.json.gz",
+        "avoidGeorge_vgfmri4": "llm_catalogue/lrm-cr/deepseek/deepseek-v4-pro/avoidGeorge_vgfmri4.replay.json.gz"
+      }
+    },
+    "qwen/qwen3.5-122b-a10b": {
+      "stats": {
+        "wins": 75,
+        "losses": 52
+      },
+      "replays": {
+        "bait_vgfmri3": "llm_catalogue/lrm-cr/qwen/qwen3.5-122b-a10b/bait_vgfmri3.replay.json.gz",
+        "chase_vgfmri3": "llm_catalogue/lrm-cr/qwen/qwen3.5-122b-a10b/chase_vgfmri3.replay.json.gz",
+        "helper_vgfmri3": "llm_catalogue/lrm-cr/qwen/qwen3.5-122b-a10b/helper_vgfmri3.replay.json.gz",
+        "lemmings_vgfmri3": "llm_catalogue/lrm-cr/qwen/qwen3.5-122b-a10b/lemmings_vgfmri3.replay.json.gz",
+        "zelda_vgfmri3": "llm_catalogue/lrm-cr/qwen/qwen3.5-122b-a10b/zelda_vgfmri3.replay.json.gz",
+        "plaqueAttack_vgfmri3": "llm_catalogue/lrm-cr/qwen/qwen3.5-122b-a10b/plaqueAttack_vgfmri3.replay.json.gz",
+        "bait_vgfmri4": "llm_catalogue/lrm-cr/qwen/qwen3.5-122b-a10b/bait_vgfmri4.replay.json.gz",
+        "chase_vgfmri4": "llm_catalogue/lrm-cr/qwen/qwen3.5-122b-a10b/chase_vgfmri4.replay.json.gz",
+        "helper_vgfmri4": "llm_catalogue/lrm-cr/qwen/qwen3.5-122b-a10b/helper_vgfmri4.replay.json.gz",
+        "lemmings_vgfmri4": "llm_catalogue/lrm-cr/qwen/qwen3.5-122b-a10b/lemmings_vgfmri4.replay.json.gz",
+        "zelda_vgfmri4": "llm_catalogue/lrm-cr/qwen/qwen3.5-122b-a10b/zelda_vgfmri4.replay.json.gz",
+        "avoidGeorge_vgfmri4": "llm_catalogue/lrm-cr/qwen/qwen3.5-122b-a10b/avoidGeorge_vgfmri4.replay.json.gz"
+      }
+    },
+    "qwen/qwen3.5-27b": {
+      "stats": {
+        "wins": 102,
+        "losses": 68
+      },
+      "replays": {
+        "bait_vgfmri3": "llm_catalogue/lrm-cr/qwen/qwen3.5-27b/bait_vgfmri3.replay.json.gz",
+        "chase_vgfmri3": "llm_catalogue/lrm-cr/qwen/qwen3.5-27b/chase_vgfmri3.replay.json.gz",
+        "helper_vgfmri3": "llm_catalogue/lrm-cr/qwen/qwen3.5-27b/helper_vgfmri3.replay.json.gz",
+        "lemmings_vgfmri3": "llm_catalogue/lrm-cr/qwen/qwen3.5-27b/lemmings_vgfmri3.replay.json.gz",
+        "zelda_vgfmri3": "llm_catalogue/lrm-cr/qwen/qwen3.5-27b/zelda_vgfmri3.replay.json.gz",
+        "plaqueAttack_vgfmri3": "llm_catalogue/lrm-cr/qwen/qwen3.5-27b/plaqueAttack_vgfmri3.replay.json.gz",
+        "bait_vgfmri4": "llm_catalogue/lrm-cr/qwen/qwen3.5-27b/bait_vgfmri4.replay.json.gz",
+        "chase_vgfmri4": "llm_catalogue/lrm-cr/qwen/qwen3.5-27b/chase_vgfmri4.replay.json.gz",
+        "helper_vgfmri4": "llm_catalogue/lrm-cr/qwen/qwen3.5-27b/helper_vgfmri4.replay.json.gz",
+        "lemmings_vgfmri4": "llm_catalogue/lrm-cr/qwen/qwen3.5-27b/lemmings_vgfmri4.replay.json.gz",
+        "zelda_vgfmri4": "llm_catalogue/lrm-cr/qwen/qwen3.5-27b/zelda_vgfmri4.replay.json.gz",
+        "avoidGeorge_vgfmri4": "llm_catalogue/lrm-cr/qwen/qwen3.5-27b/avoidGeorge_vgfmri4.replay.json.gz"
+      }
+    },
+    "qwen/qwen3.5-35b-a3b": {
+      "stats": {
+        "wins": 74,
+        "losses": 41
+      },
+      "replays": {
+        "bait_vgfmri3": "llm_catalogue/lrm-cr/qwen/qwen3.5-35b-a3b/bait_vgfmri3.replay.json.gz",
+        "chase_vgfmri3": "llm_catalogue/lrm-cr/qwen/qwen3.5-35b-a3b/chase_vgfmri3.replay.json.gz",
+        "helper_vgfmri3": "llm_catalogue/lrm-cr/qwen/qwen3.5-35b-a3b/helper_vgfmri3.replay.json.gz",
+        "lemmings_vgfmri3": "llm_catalogue/lrm-cr/qwen/qwen3.5-35b-a3b/lemmings_vgfmri3.replay.json.gz",
+        "zelda_vgfmri3": "llm_catalogue/lrm-cr/qwen/qwen3.5-35b-a3b/zelda_vgfmri3.replay.json.gz",
+        "plaqueAttack_vgfmri3": "llm_catalogue/lrm-cr/qwen/qwen3.5-35b-a3b/plaqueAttack_vgfmri3.replay.json.gz",
+        "bait_vgfmri4": "llm_catalogue/lrm-cr/qwen/qwen3.5-35b-a3b/bait_vgfmri4.replay.json.gz",
+        "chase_vgfmri4": "llm_catalogue/lrm-cr/qwen/qwen3.5-35b-a3b/chase_vgfmri4.replay.json.gz",
+        "helper_vgfmri4": "llm_catalogue/lrm-cr/qwen/qwen3.5-35b-a3b/helper_vgfmri4.replay.json.gz",
+        "lemmings_vgfmri4": "llm_catalogue/lrm-cr/qwen/qwen3.5-35b-a3b/lemmings_vgfmri4.replay.json.gz",
+        "zelda_vgfmri4": "llm_catalogue/lrm-cr/qwen/qwen3.5-35b-a3b/zelda_vgfmri4.replay.json.gz",
+        "avoidGeorge_vgfmri4": "llm_catalogue/lrm-cr/qwen/qwen3.5-35b-a3b/avoidGeorge_vgfmri4.replay.json.gz"
+      }
+    },
+    "qwen/qwen3.5-397b-a17b": {
+      "stats": {
+        "wins": 120,
+        "losses": 66
+      },
+      "replays": {
+        "bait_vgfmri3": "llm_catalogue/lrm-cr/qwen/qwen3.5-397b-a17b/bait_vgfmri3.replay.json.gz",
+        "chase_vgfmri3": "llm_catalogue/lrm-cr/qwen/qwen3.5-397b-a17b/chase_vgfmri3.replay.json.gz",
+        "helper_vgfmri3": "llm_catalogue/lrm-cr/qwen/qwen3.5-397b-a17b/helper_vgfmri3.replay.json.gz",
+        "lemmings_vgfmri3": "llm_catalogue/lrm-cr/qwen/qwen3.5-397b-a17b/lemmings_vgfmri3.replay.json.gz",
+        "zelda_vgfmri3": "llm_catalogue/lrm-cr/qwen/qwen3.5-397b-a17b/zelda_vgfmri3.replay.json.gz",
+        "plaqueAttack_vgfmri3": "llm_catalogue/lrm-cr/qwen/qwen3.5-397b-a17b/plaqueAttack_vgfmri3.replay.json.gz",
+        "bait_vgfmri4": "llm_catalogue/lrm-cr/qwen/qwen3.5-397b-a17b/bait_vgfmri4.replay.json.gz",
+        "chase_vgfmri4": "llm_catalogue/lrm-cr/qwen/qwen3.5-397b-a17b/chase_vgfmri4.replay.json.gz",
+        "helper_vgfmri4": "llm_catalogue/lrm-cr/qwen/qwen3.5-397b-a17b/helper_vgfmri4.replay.json.gz",
+        "lemmings_vgfmri4": "llm_catalogue/lrm-cr/qwen/qwen3.5-397b-a17b/lemmings_vgfmri4.replay.json.gz",
+        "zelda_vgfmri4": "llm_catalogue/lrm-cr/qwen/qwen3.5-397b-a17b/zelda_vgfmri4.replay.json.gz",
+        "avoidGeorge_vgfmri4": "llm_catalogue/lrm-cr/qwen/qwen3.5-397b-a17b/avoidGeorge_vgfmri4.replay.json.gz"
+      }
+    },
+    "qwen/qwen3.5-9b": {
+      "stats": {
+        "wins": 20,
+        "losses": 14
+      },
+      "replays": {
+        "bait_vgfmri3": "llm_catalogue/lrm-cr/qwen/qwen3.5-9b/bait_vgfmri3.replay.json.gz",
+        "chase_vgfmri3": "llm_catalogue/lrm-cr/qwen/qwen3.5-9b/chase_vgfmri3.replay.json.gz",
+        "helper_vgfmri3": "llm_catalogue/lrm-cr/qwen/qwen3.5-9b/helper_vgfmri3.replay.json.gz",
+        "lemmings_vgfmri3": "llm_catalogue/lrm-cr/qwen/qwen3.5-9b/lemmings_vgfmri3.replay.json.gz",
+        "zelda_vgfmri3": "llm_catalogue/lrm-cr/qwen/qwen3.5-9b/zelda_vgfmri3.replay.json.gz",
+        "plaqueAttack_vgfmri3": "llm_catalogue/lrm-cr/qwen/qwen3.5-9b/plaqueAttack_vgfmri3.replay.json.gz",
+        "bait_vgfmri4": "llm_catalogue/lrm-cr/qwen/qwen3.5-9b/bait_vgfmri4.replay.json.gz",
+        "chase_vgfmri4": "llm_catalogue/lrm-cr/qwen/qwen3.5-9b/chase_vgfmri4.replay.json.gz",
+        "helper_vgfmri4": "llm_catalogue/lrm-cr/qwen/qwen3.5-9b/helper_vgfmri4.replay.json.gz",
+        "lemmings_vgfmri4": "llm_catalogue/lrm-cr/qwen/qwen3.5-9b/lemmings_vgfmri4.replay.json.gz",
+        "zelda_vgfmri4": "llm_catalogue/lrm-cr/qwen/qwen3.5-9b/zelda_vgfmri4.replay.json.gz",
+        "avoidGeorge_vgfmri4": "llm_catalogue/lrm-cr/qwen/qwen3.5-9b/avoidGeorge_vgfmri4.replay.json.gz"
+      }
+    }
+  },
+  "lrm-ao": {
+    "deepseek/deepseek-v3.2": {
+      "stats": {
+        "wins": 37,
+        "losses": 68
+      },
+      "replays": {
+        "bait_vgfmri3": "llm_catalogue/lrm-ao/deepseek/deepseek-v3.2/bait_vgfmri3.replay.json.gz",
+        "chase_vgfmri3": "llm_catalogue/lrm-ao/deepseek/deepseek-v3.2/chase_vgfmri3.replay.json.gz",
+        "helper_vgfmri3": "llm_catalogue/lrm-ao/deepseek/deepseek-v3.2/helper_vgfmri3.replay.json.gz",
+        "lemmings_vgfmri3": "llm_catalogue/lrm-ao/deepseek/deepseek-v3.2/lemmings_vgfmri3.replay.json.gz",
+        "zelda_vgfmri3": "llm_catalogue/lrm-ao/deepseek/deepseek-v3.2/zelda_vgfmri3.replay.json.gz",
+        "plaqueAttack_vgfmri3": "llm_catalogue/lrm-ao/deepseek/deepseek-v3.2/plaqueAttack_vgfmri3.replay.json.gz",
+        "bait_vgfmri4": "llm_catalogue/lrm-ao/deepseek/deepseek-v3.2/bait_vgfmri4.replay.json.gz",
+        "chase_vgfmri4": "llm_catalogue/lrm-ao/deepseek/deepseek-v3.2/chase_vgfmri4.replay.json.gz",
+        "helper_vgfmri4": "llm_catalogue/lrm-ao/deepseek/deepseek-v3.2/helper_vgfmri4.replay.json.gz",
+        "lemmings_vgfmri4": "llm_catalogue/lrm-ao/deepseek/deepseek-v3.2/lemmings_vgfmri4.replay.json.gz",
+        "zelda_vgfmri4": "llm_catalogue/lrm-ao/deepseek/deepseek-v3.2/zelda_vgfmri4.replay.json.gz",
+        "avoidGeorge_vgfmri4": "llm_catalogue/lrm-ao/deepseek/deepseek-v3.2/avoidGeorge_vgfmri4.replay.json.gz"
+      }
+    },
+    "deepseek/deepseek-v4-flash": {
+      "stats": {
+        "wins": 51,
+        "losses": 77
+      },
+      "replays": {
+        "bait_vgfmri3": "llm_catalogue/lrm-ao/deepseek/deepseek-v4-flash/bait_vgfmri3.replay.json.gz",
+        "chase_vgfmri3": "llm_catalogue/lrm-ao/deepseek/deepseek-v4-flash/chase_vgfmri3.replay.json.gz",
+        "helper_vgfmri3": "llm_catalogue/lrm-ao/deepseek/deepseek-v4-flash/helper_vgfmri3.replay.json.gz",
+        "lemmings_vgfmri3": "llm_catalogue/lrm-ao/deepseek/deepseek-v4-flash/lemmings_vgfmri3.replay.json.gz",
+        "zelda_vgfmri3": "llm_catalogue/lrm-ao/deepseek/deepseek-v4-flash/zelda_vgfmri3.replay.json.gz",
+        "plaqueAttack_vgfmri3": "llm_catalogue/lrm-ao/deepseek/deepseek-v4-flash/plaqueAttack_vgfmri3.replay.json.gz",
+        "bait_vgfmri4": "llm_catalogue/lrm-ao/deepseek/deepseek-v4-flash/bait_vgfmri4.replay.json.gz",
+        "chase_vgfmri4": "llm_catalogue/lrm-ao/deepseek/deepseek-v4-flash/chase_vgfmri4.replay.json.gz",
+        "helper_vgfmri4": "llm_catalogue/lrm-ao/deepseek/deepseek-v4-flash/helper_vgfmri4.replay.json.gz",
+        "lemmings_vgfmri4": "llm_catalogue/lrm-ao/deepseek/deepseek-v4-flash/lemmings_vgfmri4.replay.json.gz",
+        "zelda_vgfmri4": "llm_catalogue/lrm-ao/deepseek/deepseek-v4-flash/zelda_vgfmri4.replay.json.gz",
+        "avoidGeorge_vgfmri4": "llm_catalogue/lrm-ao/deepseek/deepseek-v4-flash/avoidGeorge_vgfmri4.replay.json.gz"
+      }
+    },
+    "deepseek/deepseek-v4-pro": {
+      "stats": {
+        "wins": 66,
+        "losses": 75
+      },
+      "replays": {
+        "bait_vgfmri3": "llm_catalogue/lrm-ao/deepseek/deepseek-v4-pro/bait_vgfmri3.replay.json.gz",
+        "chase_vgfmri3": "llm_catalogue/lrm-ao/deepseek/deepseek-v4-pro/chase_vgfmri3.replay.json.gz",
+        "helper_vgfmri3": "llm_catalogue/lrm-ao/deepseek/deepseek-v4-pro/helper_vgfmri3.replay.json.gz",
+        "lemmings_vgfmri3": "llm_catalogue/lrm-ao/deepseek/deepseek-v4-pro/lemmings_vgfmri3.replay.json.gz",
+        "zelda_vgfmri3": "llm_catalogue/lrm-ao/deepseek/deepseek-v4-pro/zelda_vgfmri3.replay.json.gz",
+        "plaqueAttack_vgfmri3": "llm_catalogue/lrm-ao/deepseek/deepseek-v4-pro/plaqueAttack_vgfmri3.replay.json.gz",
+        "bait_vgfmri4": "llm_catalogue/lrm-ao/deepseek/deepseek-v4-pro/bait_vgfmri4.replay.json.gz",
+        "chase_vgfmri4": "llm_catalogue/lrm-ao/deepseek/deepseek-v4-pro/chase_vgfmri4.replay.json.gz",
+        "helper_vgfmri4": "llm_catalogue/lrm-ao/deepseek/deepseek-v4-pro/helper_vgfmri4.replay.json.gz",
+        "lemmings_vgfmri4": "llm_catalogue/lrm-ao/deepseek/deepseek-v4-pro/lemmings_vgfmri4.replay.json.gz",
+        "zelda_vgfmri4": "llm_catalogue/lrm-ao/deepseek/deepseek-v4-pro/zelda_vgfmri4.replay.json.gz",
+        "avoidGeorge_vgfmri4": "llm_catalogue/lrm-ao/deepseek/deepseek-v4-pro/avoidGeorge_vgfmri4.replay.json.gz"
+      }
+    },
+    "qwen/qwen3.5-122b-a10b": {
+      "stats": {
+        "wins": 34,
+        "losses": 67
+      },
+      "replays": {
+        "bait_vgfmri3": "llm_catalogue/lrm-ao/qwen/qwen3.5-122b-a10b/bait_vgfmri3.replay.json.gz",
+        "chase_vgfmri3": "llm_catalogue/lrm-ao/qwen/qwen3.5-122b-a10b/chase_vgfmri3.replay.json.gz",
+        "helper_vgfmri3": "llm_catalogue/lrm-ao/qwen/qwen3.5-122b-a10b/helper_vgfmri3.replay.json.gz",
+        "lemmings_vgfmri3": "llm_catalogue/lrm-ao/qwen/qwen3.5-122b-a10b/lemmings_vgfmri3.replay.json.gz",
+        "zelda_vgfmri3": "llm_catalogue/lrm-ao/qwen/qwen3.5-122b-a10b/zelda_vgfmri3.replay.json.gz",
+        "plaqueAttack_vgfmri3": "llm_catalogue/lrm-ao/qwen/qwen3.5-122b-a10b/plaqueAttack_vgfmri3.replay.json.gz",
+        "bait_vgfmri4": "llm_catalogue/lrm-ao/qwen/qwen3.5-122b-a10b/bait_vgfmri4.replay.json.gz",
+        "chase_vgfmri4": "llm_catalogue/lrm-ao/qwen/qwen3.5-122b-a10b/chase_vgfmri4.replay.json.gz",
+        "helper_vgfmri4": "llm_catalogue/lrm-ao/qwen/qwen3.5-122b-a10b/helper_vgfmri4.replay.json.gz",
+        "lemmings_vgfmri4": "llm_catalogue/lrm-ao/qwen/qwen3.5-122b-a10b/lemmings_vgfmri4.replay.json.gz",
+        "zelda_vgfmri4": "llm_catalogue/lrm-ao/qwen/qwen3.5-122b-a10b/zelda_vgfmri4.replay.json.gz",
+        "avoidGeorge_vgfmri4": "llm_catalogue/lrm-ao/qwen/qwen3.5-122b-a10b/avoidGeorge_vgfmri4.replay.json.gz"
+      }
+    },
+    "qwen/qwen3.5-27b": {
+      "stats": {
+        "wins": 38,
+        "losses": 70
+      },
+      "replays": {
+        "bait_vgfmri3": "llm_catalogue/lrm-ao/qwen/qwen3.5-27b/bait_vgfmri3.replay.json.gz",
+        "chase_vgfmri3": "llm_catalogue/lrm-ao/qwen/qwen3.5-27b/chase_vgfmri3.replay.json.gz",
+        "helper_vgfmri3": "llm_catalogue/lrm-ao/qwen/qwen3.5-27b/helper_vgfmri3.replay.json.gz",
+        "lemmings_vgfmri3": "llm_catalogue/lrm-ao/qwen/qwen3.5-27b/lemmings_vgfmri3.replay.json.gz",
+        "zelda_vgfmri3": "llm_catalogue/lrm-ao/qwen/qwen3.5-27b/zelda_vgfmri3.replay.json.gz",
+        "plaqueAttack_vgfmri3": "llm_catalogue/lrm-ao/qwen/qwen3.5-27b/plaqueAttack_vgfmri3.replay.json.gz",
+        "bait_vgfmri4": "llm_catalogue/lrm-ao/qwen/qwen3.5-27b/bait_vgfmri4.replay.json.gz",
+        "chase_vgfmri4": "llm_catalogue/lrm-ao/qwen/qwen3.5-27b/chase_vgfmri4.replay.json.gz",
+        "helper_vgfmri4": "llm_catalogue/lrm-ao/qwen/qwen3.5-27b/helper_vgfmri4.replay.json.gz",
+        "lemmings_vgfmri4": "llm_catalogue/lrm-ao/qwen/qwen3.5-27b/lemmings_vgfmri4.replay.json.gz",
+        "zelda_vgfmri4": "llm_catalogue/lrm-ao/qwen/qwen3.5-27b/zelda_vgfmri4.replay.json.gz",
+        "avoidGeorge_vgfmri4": "llm_catalogue/lrm-ao/qwen/qwen3.5-27b/avoidGeorge_vgfmri4.replay.json.gz"
+      }
+    },
+    "qwen/qwen3.5-35b-a3b": {
+      "stats": {
+        "wins": 27,
+        "losses": 68
+      },
+      "replays": {
+        "bait_vgfmri3": "llm_catalogue/lrm-ao/qwen/qwen3.5-35b-a3b/bait_vgfmri3.replay.json.gz",
+        "chase_vgfmri3": "llm_catalogue/lrm-ao/qwen/qwen3.5-35b-a3b/chase_vgfmri3.replay.json.gz",
+        "helper_vgfmri3": "llm_catalogue/lrm-ao/qwen/qwen3.5-35b-a3b/helper_vgfmri3.replay.json.gz",
+        "lemmings_vgfmri3": "llm_catalogue/lrm-ao/qwen/qwen3.5-35b-a3b/lemmings_vgfmri3.replay.json.gz",
+        "zelda_vgfmri3": "llm_catalogue/lrm-ao/qwen/qwen3.5-35b-a3b/zelda_vgfmri3.replay.json.gz",
+        "plaqueAttack_vgfmri3": "llm_catalogue/lrm-ao/qwen/qwen3.5-35b-a3b/plaqueAttack_vgfmri3.replay.json.gz",
+        "bait_vgfmri4": "llm_catalogue/lrm-ao/qwen/qwen3.5-35b-a3b/bait_vgfmri4.replay.json.gz",
+        "chase_vgfmri4": "llm_catalogue/lrm-ao/qwen/qwen3.5-35b-a3b/chase_vgfmri4.replay.json.gz",
+        "helper_vgfmri4": "llm_catalogue/lrm-ao/qwen/qwen3.5-35b-a3b/helper_vgfmri4.replay.json.gz",
+        "lemmings_vgfmri4": "llm_catalogue/lrm-ao/qwen/qwen3.5-35b-a3b/lemmings_vgfmri4.replay.json.gz",
+        "zelda_vgfmri4": "llm_catalogue/lrm-ao/qwen/qwen3.5-35b-a3b/zelda_vgfmri4.replay.json.gz",
+        "avoidGeorge_vgfmri4": "llm_catalogue/lrm-ao/qwen/qwen3.5-35b-a3b/avoidGeorge_vgfmri4.replay.json.gz"
+      }
+    },
+    "qwen/qwen3.5-397b-a17b": {
+      "stats": {
+        "wins": 40,
+        "losses": 70
+      },
+      "replays": {
+        "bait_vgfmri3": "llm_catalogue/lrm-ao/qwen/qwen3.5-397b-a17b/bait_vgfmri3.replay.json.gz",
+        "chase_vgfmri3": "llm_catalogue/lrm-ao/qwen/qwen3.5-397b-a17b/chase_vgfmri3.replay.json.gz",
+        "helper_vgfmri3": "llm_catalogue/lrm-ao/qwen/qwen3.5-397b-a17b/helper_vgfmri3.replay.json.gz",
+        "lemmings_vgfmri3": "llm_catalogue/lrm-ao/qwen/qwen3.5-397b-a17b/lemmings_vgfmri3.replay.json.gz",
+        "zelda_vgfmri3": "llm_catalogue/lrm-ao/qwen/qwen3.5-397b-a17b/zelda_vgfmri3.replay.json.gz",
+        "plaqueAttack_vgfmri3": "llm_catalogue/lrm-ao/qwen/qwen3.5-397b-a17b/plaqueAttack_vgfmri3.replay.json.gz",
+        "bait_vgfmri4": "llm_catalogue/lrm-ao/qwen/qwen3.5-397b-a17b/bait_vgfmri4.replay.json.gz",
+        "chase_vgfmri4": "llm_catalogue/lrm-ao/qwen/qwen3.5-397b-a17b/chase_vgfmri4.replay.json.gz",
+        "helper_vgfmri4": "llm_catalogue/lrm-ao/qwen/qwen3.5-397b-a17b/helper_vgfmri4.replay.json.gz",
+        "lemmings_vgfmri4": "llm_catalogue/lrm-ao/qwen/qwen3.5-397b-a17b/lemmings_vgfmri4.replay.json.gz",
+        "zelda_vgfmri4": "llm_catalogue/lrm-ao/qwen/qwen3.5-397b-a17b/zelda_vgfmri4.replay.json.gz",
+        "avoidGeorge_vgfmri4": "llm_catalogue/lrm-ao/qwen/qwen3.5-397b-a17b/avoidGeorge_vgfmri4.replay.json.gz"
+      }
+    },
+    "qwen/qwen3.5-9b": {
+      "stats": {
+        "wins": 34,
+        "losses": 114
+      },
+      "replays": {
+        "bait_vgfmri3": "llm_catalogue/lrm-ao/qwen/qwen3.5-9b/bait_vgfmri3.replay.json.gz",
+        "chase_vgfmri3": "llm_catalogue/lrm-ao/qwen/qwen3.5-9b/chase_vgfmri3.replay.json.gz",
+        "helper_vgfmri3": "llm_catalogue/lrm-ao/qwen/qwen3.5-9b/helper_vgfmri3.replay.json.gz",
+        "lemmings_vgfmri3": "llm_catalogue/lrm-ao/qwen/qwen3.5-9b/lemmings_vgfmri3.replay.json.gz",
+        "zelda_vgfmri3": "llm_catalogue/lrm-ao/qwen/qwen3.5-9b/zelda_vgfmri3.replay.json.gz",
+        "plaqueAttack_vgfmri3": "llm_catalogue/lrm-ao/qwen/qwen3.5-9b/plaqueAttack_vgfmri3.replay.json.gz",
+        "bait_vgfmri4": "llm_catalogue/lrm-ao/qwen/qwen3.5-9b/bait_vgfmri4.replay.json.gz",
+        "chase_vgfmri4": "llm_catalogue/lrm-ao/qwen/qwen3.5-9b/chase_vgfmri4.replay.json.gz",
+        "helper_vgfmri4": "llm_catalogue/lrm-ao/qwen/qwen3.5-9b/helper_vgfmri4.replay.json.gz",
+        "lemmings_vgfmri4": "llm_catalogue/lrm-ao/qwen/qwen3.5-9b/lemmings_vgfmri4.replay.json.gz",
+        "zelda_vgfmri4": "llm_catalogue/lrm-ao/qwen/qwen3.5-9b/zelda_vgfmri4.replay.json.gz",
+        "avoidGeorge_vgfmri4": "llm_catalogue/lrm-ao/qwen/qwen3.5-9b/avoidGeorge_vgfmri4.replay.json.gz"
+      }
+    }
+  }
+}
