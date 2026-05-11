@@ -226,6 +226,12 @@
   margin-bottom: 4px;
   border-radius: 3px;
 }
+.bgi-rep .conversation-content .msg[data-step-idx] {
+  cursor: pointer;
+}
+.bgi-rep .conversation-content .msg[data-step-idx]:hover {
+  filter: brightness(0.97);
+}
 .bgi-rep .conversation-content .msg-user {
   background: #f0f4ff;
   border-left: 3px solid #6688cc;
@@ -273,6 +279,10 @@
   opacity: 0;
   pointer-events: none;
   transition: transform var(--anim), opacity 0.28s ease;
+  /* Float above the roi-card row below us so the extended scrub hit-box
+     (::before on .scrubber-track-wrap that spills into the next grid
+     row) doesn't get covered by the later-DOM-order cards. */
+  z-index: 5;
 }
 .bgi-rep .main-container:hover .gap-row .scrubber-row {
   opacity: 1;
@@ -291,6 +301,19 @@
   height: 18px;
   cursor: pointer;
   overflow: visible;
+  touch-action: none;
+}
+/* Extend the click/touch hit area vertically beyond the visual line so
+   it's easier to grab, especially on touch. The ::before is behind the
+   thumb inputs in DOM order so it doesn't intercept native thumb drags. */
+.bgi-rep .scrubber-track-wrap::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -10px;
+  bottom: -10px;
+  cursor: pointer;
 }
 .bgi-rep .scrubber-track-wrap input[type=range] {
   position: absolute;
@@ -303,6 +326,7 @@
   appearance: none;
   height: 22px;
   margin: 0;
+  touch-action: none;
 }
 .bgi-rep .scrubber-track-wrap input[type=range]::-webkit-slider-runnable-track {
   height: 4px;
@@ -414,9 +438,12 @@
   color: #222;
 }
 .bgi-rep .play-pause-btn svg { width: 12px; height: 12px; display: block; }
-.bgi-rep .play-pause-btn .icon-pause { display: none; }
-.bgi-rep .play-pause-btn[data-state="playing"] .icon-play  { display: none; }
-.bgi-rep .play-pause-btn[data-state="playing"] .icon-pause { display: block; }
+.bgi-rep .play-pause-btn .icon-pause  { display: none; }
+.bgi-rep .play-pause-btn .icon-replay { display: none; }
+.bgi-rep .play-pause-btn[data-state="playing"] .icon-play   { display: none; }
+.bgi-rep .play-pause-btn[data-state="playing"] .icon-pause  { display: block; }
+.bgi-rep .play-pause-btn[data-state="ended"]   .icon-play   { display: none; }
+.bgi-rep .play-pause-btn[data-state="ended"]   .icon-replay { display: block; }
 
 /* Model switcher */
 .bgi-rep .gap-row .model-switcher {
@@ -905,28 +932,111 @@
 }
 .bgi-rep .model-switcher button.center:hover { color: #000; }
 
+/* SYNC NOTE
+ * ---------
+ * The standalone viewer (representation.html) keeps its own copy of
+ * these rules inline because its HTML structure for the top row
+ * differs (replay-left / translation-arrow / replay-right wrappers,
+ * no .gap-row). Any change to the mobile / RDM-card / scrubber CSS
+ * here should be mirrored in representation.html's inline <style>
+ * block. Both files carry the same SYNC NOTE for cross-reference.
+ */
+
 /* ---- Mobile: stack into a single column --------------------------- */
 @media (max-width: 900px) {
+  /* Make .main-container a flex column so we can reorder its descendants
+     (top-row, scrubber-row, panels-area, model-switcher). The gap-row
+     uses `display: contents` to dissolve its DOM box -- its children
+     become direct flex-children and can be reordered with `order`. */
+  .bgi-rep .main-container {
+    display: flex !important;
+    flex-direction: column;
+    gap: 10px;
+  }
   .bgi-rep .top-row,
   .bgi-rep .roi-row {
     grid-template-columns: 1fr;
     row-gap: 10px;
   }
   .bgi-rep .roi-card { height: auto; min-height: 220px; }
-  .bgi-rep .gap-row { height: auto; min-height: 60px; padding: 8px 0; }
+  .bgi-rep .gap-row {
+    display: contents;
+  }
   .bgi-rep .gap-row .scrubber-row,
   .bgi-rep .gap-row .model-switcher {
     position: static;
     width: 100%;
     transform: none;
     margin: 4px 0;
+    opacity: 1;
+    pointer-events: auto;
+    visibility: visible;
   }
+  /* Mobile order: canvas+conversation -> scrubber -> RDM rows ->
+     model-switcher (model-selection buttons sit BELOW the model RDM). */
+  .bgi-rep .top-row         { order: 0; }
+  .bgi-rep .scrubber-row    { order: 1; }
+  .bgi-rep .panels-area     { order: 2; }
+  .bgi-rep .model-switcher  { order: 3; }
+  /* Each ROI row stacks as: [ROI cycle controls] -> human card -> model
+     card. Keep the row as a grid (so the cards still stretch to a
+     content-sized track tall enough for the brain views to render at
+     height:100%); add an explicit auto row track for row-controls and
+     place items by grid-row. */
+  .bgi-rep .roi-row {
+    grid-template-rows: auto auto auto;
+  }
+  .bgi-rep .row-controls {
+    position: static;
+    transform: none;
+    width: 100%;
+    flex-direction: row;
+    justify-content: center;
+    opacity: 1;
+    pointer-events: auto;
+    grid-row: 1;
+  }
+  .bgi-rep .roi-card-human { grid-row: 2; }
+  .bgi-rep .roi-card-model { grid-row: 3; }
   .bgi-rep .main-container:hover .canvas-wrapper,
   .bgi-rep .main-container:hover .conversation-panel,
   .bgi-rep .main-container:hover .roi-card-human,
   .bgi-rep .main-container:hover .roi-card-model {
     transform: none;
   }
+  /* Kill ALL desktop hover-driven transforms on mobile -- the desktop
+     animation translates the scrubber-row by -spread-x and -50% (which
+     was anchored against the absolutely-positioned gap-row). On mobile
+     the gap-row is `display: contents` and the row is in flex flow, so
+     the same translate yanks the row to the top-left of the page. */
+  .bgi-rep .main-container:hover .gap-row .scrubber-row,
+  .bgi-rep .main-container:hover .gap-row .model-switcher {
+    transform: none;
+  }
+  .bgi-rep .scrubber-row,
+  .bgi-rep .model-switcher,
+  .bgi-rep .row-controls,
+  .bgi-rep .canvas-wrapper,
+  .bgi-rep .conversation-panel,
+  .bgi-rep .roi-card-human,
+  .bgi-rep .roi-card-model {
+    transition: none;
+  }
+  /* Same hover-reveal opt-out for the inter-card glue: on mobile the
+     scrub row, model switcher and ROI cycle controls are pinned visible
+     so touch users never need to hover-to-reveal. */
+  .bgi-rep .main-container .scrubber-row,
+  .bgi-rep .main-container .model-switcher,
+  .bgi-rep .main-container .row-controls {
+    opacity: 1;
+    pointer-events: auto;
+    visibility: visible;
+  }
+  /* The translation arrow only makes sense in the desktop 2-column
+     layout (game card on the left, conversation card on the right).
+     On the single-column mobile layout there's no left/right pairing
+     for it to bridge, so hide it. */
+  .bgi-rep .translation-arrow { display: none; }
   /* Model card on mobile: layer strip + label sit on the LEFT of the RDM,
      and the "Layer N" label is rotated counter-clockwise so it reads
      bottom-to-top along the far-left edge. row-reverse on both the card
@@ -935,7 +1045,10 @@
   .bgi-rep .layer-strip-col {
     flex-direction: row-reverse;
     align-items: stretch;
-    justify-content: flex-start;
+    /* Horizontally centre [label][strip] within the model card's left
+       half so they don't hug the RDM's edge -- mirrors the brain plot
+       being centred in the human card's left half. */
+    justify-content: center;
     gap: 6px;
     height: 100%;
   }

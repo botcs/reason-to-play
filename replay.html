@@ -304,6 +304,7 @@
       background: white;
       color: black;
       min-height: 100vh;
+      overflow-x: hidden;
     }
     a { color: black; }
 
@@ -508,6 +509,43 @@
       min-width: 0;
       margin: 0;
       display: block;
+      height: 28px;
+      padding: 10px 0;
+      box-sizing: border-box;
+      background: transparent;
+      cursor: pointer;
+      -webkit-appearance: none;
+      appearance: none;
+      touch-action: none;
+    }
+    #step-scrubber::-webkit-slider-runnable-track {
+      height: 4px;
+      background: #ddd;
+      border-radius: 2px;
+    }
+    #step-scrubber::-moz-range-track {
+      height: 4px;
+      background: #ddd;
+      border-radius: 2px;
+    }
+    #step-scrubber::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 13px;
+      height: 18px;
+      border-radius: 2px;
+      background: #f6c350;
+      border: 1.5px solid #8a5e0a;
+      margin-top: -7px;
+      cursor: pointer;
+    }
+    #step-scrubber::-moz-range-thumb {
+      width: 13px;
+      height: 18px;
+      border-radius: 2px;
+      background: #f6c350;
+      border: 1.5px solid #8a5e0a;
+      cursor: pointer;
     }
 
     /* D-pad: non-interactive key indicator */
@@ -606,6 +644,8 @@
       grid-template-columns: auto 1fr;
       gap: 1px 10px;
       overflow-y: auto;
+      flex: 1;
+      min-height: 0;
     }
     .metadata-panel .meta-key {
       font-weight: bold;
@@ -657,14 +697,15 @@
       padding: 2px 4px;
     }
 
-    /* Right column */
+    /* Right column. Heights of the conversation card and the Summary
+       card are pinned by JS (replay-main.js) to mirror the left column's
+       canvas+D-pad and action-log respectively, so we drop the 90vh cap
+       that used to size the conv-panel via flex: 1. */
     .replay-right {
       display: flex;
       flex-direction: column;
       gap: 12px;
       min-width: 0;
-      overflow: hidden;
-      max-height: 90vh;
     }
 
     /* Conversation panel (multi-turn) */
@@ -697,6 +738,12 @@
       padding: 6px 8px;
       margin-bottom: 4px;
       border-radius: 4px;
+    }
+    .conversation-content .msg[data-step-idx] {
+      cursor: pointer;
+    }
+    .conversation-content .msg[data-step-idx]:hover {
+      filter: brightness(0.97);
     }
     .conversation-content .msg-user {
       background: #f0f4ff;
@@ -925,8 +972,6 @@
 
     <div class="replay-container" id="replay-container">
       <div class="replay-left">
-        <input type="range" id="step-scrubber" min="0" max="0" value="0">
-
         <div class="canvas-flaps-group">
           <div class="canvas-wrapper">
             <canvas id="game-canvas"></canvas>
@@ -943,6 +988,8 @@
             <textarea id="level-text" spellcheck="false" readonly></textarea>
           </div>
         </div>
+
+        <input type="range" id="step-scrubber" min="0" max="0" value="0">
 
         <div class="dpad-caption">Key pressed at this frame</div>
         <div class="dpad" id="dpad">
@@ -971,8 +1018,17 @@
         </div>
 
         <div class="action-log" id="action-log"></div>
+      </div>
 
-        <div class="metadata-group">
+      <div class="replay-right">
+        <div id="multi-turn-layout" style="display:none; flex-direction:column; gap:12px; flex:1; min-height:0;">
+          <div class="conversation-panel" id="conversation-panel">
+            <h3>Conversation</h3>
+            <div class="conversation-content" id="conversation-content"></div>
+          </div>
+        </div>
+
+        <div class="metadata-group" id="metadata-group">
           <div class="metadata-tabs">
             <button class="metadata-tab active" id="metadata-tab-summary" data-tab="summary">Summary</button>
             <button class="metadata-tab" id="metadata-tab-json" data-tab="json">Raw JSON</button>
@@ -981,15 +1037,6 @@
           </div>
           <div class="metadata-panel" id="metadata-panel"></div>
           <div class="metadata-json" id="metadata-json"></div>
-        </div>
-      </div>
-
-      <div class="replay-right">
-        <div id="multi-turn-layout" style="display:none; flex-direction:column; gap:12px; flex:1; min-height:0;">
-          <div class="conversation-panel">
-            <h3>Conversation</h3>
-            <div class="conversation-content" id="conversation-content"></div>
-          </div>
         </div>
       </div>
     </div>

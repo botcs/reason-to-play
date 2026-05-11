@@ -298,6 +298,7 @@
       background: white;
       color: black;
       min-height: 100vh;
+      overflow-x: hidden;
     }
     a { color: black; }
 
@@ -706,6 +707,12 @@
       margin-bottom: 4px;
       border-radius: 3px;
     }
+    .conversation-content .msg[data-step-idx] {
+      cursor: pointer;
+    }
+    .conversation-content .msg[data-step-idx]:hover {
+      filter: brightness(0.97);
+    }
     .conversation-content .msg-user {
       background: #f0f4ff;
       border-left: 3px solid #6688cc;
@@ -986,9 +993,12 @@
       color: #222;
     }
     .play-pause-btn svg { width: 12px; height: 12px; display: block; }
-    .play-pause-btn .icon-pause { display: none; }
-    .play-pause-btn[data-state="playing"] .icon-play  { display: none; }
-    .play-pause-btn[data-state="playing"] .icon-pause { display: block; }
+    .play-pause-btn .icon-pause  { display: none; }
+    .play-pause-btn .icon-replay { display: none; }
+    .play-pause-btn[data-state="playing"] .icon-play   { display: none; }
+    .play-pause-btn[data-state="playing"] .icon-pause  { display: block; }
+    .play-pause-btn[data-state="ended"]   .icon-play   { display: none; }
+    .play-pause-btn[data-state="ended"]   .icon-replay { display: block; }
     .step-meta-label {
       font-family: 'Courier New', monospace;
       font-size: 12px;
@@ -1372,10 +1382,21 @@
       .help-mobile  { display: block; }
     }
 
+    /* SYNC NOTE
+     * ---------
+     * The embed (index.html) uses representation-embed.css, which has
+     * its own copy of these mobile / RDM-card rules. Structural
+     * differences in the top row (this file uses replay-left /
+     * translation-arrow / replay-right wrappers; embed uses a
+     * .gap-row) mean we can't drop one in favour of the other, but
+     * every visual fix here should be mirrored there and vice versa.
+     * Both files carry the same SYNC NOTE for cross-reference.
+     */
+
     /* Mobile / narrow-viewport: switch to a single-column layout for the
        whole page (game -> arrow -> conversation -> human RDM -> model
-       RDM). The ROI cycle controls move to the bottom of each pair, the
-       arrow rotates to point downwards, and the View-all button hides. */
+       RDM). The ROI cycle controls move above each pair, and the
+       View-all button hides. */
     @media (max-width: 900px) {
       .wrapper { max-width: 95vw; padding: 12px; }
 
@@ -1384,51 +1405,70 @@
         grid-template-rows: auto auto auto;
         gap: 10px;
       }
-      .translation-arrow {
-        flex-direction: row;
-        gap: 8px;
-      }
-      .translation-arrow svg {
-        transform: rotate(90deg);
-        width: 18px;
-        height: 56px;
-      }
+      /* No left/right pairing on mobile -- hide the bridging arrow. */
+      .translation-arrow { display: none; }
 
       .roi-row {
         grid-template-columns: 1fr;
         gap: 10px;
       }
-      .roi-card-human,
-      .roi-card-model {
-        grid-template-columns: 1fr;
+      /* On mobile, switch each card from the desktop's grid layout to a
+         flex-row layout (the same one the embed uses) so the brain
+         column and the RDM panel can drive each other's sizing:
+           - panel-cell pins to 100% card height + aspect-ratio: 1/1, so
+             it's a square anchored on card height;
+           - roi-brain takes the remaining width and stretches to full
+             card height, so the brain-view (width: 100%, flex: 1 1 0,
+             max-height: 100%) renders at a visible, viewport-responsive
+             size instead of the fixed 200x130 desktop values.
+         Mirrored from representation-embed.css. */
+      .roi-card {
+        display: flex;
+        flex-direction: row;
+        align-items: stretch;
+        gap: 8px;
+        padding: 8px;
+        height: auto;
+        min-height: 220px;
+      }
+      .roi-card .panel-cell {
+        flex: 0 0 auto;
+        height: 100%;
+        aspect-ratio: 1 / 1;
       }
       .roi-card-human .roi-brain {
-        flex-direction: row;
-        gap: 12px;
-        align-items: center;
-        justify-content: flex-start;
-      }
-      .roi-card-human .roi-brain-stack {
-        flex-direction: row;
-        width: auto;
+        flex: 1 1 0;
+        min-width: 0;
+        height: 100%;
+        padding: 0;
         gap: 4px;
       }
+      .roi-card-human .roi-brain-stack {
+        flex: 1 1 0;
+        min-height: 0;
+        width: 100%;
+      }
       .roi-card-human .roi-brain .brain-view {
-        width: 90px;
-        max-height: 80px;
+        width: 100%;
+        flex: 1 1 0;
+        min-height: 0;
+        height: auto;
+        max-height: 100%;
       }
-      /* Model card on mobile: strip + label sit on the LEFT of the RDM,
-         with the "Layer N" label rotated counter-clockwise (sideways-lr)
-         along the far-left edge. */
-      .roi-card-model {
-        grid-template-columns: auto 1fr;     /* strip column | RDM */
+      .roi-card-model .layer-strip-col {
+        order: 0;
+        /* Grow to fill the left half of the card so the model RDM is
+           pushed to the right edge (right-aligned, matching the human
+           RDM). Inside the strip-col, justify-content: center keeps
+           [label][strip] horizontally centred in the available space. */
+        flex: 1 1 0;
+        min-width: 0;
       }
-      .roi-card-model .layer-strip-col { order: 0; }
       .roi-card-model .panel-cell      { order: 1; }
       .layer-strip-col {
         flex-direction: row-reverse;
         align-items: stretch;
-        justify-content: flex-start;
+        justify-content: center;
         gap: 6px;
         height: auto;
       }
@@ -1456,15 +1496,47 @@
         padding: 4px 2px;
       }
 
-      .roi-card-human { order: 1; }
-      .roi-card-model { order: 2; }
+      /* ROI cycle controls -> above human card; model card stays below;
+         ROI controls are always visible on mobile and render
+         horizontally (no hover-to-reveal).
+         Keep .roi-row as a grid with three explicit auto rows so the
+         cards still stretch to a content-sized track (otherwise the
+         brain-view's height: 100% collapses to 0 and the brain images
+         disappear). Mirrored from representation-embed.css. */
+      .roi-row { grid-template-rows: auto auto auto; }
       .row-controls {
-        order: 3;
+        grid-row: 1;
         flex-direction: row;
         justify-content: center;
         align-items: center;
         gap: 16px;
+        width: 100%;
+        opacity: 1;
+        pointer-events: auto;
       }
+      .roi-card-human { grid-row: 2; }
+      .roi-card-model { grid-row: 3; }
+      /* Model selection buttons -> beneath the model RDM card. The
+         model-switcher lives inside .replay-right inside .top-row; on
+         mobile we collapse the wrappers with `display: contents` so the
+         canvas, scrubber, conversation, panels-area and model-switcher
+         all become direct flex-children of .main-container -- then
+         CSS `order` puts the model switcher last (after the panels
+         area, i.e. under the model RDM card). */
+      .main-container {
+        display: flex !important;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .top-row, .replay-left, .replay-right { display: contents; }
+      /* Mirrors embed mobile order: canvas + conversation share the top
+         band (top-row), then the scrubber sits BELOW the conversation,
+         then the RDM rows, then the model switcher last. */
+      .canvas-wrapper       { order: 0; }
+      .conversation-panel   { order: 1; }
+      .scrubber-row         { order: 2; }
+      .panels-area          { order: 3; }
+      .model-switcher       { order: 4; }
 
       /* Drop the expand-all toggle on mobile -- single-row only. */
       #btn-expand-all { display: none; }
@@ -1558,7 +1630,7 @@
 <body>
   <div class="wrapper">
     <header>
-      <h1><b>B</b>rowser <b>G</b>ame <b>I</b>nterpreter &mdash; Representation Viewer v2</h1>
+      <h1><a href="index.html" style="text-decoration:none; color:inherit;"><b>Reason to Play</b></a> &mdash; Representation Viewer</h1>
       <div class="subtitle">Per-TR RDMs across human ROIs and LLM hidden layers</div>
     </header>
 
@@ -1627,6 +1699,12 @@
                 <svg class="icon-pause" viewBox="0 0 16 16" aria-hidden="true">
                   <rect x="4" y="3" width="3" height="10" fill="currentColor"/>
                   <rect x="9" y="3" width="3" height="10" fill="currentColor"/>
+                </svg>
+                <svg class="icon-replay" viewBox="0 0 16 16" aria-hidden="true">
+                  <path d="M 11.5 3.5 A 5 5 0 1 0 13 7.5"
+                        fill="none" stroke="currentColor" stroke-width="1.6"
+                        stroke-linecap="round"/>
+                  <polygon points="13.6,1.2 13.6,5.6 9.8,3.4" fill="currentColor"/>
                 </svg>
               </button>
               <div class="scrubber-track-wrap" id="scrubber-track-wrap">
