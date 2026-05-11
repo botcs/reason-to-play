@@ -1439,8 +1439,15 @@
         align-items: stretch;
         gap: 8px;
         padding: 8px;
-        height: auto;
-        min-height: 220px;
+        /* Lock the card to the canvas-driven --card-h (set by JS on
+           .main-container). Without this, min-height + auto height lets
+           the brain stack push the card taller than the viewport is
+           wide, and the height:100% + aspect-ratio:1/1 panel-cell then
+           expands into a square wider than the screen, causing
+           horizontal page scroll. The embed CSS does the same thing. */
+        height: var(--card-h, 360px);
+        min-width: 0;
+        overflow: hidden;
       }
       .roi-card .panel-cell {
         flex: 0 0 auto;
