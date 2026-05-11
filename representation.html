@@ -477,6 +477,26 @@
       height: auto;
       image-rendering: pixelated;
     }
+    /* vgfmri3 levels have non-uniform shapes per level, so stepping the
+       scrubber across a level boundary changes the canvas aspect and
+       reflows the surrounding cards. Lock the wrapper to the vgfmri4
+       reference shape (21 cells x 12 cells = 21:12) and centre the
+       canvas inside it; the surrounding band is filled with the level's
+       wall colour (set in JS) so the padding reads as part of the game
+       arena. vgfmri4 games are 21:12 already so the class is a no-op
+       for them. */
+    .canvas-wrapper.vgfmri3-pad {
+      aspect-ratio: 21 / 12;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .canvas-wrapper.vgfmri3-pad #game-canvas {
+      width: auto;
+      height: auto;
+      max-width: 100%;
+      max-height: 100%;
+    }
     /* Catalogue-style play indicator: fades in briefly on click */
     .play-indicator {
       position: absolute;

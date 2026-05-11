@@ -85,9 +85,16 @@
 }
 .cat-embed .game-card-title:hover::after { width: 60%; left: 20%; }
 
-/* Canvas container -- bg set by JS to the level's wall colour */
+/* Canvas container -- bg set by JS to the level's wall colour.
+   Standalone catalogue uses a fixed 220px height which works because
+   its cards are ~395px wide (~21:12). When this stylesheet is in play
+   the cards are embedded in a narrower 3-column grid on index.html
+   (~310px each), and a fixed 220px height becomes taller than 21:12 of
+   the card width, leaving black bars above and below the canvas. We
+   match the vgfmri4 21:12 aspect ratio instead so the container hugs
+   the canvas regardless of card width. */
 .cat-embed .canvas-container {
-  height: 220px;
+  aspect-ratio: 21 / 12;
   display: flex;
   align-items: center;
   justify-content: center;
