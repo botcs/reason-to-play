@@ -484,6 +484,10 @@
       max-height: 100%;
       width: auto;
       height: auto;
+      /* The wrapper paints the wall-colour band around the canvas; the
+         canvas's own 3px grey border would be visible against that band,
+         so drop it when padding is active. */
+      border: none;
     }
 
     /* Playback controls */

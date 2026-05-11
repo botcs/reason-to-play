@@ -594,6 +594,19 @@
     /* Spacer around the inlined representation viewer */
     .rep-embed { margin: 20px 0 0; width: 100%; }
 
+    /* Section A's positional intro sentence has two variants -- the
+       desktop one talks about the 2x2 grid (top-left / top-right /
+       bottom-left / bottom-right), the mobile one walks the single-
+       column stacking order (top / 2nd / 3rd / bottom). Breakpoint
+       matches the representation viewer's mobile flip in
+       representation-embed.css. */
+    .rep-intro-desktop { display: inline; }
+    .rep-intro-mobile  { display: none; }
+    @media (max-width: 900px) {
+      .rep-intro-desktop { display: none; }
+      .rep-intro-mobile  { display: inline; }
+    }
+
     /* Big call-to-action button row that sits under each section's main
        artifact. Three equal-width buttons; stacks on mobile. */
     .section-cta {
@@ -733,10 +746,13 @@
       <h2>Do Models Represent the Games as Humans do?</h2>
       The games on this page are the exact same environments used in the experiment, including the randomized colour assignment.
       Nobody, neither the human participants nor the LLMs, was told what the rules are.
-      On the left side you see a human participant's gameplay (<b>top left</b>),
+      <span class="rep-intro-desktop">On the left side you see a human participant's gameplay (<b>top left</b>),
       their neural representation evolving during in-context learning (<b>bottom left</b>),
       while on the (<b>top right</b>) you see what the LLM sees and
-      in (<b>bottom right</b>) how their representation formed for the same gameplay.
+      in (<b>bottom right</b>) how their representation formed for the same gameplay.</span><span class="rep-intro-mobile">At the <b>top</b> you see a human participant's gameplay,
+      in the <b>2nd panel</b> what the LLM sees,
+      in the <b>3rd panel</b> their neural representation evolving during in-context learning,
+      and at the <b>bottom</b> how the model's representation formed for the same gameplay.</span>
 
       <div class="rep-embed">
         <div class="bgi-rep">
