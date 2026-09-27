@@ -14,9 +14,26 @@ Open any `.html` file directly in a modern browser -- no server required.
 
 ## Source Code
 
-The `source-code/` directory contains the LLM evaluation pipeline, VGDL game engine,
-system prompts, game definitions, and experiment sweep configurations.
-See `source-code/README.md` for details.
+The public research code is maintained in
+[botcs/reason-to-play-src](https://github.com/botcs/reason-to-play-src).
+
+## Paper and Data
+
+- [Paper on arXiv](https://arxiv.org/abs/2605.08019)
+- [Paper on Hugging Face](https://huggingface.co/papers/2605.08019)
+- [Original human data: OpenNeuro ds004323 v1.0.0](https://openneuro.org/datasets/ds004323/versions/1.0.0)
+- [Dataset release discussion](https://github.com/botcs/reason-to-play-src/issues/1)
+
+The derivative dataset is being prepared for Hugging Face. The Data navigation
+link stays disabled until a public dataset exists. To enable it, set
+`huggingFaceDataset` in `index.html` to its verified `owner/repository` ID and
+check that the page is accessible without authentication. The Hugging Face
+paper link is already live; it is separate from the dataset link.
+
+The research repository's `scripts/deploy_gh_pages.py` regenerates this site
+from its `vgdl-js` source. Keep the corresponding source `index.html` and
+`README.md` updated when changing these links so a later deployment preserves
+them.
 
 ## Acknowledgements
 
