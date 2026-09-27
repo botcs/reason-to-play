@@ -385,6 +385,7 @@
     /* --- App nav --- */
     .app-nav {
       display: flex;
+      flex-wrap: wrap;
       gap: 10px;
       margin: 16px 0 8px;
       text-align: left;
@@ -411,7 +412,9 @@
     .app-nav .nav-paper:hover { background: rgba(230,230,220,0.9); }
     .app-nav .nav-code { background: rgba(240,240,235,0.6); }
     .app-nav .nav-code:hover { background: rgba(230,230,220,0.9); }
-    .app-nav .nav-data {
+    .app-nav .nav-data { background: rgba(240,240,235,0.6); }
+    .app-nav .nav-data:hover { background: rgba(230,230,220,0.9); }
+    .app-nav .nav-data[aria-disabled="true"] {
       background: rgba(220,220,220,0.5);
       color: #777;
       border-color: #aaa;
@@ -419,7 +422,7 @@
       cursor: default;
       pointer-events: none;
     }
-    .app-nav .nav-data .nav-title { color: #666; }
+    .app-nav .nav-data[aria-disabled="true"] .nav-title { color: #666; }
     .app-nav .nav-data .nav-title small {
       font-size: 12px;
       font-weight: 400;
@@ -712,7 +715,10 @@
         <a href="https://github.com/botcs/reason-to-play-src" class="nav-code">
           <span class="nav-title">Code</span>
         </a>
-        <a class="nav-data" aria-disabled="true" tabindex="-1">
+        <a href="https://huggingface.co/papers/2605.08019" target="_blank" rel="noopener" class="nav-paper">
+          <span class="nav-title">Hugging Face <small>Paper</small></span>
+        </a>
+        <a id="dataset-link" class="nav-data" aria-disabled="true" tabindex="-1">
           <span class="nav-title">Data <small>(coming soon)</small></span>
         </a>
         <a href="catalogue.html" class="nav-catalogue">
@@ -1065,6 +1071,19 @@
     <div>All games rendered using the Browser Game Interpreter (BGI) &mdash; an interpreter for VGDL implemented in JavaScript</div>
   </footer>
 
+  <script>
+    // Set to the verified public dataset's owner/name after its release.
+    // Leave null while the dataset is being prepared.
+    const huggingFaceDataset = null;
+    if (typeof huggingFaceDataset === 'string' &&
+        /^[A-Za-z0-9][A-Za-z0-9_.-]*\/[A-Za-z0-9][A-Za-z0-9_.-]*$/.test(huggingFaceDataset)) {
+      const datasetLink = document.getElementById('dataset-link');
+      datasetLink.href = `https://huggingface.co/datasets/${huggingFaceDataset}`;
+      datasetLink.removeAttribute('aria-disabled');
+      datasetLink.removeAttribute('tabindex');
+      datasetLink.querySelector('.nav-title').textContent = 'Data on Hugging Face';
+    }
+  </script>
   <script>
     // Configuration for the inlined representation viewer. Picked up by
     // representation-main.js (window.EMBED_CONFIG takes precedence over
