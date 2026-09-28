@@ -6,7 +6,7 @@ Behavioral and Brain Alignment Between Frontier LRMs and Human Game Learners.
 
 ## Interactive Tools
 
-- **Replay Catalogue** (`catalogue.html`) -- browse all human and LLM gameplay replays
+- **Interactive Catalogue** (`catalogue.html`) -- browse all human and LLM gameplay replays
 - **Replay Viewer** (`replay.html`) -- step through replays with reasoning traces and full conversation history
 - **Play the Games** (`interactive-gameplay.html`) -- try the VGDL games yourself in the browser
 

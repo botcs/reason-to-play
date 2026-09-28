@@ -392,8 +392,10 @@
       text-align: left;
     }
     .app-nav a {
-      flex: 1;
-      display: block;
+      flex: 1 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       text-decoration: none;
       padding: 4px 22px;
       border: 1.25px solid #1a1a1a;
@@ -408,6 +410,7 @@
     }
     .app-nav .nav-title {
       font-size: 17px; font-weight: 700;
+      white-space: nowrap;
     }
     .app-nav .nav-paper { background: rgba(240,240,235,0.6); }
     .app-nav .nav-paper:hover { background: rgba(230,230,220,0.9); }
@@ -415,22 +418,6 @@
     .app-nav .nav-code:hover { background: rgba(230,230,220,0.9); }
     .app-nav .nav-data { background: rgba(240,240,235,0.6); }
     .app-nav .nav-data:hover { background: rgba(230,230,220,0.9); }
-    .app-nav .nav-data[aria-disabled="true"] {
-      background: rgba(220,220,220,0.5);
-      color: #777;
-      border-color: #aaa;
-      border-style: dashed;
-      cursor: default;
-      pointer-events: none;
-    }
-    .app-nav .nav-data[aria-disabled="true"] .nav-title { color: #666; }
-    .app-nav .nav-data .nav-title small {
-      font-size: 12px;
-      font-weight: 400;
-      font-style: italic;
-      color: #888;
-      margin-left: 4px;
-    }
     .app-nav .nav-catalogue { background: rgba(253,230,153,0.35); }
     .app-nav .nav-catalogue:hover { background: rgba(253,230,153,0.6); }
     .app-nav .nav-play { background: rgba(180,216,170,0.3); }
@@ -711,19 +698,16 @@
       </h5>
       <nav class="app-nav" style="justify-content:center;">
         <a href="https://openreview.net/forum?id=Y1oX1yuaWM" target="_blank" rel="noopener" class="nav-paper">
-          <span class="nav-title">NeurIPS 2026 paper</span>
+          <span class="nav-title">Paper</span>
         </a>
         <a href="https://github.com/botcs/reason-to-play-src" class="nav-code">
           <span class="nav-title">Code</span>
         </a>
-        <a href="https://huggingface.co/papers/2605.08019" target="_blank" rel="noopener" class="nav-paper">
-          <span class="nav-title">Hugging Face <small>Paper</small></span>
-        </a>
         <a id="dataset-link" href="https://huggingface.co/datasets/csbotos/reason-to-play" target="_blank" rel="noopener" class="nav-data">
-          <span class="nav-title">Data on Hugging Face</span>
+          <span class="nav-title">Data</span>
         </a>
         <a href="catalogue.html" class="nav-catalogue">
-          <span class="nav-title">Replay Catalogue</span>
+          <span class="nav-title">Interactive Catalogue</span>
         </a>
         <a href="interactive-gameplay.html" class="nav-play">
           <span class="nav-title">Play the Games</span>
@@ -897,7 +881,7 @@
           <small>scrub through TRs and switch ROI / layer / model</small>
         </a>
         <a class="cta-cat" href="catalogue.html">
-          Browse the Replay Catalogue
+          Browse the Interactive Catalogue
           <small>every participant, every game, every model</small>
         </a>
         <a class="cta-play" href="interactive-gameplay.html">
@@ -973,7 +957,7 @@
           <small>every observation, every chain of thought, every action</small>
         </a>
         <a class="cta-cat" href="catalogue.html">
-          Browse the Replay Catalogue
+          Browse the Interactive Catalogue
           <small>compare runs across models, games and participants</small>
         </a>
       </nav>
