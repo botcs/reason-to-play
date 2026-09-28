@@ -5,6 +5,31 @@
 <head>
   <script src="data-source.js"></script>
   <script src="data-config-bundle.js"></script>
+  <script>
+    // Start the first comparison's data while the page and viewer load.
+    window.EMBED_CONFIG = {
+      subject: 'sub-13',
+      game:    'bait',
+      model:   'dsv4_pro',
+      stream:  'main',
+      roi:     'SFG',
+      layer:   51,
+      level:   3,
+      episode: 0,
+    };
+    for (const extension of ['json', 'bin']) {
+      const { subject, game, model } = window.EMBED_CONFIG;
+      const preload = document.createElement('link');
+      preload.rel = 'preload';
+      preload.as = 'fetch';
+      preload.crossOrigin = 'anonymous';
+      preload.fetchPriority = 'high';
+      preload.href = ReasonToPlayAssets.resolveRdmUrl(
+        `data/${subject}__${game}__${model}.${extension}`
+      );
+      document.head.appendChild(preload);
+    }
+  </script>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-TCWJ0JB5KY"></script>
   <script>
@@ -945,7 +970,7 @@
       </p>
 
       <div class="section-figure">
-        <img src="figures/reasoning_trace_bait.svg" alt="Reasoning trace (Bait, level 3)">
+        <img loading="lazy" decoding="async" style="aspect-ratio: 1104.272665 / 394.56" src="figures/reasoning_trace_bait.svg" alt="Reasoning trace (Bait, level 3)">
         <div class="section-figure-caption">
           <b>Reasoning trace (Bait, level 3).</b>
           Curated excerpts from the DeepSeek-V3.2 run shown above.
@@ -978,7 +1003,7 @@
       Human participants, deep-RL baselines (DDQN, EfficientZero, EMPA) and eight frontier LRMs all play the same games under the same conditions.
 
       <div class="section-figure">
-        <img src="figures/behavioural_discovery_curriculum_combined.svg" alt="Learning efficiency and capability">
+        <img loading="lazy" decoding="async" style="aspect-ratio: 2373.551386 / 1589.158587" src="figures/behavioural_discovery_curriculum_combined.svg" alt="Learning efficiency and capability">
         <div class="section-figure-caption">
           <b>Learning efficiency and capability.</b>
           Top: discovery-time distributions (KDE); LRMs overlap with humans while deep-RL baselines are shifted far right.
@@ -992,7 +1017,7 @@
       Targeted ablations (prompt-only, shuffled-features, random-init controls) confirm that the signal comes from the model's in-context representation of the game state, not from surface-level prompt statistics or chance correlations.
 
       <div class="section-figure">
-        <img src="figures/encoding_groups_combined.svg" alt="Brain encoding accuracy by region group">
+        <img loading="lazy" decoding="async" style="aspect-ratio: 1338.36 / 969.021" src="figures/encoding_groups_combined.svg" alt="Brain encoding accuracy by region group">
         <div class="section-figure-caption">
           <b>Brain encoding accuracy by region group.</b>
           Best-layer Pearson correlation averaged across voxels within each functional group.
@@ -1057,21 +1082,6 @@
     <div>All games rendered using the Browser Game Interpreter (BGI) &mdash; an interpreter for VGDL implemented in JavaScript</div>
   </footer>
 
-  <script>
-    // Configuration for the inlined representation viewer. Picked up by
-    // representation-main.js (window.EMBED_CONFIG takes precedence over
-    // URL params, which only matter for the standalone representation.html).
-    window.EMBED_CONFIG = {
-      subject: 'sub-13',
-      game:    'bait',
-      model:   'dsv4_pro',
-      stream:  'main',
-      roi:     'SFG',
-      layer:   51,
-      level:   3,
-      episode: 0,
-    };
-  </script>
   <script src="representation-bundle.js"></script>
   <!-- catalogue-main.js detects the .cat-embed-card mount points in
        this document and mounts a GameCard in each (no iframe). -->
