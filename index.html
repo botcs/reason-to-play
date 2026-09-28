@@ -16,8 +16,7 @@
   <title>Reason to Play</title>
 
   <!-- Favicon: 4x4 pixel-grid mark, bait_vgfmri4 / sub-13 / level 6 palette.
-       Edit vgdl-js/scripts/make_favicon.py (ASCII grid + colour map) to
-       regenerate vgdl-js/figures/favicon.svg. -->
+       Source: botcs/browser-game-interpreter, scripts/make_favicon.py. -->
   <link rel="icon" type="image/svg+xml" href="figures/favicon.svg">
   <link rel="apple-touch-icon" href="figures/favicon.svg">
 
@@ -1072,7 +1071,7 @@
 
   <script>
     // Set to the verified public dataset's owner/name after its release.
-    // Leave null while the dataset is being prepared.
+    // Leave null until the dataset is publicly accessible.
     const huggingFaceDataset = null;
     if (typeof huggingFaceDataset === 'string' &&
         /^[A-Za-z0-9][A-Za-z0-9_.-]*\/[A-Za-z0-9][A-Za-z0-9_.-]*$/.test(huggingFaceDataset)) {

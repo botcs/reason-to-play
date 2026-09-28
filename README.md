@@ -25,8 +25,7 @@ The public research code is maintained in
 - [Original human data: OpenNeuro ds004323 v1.0.0](https://openneuro.org/datasets/ds004323/versions/1.0.0)
 - [Dataset release discussion](https://github.com/botcs/reason-to-play-src/issues/1)
 
-The derivative dataset is being prepared for Hugging Face. The Data navigation
-link stays disabled until a public dataset exists. To enable it, set
+The Data navigation link requires a public Hugging Face dataset. To enable it, set
 `huggingFaceDataset` in `index.html` to its verified `owner/repository` ID and
 check that the page is accessible without authentication. The Hugging Face
 paper link is already live; it is separate from the dataset link.
