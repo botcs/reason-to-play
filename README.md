@@ -47,3 +47,17 @@ VGDL engine for interactive visualization and replay.
 ## License
 
 MIT License. See [LICENSE](LICENSE) for details.
+
+## Dataset assets
+
+`data-source.js` selects the data location for the catalogue, replays, RDMs and
+replay-linked game descriptions. Leave `datasetRoot: null` to use the public
+CDN (or a `data/` mirror on localhost). To serve a downloaded dataset, set it to
+the dataset's HTTP root, for example `datasetRoot: "/dataset"`. For Hugging
+Face, use `https://huggingface.co/datasets/OWNER/REPO/resolve/COMMIT` after the
+files are published. Pin the commit to keep the catalogue and payloads together.
+
+The dataset catalogue is `website-assets/replays/manifest.json`; it references
+`behavior/human` and `behavior/lrm` directly. RDM metadata and binary pairs live
+under `website-assets/rdms`. Every human catalogue entry uses the `elaborate`
+prompt condition and contains the complete participant/game recording.
