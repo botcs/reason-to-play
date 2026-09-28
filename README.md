@@ -2,7 +2,7 @@
 
 Behavioral and Brain Alignment Between Frontier LRMs and Human Game Learners.
 
-**Project page:** https://botcs.github.io/reason-to-play/
+**Project page:** [Reason to Play](https://botcs.github.io/reason-to-play/)
 
 ## Interactive Tools
 
@@ -10,7 +10,8 @@ Behavioral and Brain Alignment Between Frontier LRMs and Human Game Learners.
 - **Replay Viewer** (`replay.html`) -- step through replays with reasoning traces and full conversation history
 - **Play the Games** (`interactive-gameplay.html`) -- try the VGDL games yourself in the browser
 
-Open any `.html` file directly in a modern browser -- no server required.
+For a local preview, run `python -m http.server 8000` from this directory and
+open `http://localhost:8000`.
 
 ## Source Code
 
@@ -19,7 +20,7 @@ The public research code is maintained in
 
 ## Paper and Data
 
-- [Paper on arXiv](https://arxiv.org/abs/2605.08019)
+- [NeurIPS 2026 paper](https://openreview.net/forum?id=Y1oX1yuaWM)
 - [Paper on Hugging Face](https://huggingface.co/papers/2605.08019)
 - [Original human data: OpenNeuro ds004323 v1.0.0](https://openneuro.org/datasets/ds004323/versions/1.0.0)
 - [Dataset release discussion](https://github.com/botcs/reason-to-play-src/issues/1)
@@ -30,10 +31,11 @@ link stays disabled until a public dataset exists. To enable it, set
 check that the page is accessible without authentication. The Hugging Face
 paper link is already live; it is separate from the dataset link.
 
-The research repository's `scripts/deploy_gh_pages.py` regenerates this site
-from its `vgdl-js` source. Keep the corresponding source `index.html` and
-`README.md` updated when changing these links so a later deployment preserves
-them.
+Browser engine and viewer source are maintained in
+[botcs/browser-game-interpreter](https://github.com/botcs/browser-game-interpreter).
+The bundles in this repository serve the project website. Research workflows
+and the canonical citation are documented in
+[botcs/reason-to-play-src](https://github.com/botcs/reason-to-play-src).
 
 ## Acknowledgements
 
