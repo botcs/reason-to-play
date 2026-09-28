@@ -27,7 +27,7 @@ The public research code is maintained in
 - [Dataset release discussion](https://github.com/botcs/reason-to-play-src/issues/1)
 
 The Data navigation link opens the derivative dataset. Its `files` catalogue
-lists verified downloads. The Hugging Face paper page is a separate link.
+lists every released payload with verified sizes and SHA-256 checksums.
 
 Browser engine and viewer source are maintained in
 [botcs/browser-game-interpreter](https://github.com/botcs/browser-game-interpreter).
@@ -55,7 +55,14 @@ set `datasetRoot` to its HTTP root, for example `"/dataset"`. Setting it to `nul
 uses the public CDN (or a `data/` mirror on localhost). Keep the Hugging Face
 commit pinned so the catalogue and payloads come from the same version.
 
-The dataset catalogue is `website-assets/replays/manifest.json`; it references
-`behavior/human` and `behavior/lrm` directly. RDM metadata and binary pairs live
-under `website-assets/rdms`. Every human catalogue entry uses the `elaborate`
-prompt condition and contains the complete participant/game recording.
+The browser replay index is `website-assets/replays/manifest.json`; it references
+compact copies under `website-assets/replays/human/` and
+`website-assets/replays/lrm/`. These retain the displayed trajectories and complete
+conversations while omitting engine and raw-input fields unused by the browser.
+Canonical research recordings remain under `behavior/human/` and `behavior/lrm/`.
+RDM metadata and binary pairs live under `website-assets/rdms/`. Human catalogue
+entries select the `elaborate` prompt condition.
+
+The website uses the
+[verified dataset snapshot](https://huggingface.co/datasets/csbotos/reason-to-play/tree/0c674c3ff19b64a55f3fba6d862f5fb828292b74)
+pinned in `data-source.js`.
