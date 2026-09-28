@@ -3,6 +3,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="data-source.js"></script>
+  <script src="data-config-bundle.js"></script>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-TCWJ0JB5KY"></script>
   <script>
@@ -16,8 +18,7 @@
   <title>Reason to Play</title>
 
   <!-- Favicon: 4x4 pixel-grid mark, bait_vgfmri4 / sub-13 / level 6 palette.
-       Edit vgdl-js/scripts/make_favicon.py (ASCII grid + colour map) to
-       regenerate vgdl-js/figures/favicon.svg. -->
+       Source: botcs/browser-game-interpreter, scripts/make_favicon.py. -->
   <link rel="icon" type="image/svg+xml" href="figures/favicon.svg">
   <link rel="apple-touch-icon" href="figures/favicon.svg">
 
@@ -709,8 +710,8 @@
         *&thinsp;Equal first authors, +&thinsp;Equal senior authors
       </h5>
       <nav class="app-nav" style="justify-content:center;">
-        <a href="https://arxiv.org/abs/2605.08019" target="_blank" rel="noopener" class="nav-paper">
-          <span class="nav-title">Paper</span>
+        <a href="https://openreview.net/forum?id=Y1oX1yuaWM" target="_blank" rel="noopener" class="nav-paper">
+          <span class="nav-title">NeurIPS 2026 paper</span>
         </a>
         <a href="https://github.com/botcs/reason-to-play-src" class="nav-code">
           <span class="nav-title">Code</span>
@@ -1045,14 +1046,13 @@
     <!-- =========================================================== -->
     <section>
       <h2>Citation</h2>
-      <div class="bibtex-block" id="bibtex"><button class="copy-btn" onclick="navigator.clipboard.writeText(document.getElementById('bibtex-text').textContent)">Copy</button><span id="bibtex-text">@misc{csaba2026reasonplaybehavioralbrain,
+      <div class="bibtex-block" id="bibtex"><button class="copy-btn" onclick="navigator.clipboard.writeText(document.getElementById('bibtex-text').textContent)">Copy</button><span id="bibtex-text">@inproceedings{botos2026reasontoplay,
       title={Reason to Play: Behavioral and Brain Alignment Between Frontier LRMs and Human Game Learners},
       author={Botos Csaba and Sreejan Kumar and Austin Tudor David Andrews and Laurence Hunt and Chris Summerfield and Joshua B. Tenenbaum and Rui Ponte Costa and Marcelo G. Mattar and Momchil Tomov},
       year={2026},
-      eprint={2605.08019},
-      archivePrefix={arXiv},
-      primaryClass={cs.AI},
-      url={https://arxiv.org/abs/2605.08019},
+      booktitle={Advances in Neural Information Processing Systems},
+      note={Accepted at NeurIPS 2026},
+      url={https://openreview.net/forum?id=Y1oX1yuaWM},
 }</span></div>
     </section>
 
@@ -1073,7 +1073,7 @@
 
   <script>
     // Set to the verified public dataset's owner/name after its release.
-    // Leave null while the dataset is being prepared.
+    // Leave null until the dataset is publicly accessible.
     const huggingFaceDataset = null;
     if (typeof huggingFaceDataset === 'string' &&
         /^[A-Za-z0-9][A-Za-z0-9_.-]*\/[A-Za-z0-9][A-Za-z0-9_.-]*$/.test(huggingFaceDataset)) {
