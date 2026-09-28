@@ -385,19 +385,18 @@
 
     /* --- App nav --- */
     .app-nav {
-      display: flex;
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
       gap: 10px;
       margin: 16px 0 8px;
       text-align: left;
     }
     .app-nav a {
-      flex: 1 0 auto;
       display: flex;
       align-items: center;
       justify-content: center;
       text-decoration: none;
-      padding: 4px 22px;
+      padding: 4px 12px;
       border: 1.25px solid #1a1a1a;
       border-radius: 5px;
       transition: background 0.15s, transform 0.15s;
@@ -422,6 +421,9 @@
     .app-nav .nav-catalogue:hover { background: rgba(253,230,153,0.6); }
     .app-nav .nav-play { background: rgba(180,216,170,0.3); }
     .app-nav .nav-play:hover { background: rgba(180,216,170,0.55); }
+    @media (max-width: 960px) {
+      .app-nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
 
     /* --- Game widget --- */
     .game-box {
@@ -579,7 +581,7 @@
     @media (max-width: 680px) {
       #primary-content { padding: 10px 14px 40px; }
       h1 { font-size: 32px; }
-      .app-nav { flex-direction: column; }
+      .app-nav { grid-template-columns: 1fr; }
     }
 
     /* Spacer around the inlined representation viewer */
@@ -696,9 +698,9 @@
         &mdash;
         *&thinsp;Equal first authors, +&thinsp;Equal senior authors
       </h5>
-      <nav class="app-nav" style="justify-content:center;">
+      <nav class="app-nav">
         <a href="https://openreview.net/forum?id=Y1oX1yuaWM" target="_blank" rel="noopener" class="nav-paper">
-          <span class="nav-title">Paper</span>
+          <span class="nav-title">Paper [NeurIPS '26]</span>
         </a>
         <a href="https://github.com/botcs/reason-to-play-src" class="nav-code">
           <span class="nav-title">Code</span>
