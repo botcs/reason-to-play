@@ -719,8 +719,8 @@
         <a href="https://huggingface.co/papers/2605.08019" target="_blank" rel="noopener" class="nav-paper">
           <span class="nav-title">Hugging Face <small>Paper</small></span>
         </a>
-        <a id="dataset-link" class="nav-data" aria-disabled="true" tabindex="-1">
-          <span class="nav-title">Data <small>(coming soon)</small></span>
+        <a id="dataset-link" href="https://huggingface.co/datasets/csbotos/reason-to-play" target="_blank" rel="noopener" class="nav-data">
+          <span class="nav-title">Data on Hugging Face</span>
         </a>
         <a href="catalogue.html" class="nav-catalogue">
           <span class="nav-title">Replay Catalogue</span>
@@ -1071,19 +1071,6 @@
     <div>All games rendered using the Browser Game Interpreter (BGI) &mdash; an interpreter for VGDL implemented in JavaScript</div>
   </footer>
 
-  <script>
-    // Set to the verified public dataset's owner/name after its release.
-    // Leave null until the dataset is publicly accessible.
-    const huggingFaceDataset = null;
-    if (typeof huggingFaceDataset === 'string' &&
-        /^[A-Za-z0-9][A-Za-z0-9_.-]*\/[A-Za-z0-9][A-Za-z0-9_.-]*$/.test(huggingFaceDataset)) {
-      const datasetLink = document.getElementById('dataset-link');
-      datasetLink.href = `https://huggingface.co/datasets/${huggingFaceDataset}`;
-      datasetLink.removeAttribute('aria-disabled');
-      datasetLink.removeAttribute('tabindex');
-      datasetLink.querySelector('.nav-title').textContent = 'Data on Hugging Face';
-    }
-  </script>
   <script>
     // Configuration for the inlined representation viewer. Picked up by
     // representation-main.js (window.EMBED_CONFIG takes precedence over

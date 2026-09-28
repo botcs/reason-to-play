@@ -1,4 +1,5 @@
-// Set datasetRoot to an HTTP-served dataset directory or a published
-// https://huggingface.co/datasets/OWNER/REPO/resolve/COMMIT URL.
-// null keeps the current CDN (or the local data/ mirror on localhost).
-window.REASON_TO_PLAY_DATA = { datasetRoot: null };
+// Keep the catalogue and payloads pinned to the same dataset version.
+// A local HTTP-served dataset directory can replace this URL.
+window.REASON_TO_PLAY_DATA = {
+  datasetRoot: 'https://huggingface.co/datasets/csbotos/reason-to-play/resolve/be7dbfbf4b926a6248406712f09f0b2f043afd24'
+};

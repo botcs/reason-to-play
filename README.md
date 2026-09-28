@@ -21,14 +21,13 @@ The public research code is maintained in
 ## Paper and Data
 
 - [NeurIPS 2026 paper](https://openreview.net/forum?id=Y1oX1yuaWM)
+- [Dataset on Hugging Face](https://huggingface.co/datasets/csbotos/reason-to-play)
 - [Paper on Hugging Face](https://huggingface.co/papers/2605.08019)
 - [Original human data: OpenNeuro ds004323 v1.0.0](https://openneuro.org/datasets/ds004323/versions/1.0.0)
 - [Dataset release discussion](https://github.com/botcs/reason-to-play-src/issues/1)
 
-The Data navigation link requires a public Hugging Face dataset. To enable it, set
-`huggingFaceDataset` in `index.html` to its verified `owner/repository` ID and
-check that the page is accessible without authentication. The Hugging Face
-paper link is already live; it is separate from the dataset link.
+The Data navigation link opens the derivative dataset. Its `files` catalogue
+lists verified downloads. The Hugging Face paper page is a separate link.
 
 Browser engine and viewer source are maintained in
 [botcs/browser-game-interpreter](https://github.com/botcs/browser-game-interpreter).
@@ -50,12 +49,11 @@ MIT License. See [LICENSE](LICENSE) for details.
 
 ## Dataset assets
 
-`data-source.js` selects the data location for the catalogue, replays, RDMs and
-replay-linked game descriptions. Leave `datasetRoot: null` to use the public
-CDN (or a `data/` mirror on localhost). To serve a downloaded dataset, set it to
-the dataset's HTTP root, for example `datasetRoot: "/dataset"`. For Hugging
-Face, use `https://huggingface.co/datasets/OWNER/REPO/resolve/COMMIT` after the
-files are published. Pin the commit to keep the catalogue and payloads together.
+`data-source.js` pins the published Hugging Face files used by the catalogue,
+replays, RDMs and replay-linked game descriptions. To serve a downloaded dataset,
+set `datasetRoot` to its HTTP root, for example `"/dataset"`. Setting it to `null`
+uses the public CDN (or a `data/` mirror on localhost). Keep the Hugging Face
+commit pinned so the catalogue and payloads come from the same version.
 
 The dataset catalogue is `website-assets/replays/manifest.json`; it references
 `behavior/human` and `behavior/lrm` directly. RDM metadata and binary pairs live
