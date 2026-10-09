@@ -6,7 +6,7 @@ Behavioral and Brain Alignment Between Frontier LRMs and Human Game Learners.
 [browse human and model replays](https://botcs.github.io/reason-to-play/catalogue.html),
 or [play the games](https://botcs.github.io/reason-to-play/interactive-gameplay.html).
 
-[NeurIPS 2026 paper](https://openreview.net/forum?id=Y1oX1yuaWM) ·
+[NeurIPS 2026 paper](https://arxiv.org/abs/2605.08019) ·
 [Research code and workflows](https://github.com/botcs/reason-to-play-src) ·
 [Hugging Face dataset](https://huggingface.co/datasets/csbotos/reason-to-play)
 
