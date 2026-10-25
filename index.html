@@ -450,6 +450,22 @@
       .app-nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
 
+    /* --- Project overview video --- */
+    .project-video {
+      width: 100%;
+      max-width: 800px;
+      aspect-ratio: 16 / 9;
+      margin: 28px auto 4px;
+      overflow: hidden;
+      border-radius: 5px;
+    }
+    .project-video iframe {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
     /* --- Game widget --- */
     .game-box {
       width: fit-content;
@@ -741,6 +757,18 @@
         </a>
       </nav>
     </center>
+
+    <div class="project-video">
+      <iframe
+        src="https://www.youtube-nocookie.com/embed/8yEItbOE_7A?rel=0"
+        title="Reason to Play: narrated project overview"
+        width="800" height="450"
+        loading="lazy"
+        referrerpolicy="strict-origin-when-cross-origin"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowfullscreen>
+      </iframe>
+    </div>
 
     <!-- =========================================================== -->
     <!-- Summary                                                    -->
